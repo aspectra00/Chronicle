@@ -1,8 +1,13 @@
 ![Chronicle logo](src/main/resources/assets/chronicle/icon.png)
 
 #  Chronicle
+[![GitHub](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png)](https://github.com/aspectrea00/Chronicle)
+[![Ko-fi](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png)](https://ko-fi.com/aspectra)
+[![Modrinth](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/modrinth.png)](https://modrinth.com/mod/chronicle-reminders)
+[![CurseForge](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/curse-forge.png)](https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders)
 > **Smart scheduled reminders for Minecraft.**  
 > Create reminders, customize notifications, repeat them automatically, and keep track of what matters without leaving the game.
+> 
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-26.2-62B47A?style=flat-square)
 ![Fabric](https://img.shields.io/badge/Fabric-Client%20Mod-DBD0B4?style=flat-square)
