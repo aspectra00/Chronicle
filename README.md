@@ -1,6 +1,6 @@
 ![Chronicle logo](src/main/resources/assets/chronicle/icon.png)
 
-#  Chronicle
+<h1 align="center">Chronicle</h1>
 <p align="center">
   <a href="https://github.com/aspectrea00/Chronicle"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png" alt="GitHub" width="64" height="64"></a>&nbsp;&nbsp;
   <a href="https://ko-fi.com/aspectra"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png" alt="Ko-fi" width="64" height="64"></a>&nbsp;&nbsp;
