@@ -1,392 +1,1108 @@
-# Chronicle deep audit — fixed85
+# Chronicle Deep Audit
 
-All Java and resource sources were reviewed for Minecraft 26.2 GUI lifecycle,
-font metrics, resize/GUI scale, clipping, input routing, scheduler state and config
-persistence. A clean Gradle build completed successfully with the declared 26.2
-dependencies.
+> **Minecraft 26.2 · Chronicle 1.2.7 · fixed85**  
+> Whole-project correctness, UI geometry, scheduler, persistence and audio audit.
 
-## Fixed
+Chronicle's Java and resource sources were reviewed against Minecraft 26.2 behavior for GUI lifecycle, font metrics, resize and GUI-scale changes, clipping, input routing, scheduler state, notification delivery, custom audio and configuration persistence.
 
-1. Borderless `EditBox` values, caret and selection now use a single vertically
-   centered baseline. The previous five-pixel screen-level offset was incorrect
-   for a 28px field and could leave color values visually clipped or crowded.
-2. Compact Toast Customizer color rows no longer overlap. The palette target was
-   previously placed 18px inside the final field row, and single-column pairs
-   shared identical coordinates.
-3. Size-control groups now fit their columns and stack when necessary; compact
-   title input uses the full available width.
-4. Compact scroll extent includes palette cards, the complete HSV picker and live
-   preview. One-column palettes no longer overlap the picker.
-5. The style selector and its caption now scroll with all other editor content;
-   only the footer remains fixed. Every scrolling control shares the same clip
-   boundary and hit-test viewport at Minecraft's 320x240 logical GUI floor.
-6. Scrolling buttons are re-styled before `disableScissor()`. Partial cards and
-   editor buttons can no longer bleed over headers or footers.
+A clean Gradle build completed successfully against the declared Minecraft 26.2 toolchain.
+
+---
+
+## Audit status
+
+| Area | Status |
+|---|:---:|
+| GUI lifecycle | ✅ Verified |
+| Responsive layout | ✅ Verified |
+| Input / focus routing | ✅ Verified |
+| Scissor / clipping | ✅ Verified |
+| Toast geometry | ✅ Verified |
+| Scheduler state | ✅ Verified |
+| Config persistence | ✅ Verified |
+| Custom audio lifecycle | ✅ Verified |
+| Localization consistency | ✅ Verified |
+| Clean release build | ✅ Passed |
+
+### Release gate
+
+```text
+Chronicle 1.2.7
+fixed85
+Minecraft 26.2
+Java 25
+clean build: PASS
+```
+
+---
+
+# fixed85
+
+## Whole-project correctness and geometry audit
+
+`fixed85` completes the full Chronicle reliability and pixel-geometry audit.
+
+### UI transitions and coordinate stability
+
+- Replaced fractional screen scale and translation effects with a **pixel-stable fade**.
+- Visual bounds and pointer hit boxes now remain in the same coordinate system throughout open and close transitions.
+- One-pixel borders, text and controls no longer drift onto fractional coordinates during animation.
+
+### Text fields and input geometry
+
+- Borderless-field padding is now part of the field's actual content geometry.
+- Rendered text, horizontal scrolling, caret placement, selection, click and drag positions all use the same inset.
+- IME candidate placement follows the same geometry.
+- Long custom-sound paths no longer visually disagree with their editable or selectable region.
+
+### Responsive layouts
+
+Corrected Chronicle's layouts at Minecraft's **320×240 logical minimum**.
+
+- Schedule modes remain on one usable row.
+- The main footer leaves enough space for at least one interactive reminder card.
+- Save errors have a dedicated non-overlapping strip.
+- Sound path and `Browse` controls remain fully contained.
+- Hidden or inactive controls cannot retain focus.
+
+### Notification geometry
+
+- Unified live-preview and real-toast geometry.
+- Notification dimensions now update safely after resize or GUI-scale changes.
+- Added stable three-slot allocation.
+- Removed the second Chronicle-specific slide transform.
+- Disabling animations now makes notification motion immediate.
+- Unicode, CJK and long unbroken tokens wrap without silently dropping the remaining text.
+- Placeholder rendering and progress state now match between previews, tests and real notifications.
+
+### Scheduler correctness
+
+- Interval reminders now use **exact millisecond deadlines**.
+- Legacy minute-based timing data migrates safely.
+- Interval checks no longer depend on the wall-clock minute gate.
+- Forward and backward system-clock changes are handled without catch-up spam.
+- Editor and scheduler races can no longer restore stale enabled state or stale interval deadlines.
+- A reminder deleted by a one-shot action cannot be silently recreated by an open editor.
+
+### Persistence
+
+- Failed runtime saves remain marked dirty.
+- Save retries use bounded backoff.
+- Chronicle performs a final persistence attempt during shutdown.
+- The main screen exposes persistent save failure instead of silently hiding it.
+- Config loading distinguishes malformed JSON from temporary I/O failure.
+- Corrupt configuration receives a unique recoverable backup before replacement.
+- Temporary read failures are never replaced with defaults.
+- Config input is capped at **4 MiB**.
+- Reminder count is capped at **512**.
+
+### Custom audio
+
+Custom sound playback now follows a strict **latest-request-wins** lifecycle.
+
+- Deterministic cancellation of stale work
+- Synchronized `Clip` and decoded-audio cache access
+- Minecraft `MASTER` volume × Chronicle UI volume
+- Complete shutdown cleanup
+- `OFF` / `VANILLA` transitions cancel stale custom playback
+- Closing the sound screen prevents delayed custom test playback
+
+### Notification traffic
+
+- Added a bounded **32-item notification queue**.
+- Delivery is paced instead of dumping a burst into Minecraft's toast stack.
+- Duplicate notifications are aggregated.
+- Overflow is represented by a localized summary notification.
+
+### Localization
+
+All five locale files contain the same **154 translation keys** with matching formatting parameters.
+
+- English
+- Russian
+- Simplified Chinese
+- Spanish
+- German
+
+### Code quality
+
+- Enabled Java 25 `-Xlint:all`.
+- Removed dead helpers.
+- Completed static scans for:
+  - debug prints
+  - blocking sleeps
+  - unfinished markers
+
+A clean **Chronicle 1.2.7** build is required as the release gate.
+
+---
+
+# Verification
+
+## Build
+
+```bash
+gradlew clean build --no-daemon --warning-mode all
+```
+
+**Result:** successful.
+
+Layout assertions cover:
+
+- `320×240`
+- intermediate compact sizes
+- `427×240`
+- `640×360`
+- `920×384`
+- `960×540`
+- `1280×720`
+- `1920×1080`
+- the `720px` desktop-layout transition
+
+Automated source and build verification cannot fully replace a manual in-game visual pass across every resource pack, font renderer, operating system and DPI configuration.
+
+---
+
+# Compatibility
+
+| Component | Verified version |
+|---|---|
+| Minecraft | **26.2** |
+| Java | **25** |
+| Fabric Loader | **0.19.3** |
+| Fabric API | **0.157.0+26.2** |
+| Text Placeholder API | **3.1.0-beta.1+26.2** |
+| Fabric Loom | **1.17.19** |
+| Gradle | **9.5.1** |
+
+### Rendering
+
+Chronicle uses Minecraft's `GuiGraphicsExtractor` rendering path.
+
+**No raw OpenGL dependency is used.**
+
+---
+
+# Core fixes
+
+These findings predate the numbered revision history below and remain part of the verified state.
+
+## Layout and field geometry
+
+1. Borderless `EditBox` values, caret and selection now use one vertically centered baseline.
+
+   The previous five-pixel screen-level offset was incorrect for a `28px` field and could leave color values visually clipped or crowded.
+
+2. Compact Toast Customizer color rows no longer overlap.
+
+   The palette target was previously placed `18px` inside the final field row, while single-column pairs could share identical coordinates.
+
+3. Size-control groups fit their available columns and stack when required.
+
+   Compact title input now uses the full available width.
+
+4. Compact scroll extent includes:
+   - palette cards
+   - the complete HSV picker
+   - live preview
+
+   One-column palettes no longer overlap the picker.
+
+5. The style selector and caption scroll together with editor content.
+
+   Only the footer remains fixed.
+
+   All scrolling controls share the same clip boundary and hit-test viewport at Minecraft's `320×240` logical floor.
+
+## Clipping and input
+
+6. Scrolling buttons are re-styled before `disableScissor()`.
+
+   Partial cards and editor controls can no longer bleed across headers or footers.
+
 7. Fixed footer controls receive mouse input before content underneath them.
+
    The HSV picker cannot intercept clicks outside its clipped viewport.
-8. Focus is retained across useful scroll/resize rebuilds and cleared when its
-   field leaves the viewport, preventing hidden text fields from consuming input.
-9. The main reminder list now exposes a real interactive row at 320x240 instead
-   of drawing row text without constructing its buttons.
-10. Inactive schedule tabs have a distinct state, button/error text is safely
-    width-clipped, and HSV's current-color swatch reflects saturation/value rather
-    than displaying only the pure hue.
-11. A failed enable/save operation restores the interval timer as well as the
-    enabled flag. Broken legacy configs are backed up at the correct path, and
-    atomic-save fallback handles provider-specific `IOException` variants.
-12. Config strings are trimmed and safely bounded without splitting surrogate
-    pairs; stale HEX validation clears as soon as the field becomes valid.
-13. Section captions are positioned from their actual field coordinates. The
-    ICON/TITLE and color captions now have explicit vertical gutters, so text no
-    longer sits behind the ICON size row or crowds the next control at any scale.
 
-## fixed74 interface polish
+8. Focus survives useful scroll and resize rebuilds, but is cleared when its field leaves the viewport.
 
-1. `UiMetrics` now supplies the common 8px control gap, 12px section gap,
-   24px responsive content inset, field/button heights, header boundary and text
-   baseline used across all screens.
-2. The reminder list, schedule editor and toast customizer now share one button
-   renderer. Selected schedule modes, weekly days, toast styles and primary
-   actions remain visually selected without requiring hover; keyboard focus uses
-   the same highlight.
-3. Compact reminder cards reserve a real five-pixel text-to-button gutter and an
-   eight-pixel row gutter. The 320x240 layout still exposes one complete row.
-4. Long editor and customizer views show a proportional scroll indicator. Mode
-   changes return to the top instead of leaving the user halfway down a different
-   form.
-5. Reminder deletion requires a second confirmation click within three seconds.
-6. Clicking any HEX color field selects it as the palette/HSV target. The active
-   field and matching palette swatch stay highlighted; narrow picker captions are
-   width-clipped instead of colliding with the HEX value.
-7. Read-only scale values no longer behave like clickable buttons. Footer widths
-   are derived from the same inner content bounds and cannot escape the panel.
-8. The schedule editor's first caption starts below the header clip, and every
-   subsequent section is positioned from the actual bottom of the preceding
-   controls. Stacked mode, time, day and message layouts therefore keep identical
-   gutters.
-9. The toast customizer uses the scrolling layout below 680 logical pixels. Its
-   desktop layout is only selected when the complete palette fits above the
-   footer. The HSV picker is positioned from the real preview height.
-10. Truncated toast body text now always receives an ellipsis, and the message
-    editor shows a non-overlapping 80-character counter when space permits.
+   Hidden text fields therefore cannot consume keyboard input.
 
-## fixed75 usability and code audit
+9. The main reminder list now constructs a genuinely interactive row at `320×240` instead of rendering row text without its buttons.
 
-1. Compact Toast Customizer now starts with the real live preview. Style, text,
-   size, color fields, palettes and HSV controls follow in a predictable order.
-   The fixed `SHOW TOAST` action remains available while the preview is scrolled
-   away.
-2. Color captions use a strict 28px control + 8px gutter + 17px caption offset.
-   `ACCENT`, `TITLE COLOR`, `MESSAGE COLOR` and `ICON COLOR` can no longer sit
-   behind the preceding HEX field.
-3. Palette-target fields no longer receive a permanent blue focus-like outline.
-   The explicit `EDIT COLOR: … >` control communicates the active palette/HSV
-   target without suggesting that the user clicked or focused a field.
-4. The live preview, style section, color rows, palette cards and HSV picker now
-   share one compact scroll model. The picker follows its palette with a 12px
-   section gap, and bottom scrolling leaves 24px before the fixed footer.
-5. The HSV readout now includes the target's real alpha channel instead of
-   displaying `00`; picker handles stay inside their controls. Palette card hover
-   and selection borders now render using the computed state.
-6. Scrolling the reminder editor first captures all current field values, so
-   partially typed time, interval or message text is never replaced by an older
-   snapshot during a widget rebuild.
-7. A failed save restores the in-memory 12/24-hour preference as well as the
-   reminder. Editing an interval reminder without changing its interval no longer
-   silently restarts its countdown.
-8. Toast rendering no longer draws a shadow outside the dimensions reported to
-   Minecraft's toast manager, preventing edge fragments and overlap between
-   stacked notifications.
-9. The config path now comes from Fabric Loader's config-directory API instead
-   of rebuilding it from the Minecraft game directory.
+## State and validation
 
-## fixed76 notification redesign and motion
+10. Inactive schedule tabs have a distinct visual state.
 
-1. On wide compact layouts, the HSV picker now uses the left side of the color
-   workspace while the target selector and eight presets use the previously empty
-   right side. Narrow layouts keep the same logical order in a single column.
-2. Each palette preset is one full-width card with a swatch and name. The old
-   detached `USE` column and its dark dividers were removed; the hue strip is a
-   continuous per-pixel gradient with only one outer boundary.
-3. The compact live preview remains at the top and updates immediately. `SHOW
-   TOAST` stays fixed in the footer so a user can test the current draft at any
-   scroll position.
-4. A new `TOAST: MODERN / VANILLA` control changes the notification shell. The
-   modern shell has a compact hierarchy, inset shadow, accent rail and one-pixel
-   progress indicator; vanilla mode uses Minecraft's current `toast/system`
-   sprite and a pixel-bevel icon slot, so resource packs can restyle it naturally.
-5. A new persisted `ANIMATIONS: ON / OFF` setting controls Chronicle's motion.
-   Shared wall-clock transitions provide a subtle 220ms opening settle and a
-   deferred 170ms close, while button hover/emphasis interpolates independently
-   of frame rate. Disabled motion switches screens and button states immediately.
-6. Screen navigation is ignored while a close transition is already running,
-   preventing double activation. Resize/GUI-scale rebuilds reset transient drags
-   and preserve the meaningful text-field focus and draft values.
-7. Toast text has separate title/body rhythm, adaptive one/two-line wrapping,
-   Unicode-safe clipping and guarded geometry for tiny manager bounds. The modern
-   shadow remains inside the size reported to Minecraft's toast manager.
-8. Config loading is backward compatible: older files receive `MODERN` and
-   animations enabled by default, while invalid future frame names normalize to
-   the safe modern mode. Failed saves roll both new settings back in memory.
-9. Static layout assertions cover the 320x240 floor, 427x240, 640x360, 920x384,
-   960x540, the 720px desktop breakpoint, 1280x720 and 1920x1080. All checked
-   layouts preserve the 8px control gap, 12px section gap and non-overlapping
-   picker/palette columns.
+    Button and error text is safely width-clipped.
 
-## fixed77 Vanilla geometry correction
+    The HSV current-color swatch reflects saturation and value instead of displaying pure hue only.
 
-1. The Vanilla preview and real toast no longer reuse the much larger responsive
-   dimensions of the modern card. That stretched Minecraft's 160x64 nine-slice
-   sprite into a disproportionate blue panel.
-2. Vanilla width now follows `SystemToast`: 160px minimum, up to 200px of text
-   plus 30px margins, clamped to the current logical GUI width. A one-line title
-   and message produce the native 32px height; wrapped message lines add 12px.
-3. Vanilla text uses Minecraft's native 18px left inset, y=7 title baseline,
-   twelve-pixel line rhythm, yellow title and white message. The non-vanilla icon
-   tile, custom font scaling and custom progress line are intentionally omitted.
-4. The live preview centers the compact toast inside its reserved area without
-   stretching it. Its caption identifies native sizing, and irrelevant scale
-   controls display `1.00x` / `NO ICON` and cannot be clicked until MODERN is
-   selected again.
+11. A failed enable/save operation restores:
+    - the enabled flag
+    - the interval timer
 
-## Compatibility verified
+    Broken legacy configs are backed up at the correct path, and atomic-save fallback handles provider-specific `IOException` variants.
 
-- Minecraft 26.2 / Java 25
-- Fabric Loader 0.19.3
-- Fabric API 0.157.0+26.2
-- Text Placeholder API 3.1.0-beta.1+26.2 (included in the mod JAR)
-- Fabric Loom 1.17.19 / Gradle 9.5.1
-- `GuiGraphicsExtractor` rendering only; no raw OpenGL dependency
+12. Config strings are trimmed and bounded without splitting surrogate pairs.
 
-## Verification
+    Stale HEX validation clears immediately once a field becomes valid.
 
-`gradlew clean build --no-daemon` completed successfully. Layout assertions cover
-320x240, intermediate compact sizes, the 720px desktop transition and 1920x1080.
-Automated source/build verification cannot replace a manual in-game visual pass
-with every resource pack, font and OS DPI combination.
+13. Section captions are derived from actual field coordinates.
 
-## fixed78 Smart reminders
+    `ICON`, `TITLE` and color captions have explicit vertical gutters so labels cannot sit behind controls or crowd the next row at any scale.
 
-1. Added a native Minecraft key mapping, default `L`, under the Chronicle
-   category. It opens the reminder screen directly and is fully rebindable.
-2. Added per-reminder post-trigger actions: keep repeating, disable after the
-   first display, or delete after the first display. Scheduler-side mutations
-   refresh an already-open list safely.
-3. Added friendly live placeholders for player, save/server name, coordinates,
-   biome and dimension. Text Placeholder API is bundled, so common/client
-   placeholders registered by other mods are parsed as well.
-4. Added OFF/VANILLA/CUSTOM sound modes, volume control, native file selection,
-   async decoding, one-clip caching and OGG/WAV/AIFF/AU-family support. File size,
-   duration, channel count and sample rate are bounded before playback.
-5. The scheduler now exits before allocating date/time objects on the other
-   client ticks, keeps the existing 15-minute catch-up ceiling, and suppresses
-   identical toast bursts within 2.5 seconds.
-6. Added 145 matching translation keys in English, Russian, Simplified Chinese,
-   Spanish and German. Custom-drawn labels, errors, schedule summaries, palette
-   names, sound settings and key mapping names all use the active game language.
-7. The sound screen preserves its draft and focus through resize/GUI-scale
-   rebuilds. Its compact-height layout removes the secondary caption and reduces
-   control spacing before any labels, fields or footer actions can collide.
+---
 
-## fixed79 logo integration and final audit
+# Revision history
 
-1. Replaced the Fabric/Mod Menu icon with the supplied Chronicle clock artwork.
-   Added a tighter 128px UI texture made from the same source so the thin mark
-   remains readable in small headers without changing its geometry or colors.
-2. Added the brand mark to the main list, reminder editor, toast customizer and
-   sound screen. Header text now starts after the logo and is clipped against the
-   real remaining width at compact GUI scales.
-3. Added a reserved right-side Chronicle mark to the modern notification while
-   preserving the user's custom icon tile. The mark is omitted automatically only
-   when an exceptionally narrow toast cannot keep a safe text column.
-4. Added a compact Chronicle tile to the Vanilla notification. Vanilla still uses
-   the resource-pack-aware `toast/system` sprite and native typography; its text
-   inset and width calculation now reserve the exact logo width and gap.
-5. Corrected button focus semantics. Mouse hover, keyboard focus and persistent
-   selected state are no longer conflated. Keyboard focus uses a quiet outline
-   only after keyboard input; opening a screen with the mouse no longer makes the
-   first button look selected.
-6. Fixed the Chronicle key mapping creating nested main screens when `L` was
-   pressed inside the editor, toast customizer or sound screen. It now opens the
-   menu only when no Chronicle screen is already active.
-7. Fixed stale asynchronous sound errors reappearing after the user changed sound
-   mode. Audio requests use a generation token, and clearing/switching modes
-   invalidates late worker results. Sound-screen buttons are also ignored during
-   close transitions, matching every other Chronicle screen.
-8. Restyled the sound path field with the shared Chronicle border, surface,
-   baseline and focus treatment. Added the same press feedback used by the other
-   screens, and made the global animation toggle disable all press pulses too.
-9. Verified all 145 localization keys across English, Russian, Simplified Chinese,
-   Spanish and German, including identical format-placeholder sets. Verified all
-   static translation references from Java, both PNG dimensions, responsive
-   header/toast geometry at 320x240 through 1920x1080, and required JAR entries.
-10. `clean build --no-daemon --warning-mode all` succeeds for version 1.2.1. The
-    remapped JAR includes the Mod Menu icon, UI logo texture, five languages and
-    bundled Text Placeholder API.
+<details>
+<summary><strong>fixed84 · Pixel-stable toast motion</strong></summary>
 
-## fixed80 logo sampling, J key and test action
+## fixed84
 
-1. Fixed the invisible header/toast logo at its actual source. Minecraft 26.2's
-   short `GuiGraphicsExtractor.blit` overload uses the destination width/height
-   as the sampled source-region width/height. At 20–28 logical pixels it therefore
-   sampled only the empty top-left corner of the 128px PNG. Chronicle now calls
-   the explicit overload with independent destination, 128×128 source-region and
-   128×128 texture dimensions.
-2. Re-exported the Fabric/Mod Menu metadata icon as a standard opaque 128×128 PNG.
-   Automated pixel-bound checks place the cyan mark at x=25..102, y=24..103,
-   leaving 24–25px safe margins on every side. The UI crop remains a separate
-   opaque 128×128 texture with 11–13px margins for small-screen readability.
-3. Changed the registered default menu key from `L` to `J`. The mapping remains
-   in Minecraft Controls and is still fully rebindable.
-4. Restored a short localized `TEST` action in the toast customizer and added the
-   same action to the fixed main-screen header for immediate access without
-   scrolling. The header reserves the button's real width before clipping title
-   and subtitle text, so it cannot cover either at compact GUI scales.
-5. The main-screen test uses current saved colors, frame, animation setting and
-   placeholders, deliberately skips audio, bypasses scheduler duplicate filtering,
-   and has a 500ms click debounce so testing cannot flood the toast stack.
-6. Rechecked all five 145-key locale files and their formatted parameters, static
-   Java translation references, key mapping source, test-button presence, image
-   alpha/dimensions/bounds and responsive header geometry from 244×240 through
-   1920×1080.
-7. `clean build --no-daemon --warning-mode all` succeeds for version 1.2.2. JAR
-   inspection confirms both logo resources, five languages, metadata version and
-   bundled Text Placeholder API. Compiled bytecode uses GLFW key code 74 (`J`) and
-   the full-region `blit` descriptor.
+### Pixel-stable toast motion
 
-## fixed81 notification identity, audio layout and MP3
+1. Removed the two-pixel vertical settle from the Modern toast transform.
 
-1. Removed the Chronicle brand mark from the right edge of MODERN notifications
-   and from the left edge of VANILLA notifications, including live previews.
-   Modern text reclaims the reserved width; Vanilla returns to Minecraft's native
-   18px text inset and compact width calculation. The user's configurable Modern
-   icon tile remains unchanged.
-2. Re-exported both the UI logo texture and Fabric/Mod Menu icon as real 32-bit
-   PNGs with transparent pixels outside the supplied cyan mark. Automated alpha
-   checks confirm transparent backgrounds and safe mark bounds of 12..115 for the
-   UI crop and 25..102 for the metadata icon.
-3. The non-compact sound layout now places an eight-pixel gutter after the entire
-   format-help line before the VOLUME caption. Widget construction and rendering
-   call the same geometry helper, preventing resize or GUI-scale drift.
-4. Main-screen TEST and customizer SHOW TOAST now play the saved sound mode,
-   custom path and volume. OFF invalidates stale async playback; VANILLA uses the
-   configured quiet cue; CUSTOM uses the bounded background decoder. A stale
-   custom decode cannot start after a newer sound request.
-5. Added `.mp3` validation, native file-dialog filtering and bounded JLayer
-   decoding to little-endian 16-bit PCM. The existing 16MB input, 30-second
-   decoded-duration, mono/stereo and 192kHz limits also apply to MP3. The last
-   decoded clip cache now checks file size as well as path and modification time.
-6. A real MP3 smoke test decoded 14,267 MPEG frames into 32,871,168 PCM samples
-   at 44.1kHz stereo. The production path rejects the same long fixture once its
-   decoded PCM crosses the 30-second limit instead of buffering the whole file.
-7. `clean build --no-daemon --warning-mode all` succeeds for version 1.2.3. The
-   remapped JAR includes JLayer as a separate nested library, the third-party
-   notice, transparent logos, five locales and the expected Fabric metadata.
+   Minecraft keeps `fullyVisibleForMs == 0` throughout its native entrance slide. Rounding the old offset therefore kept the card one pixel below its final baseline before moving it upward when entrance completed.
 
-## fixed82 menu identity and sound-field polish
+2. Modern notifications now animate only on the **X axis**.
 
-1. Removed logo rendering from the reminder list, reminder editor, toast
-   customizer and sound settings. Header title X coordinates now start directly
-   at the shared content inset; title clipping, subtitles and the main TEST action
-   all use the reclaimed width. The unused in-screen logo texture and rendering
-   API were removed from the JAR.
-2. Rebuilt the Fabric/Mod Menu icon as a rounded graphite tile with a restrained
-   cyan outline, centered Chronicle mark and a five-pixel transparent safety
-   margin. It is a 128×128 RGBA PNG; automated checks require transparent,
-   partially transparent and fully opaque pixels so rounded corners cannot turn
-   back into a square background.
-3. Fixed the custom-sound path beginning directly on the field border. The
-   borderless `EditBox` now supports render-only horizontal content padding while
-   preserving its full logical hit box and narration bounds. The sound screen
-   applies four pixels on each side, so glyphs, selection, cursor and horizontal
-   clipping share the same inset.
-4. Added a localized empty-state hint in all five languages, widened the native
-   browse action for long translations and set an explicit disabled text color.
-   The full stored path remains editable and is never shortened in configuration;
-   only its on-screen rendering is clipped or scrolled.
-5. Rechecked header geometry at the 320×240 logical floor, intermediate compact
-   sizes and desktop layouts. Static source checks find no remaining menu-logo
-   draw calls or references to the removed GUI texture.
-6. `clean build --no-daemon --warning-mode all` succeeds for version 1.2.4.
+   Frame, text, icon, progress line and shadow keep exactly the same Y coordinate on every frame.
 
-## fixed83 notification redesign and boundary audit
+3. Release verification:
 
-1. Replaced the flat rectangular Modern toast with a smaller, wider notification
-   card: stepped pixel corners, in-bounds shadow, layered surface, subtle top
-   highlight, restrained accent rail, adaptive icon tile and a draining lifetime
-   indicator. No Chronicle branding is reintroduced into the notification.
-2. Fixed the empty-card entrance bug at its source. Minecraft 26.2 reports
-   `fullyVisibleForMs == 0` throughout its native 600ms toast slide; the old code
-   used that value as content alpha, making title, message and icon fully
-   transparent. The complete card now uses one motion transform and full content
-   opacity, so every element becomes visible together as it enters.
-3. Modern toast width/height are rebalanced for faster scanning, with safe GUI
-   bounds, an adaptive icon-free fallback, Unicode-safe title clipping and up to
-   two body lines when height permits. The customizer still calls the exact same
-   renderer as real notifications.
-4. Rebuilt sound-settings geometry around one immutable layout snapshot shared by
-   `init` and rendering. Normal screens use the common 17px caption-to-control
-   offset and 12px section gap; compact and high-scale layouts remove secondary
-   captions before they can collide while retaining all controls.
-5. Removed hard minimum widths that could push Browse, volume and footer buttons
-   outside a narrow sound panel. The shared content inset can no longer consume
-   more than half its panel.
-6. Added narrow-GUI containment for reminder-list text, empty-state copy, weekly
-   day buttons, the HSV marker/current-color swatch and palette cards. These
-   elements now adapt or clip inside their real bounds instead of relying on a
-   normal desktop width.
-7. Re-audited the scheduler, duplicate suppression, one-shot actions, placeholder
-   fallback, atomic config save/rollback, async audio generation tokens, focus,
-   scrolling, scissor order, footer hit-testing and resize rebuilds. No additional
-   functional regression was found.
-8. `build --no-daemon` succeeds for version 1.2.5 against Minecraft 26.2, Fabric
-   Loader 0.19.3, Fabric API 0.157.0+26.2, Loom 1.17.19 and Java 25.
+```text
+build --no-daemon --warning-mode all
+Chronicle 1.2.6
+PASS
+```
 
-## fixed84 pixel-stable toast motion
+</details>
 
-1. Removed the two-pixel vertical settle from the Modern toast transform. Because
-   Minecraft holds `fullyVisibleForMs` at zero during its native slide, rounding
-   that offset kept the card one pixel below its final baseline and then moved it
-   upward after the entrance completed.
-2. The complete notification now animates only on X; its frame, text, icon,
-   progress line and shadow keep exactly the same Y coordinate on every frame.
-3. `build --no-daemon --warning-mode all` succeeds for version 1.2.6.
+<details>
+<summary><strong>fixed83 · Notification redesign and boundary audit</strong></summary>
 
-## fixed85 whole-project correctness and geometry audit
+## fixed83
 
-1. Replaced fractional screen scale/translation with a pixel-stable fade. Visual
-   bounds and pointer hit boxes now remain in the same coordinate system for the
-   complete open and close transition.
-2. Made borderless-field padding part of its real content geometry. Rendered
-   text, scrolling, caret, selection, click/drag positions and IME candidate
-   placement now share one inset, including long custom-sound paths.
-3. Corrected responsive layouts at the 320x240 logical minimum: schedule modes
-   remain on one usable row, the main footer leaves at least one reminder card,
-   save errors have a non-overlapping strip, and sound path/Browse widths remain
-   fully contained. Hidden or inactive controls no longer retain focus.
-4. Unified preview and real notification geometry, added dynamic resize/GUI-scale
-   sizing and stable three-slot allocation, removed the second custom slide, and
-   made disabled animations immediate. Unicode/CJK and long unbroken tokens wrap
-   without dropping their remainder; placeholders and progress also match the
-   real notification during preview and tests.
-5. Fixed exact interval timing with millisecond deadlines and safe migration of
-   legacy minute data. Interval checks are independent of the wall-clock minute
-   gate and handle forward/backward clock changes without catch-up spam.
-6. Prevented editor/scheduler races from restoring stale enabled/deadline fields
-   or silently recreating a reminder deleted by a one-shot action. Failed runtime
-   saves remain dirty, retry with bounded backoff and receive a final stop-time
-   attempt; the main screen exposes the persistence error.
-7. Config loading now distinguishes malformed JSON from transient I/O failure.
-   Corrupt input receives a unique recoverable backup before atomic replacement;
-   temporary read failures are never overwritten with defaults. Input size is
-   capped at 4 MiB and reminder count at 512.
-8. Reworked custom audio into latest-request-wins playback with deterministic
-   cancellation, Clip/cache synchronization, Minecraft MASTER x UI volume and
-   complete shutdown. OFF/VANILLA transitions and screen close stop stale custom
-   tests instead of allowing delayed playback.
-9. Added a bounded 32-item notification queue with paced delivery, duplicate
-   aggregation and a localized overflow summary. Five locale files contain the
-   same 154 keys and matching format parameters.
-10. Enabled Java 25 `-Xlint:all`, removed dead helpers and completed static scans
-    for debug prints, blocking sleeps and unfinished markers. A clean version
-    1.2.7 build is required as the release gate.
+### Modern notification redesign
+
+1. Replaced the flat rectangular Modern toast with a smaller, wider notification card featuring:
+   - stepped pixel corners
+   - in-bounds shadow
+   - layered surface
+   - subtle top highlight
+   - restrained accent rail
+   - adaptive icon tile
+   - draining lifetime indicator
+
+   Chronicle branding remains absent from notification content.
+
+2. Fixed the empty-card entrance bug at its source.
+
+   Minecraft 26.2 reports `fullyVisibleForMs == 0` throughout the native `600ms` toast slide. The previous renderer reused this value as content alpha, making title, message and icon transparent during entrance.
+
+   The complete card now shares one motion transform and full content opacity.
+
+3. Modern toast width and height were rebalanced for faster scanning.
+
+   Added:
+   - safe GUI bounds
+   - adaptive icon-free fallback
+   - Unicode-safe title clipping
+   - up to two body lines where height permits
+
+   The customizer still uses the same renderer as real notifications.
+
+### Sound screen
+
+4. Rebuilt sound-settings geometry around one immutable layout snapshot shared by initialization and rendering.
+
+   Standard layouts use:
+   - `17px` caption-to-control offset
+   - `12px` section gap
+
+   Compact and high-scale layouts remove secondary captions before collisions become possible.
+
+5. Removed hard minimum widths that could push:
+   - Browse
+   - volume
+   - footer controls
+
+   outside narrow panels.
+
+   Shared content inset can no longer consume more than half of its panel.
+
+### Boundary audit
+
+6. Added narrow-GUI containment for:
+   - reminder-list text
+   - empty-state copy
+   - weekly day buttons
+   - HSV marker
+   - current-color swatch
+   - palette cards
+
+7. Re-audited:
+   - scheduler behavior
+   - duplicate suppression
+   - one-shot actions
+   - placeholder fallback
+   - atomic config save and rollback
+   - async audio generation tokens
+   - focus
+   - scrolling
+   - scissor order
+   - footer hit-testing
+   - resize rebuilds
+
+   No additional functional regression was found.
+
+8. Release verification:
+
+```text
+build --no-daemon
+Chronicle 1.2.5
+PASS
+```
+
+</details>
+
+<details>
+<summary><strong>fixed82 · Menu identity and sound-field polish</strong></summary>
+
+## fixed82
+
+### Menu identity
+
+1. Removed Chronicle logo rendering from:
+   - reminder list
+   - reminder editor
+   - Toast Customizer
+   - sound settings
+
+   Header title X positions now begin directly at the shared content inset.
+
+   Title clipping, subtitles and the main `TEST` action use the reclaimed width.
+
+   The unused in-screen logo texture and rendering API were removed from the JAR.
+
+2. Rebuilt the Fabric / Mod Menu icon as a rounded graphite tile with:
+   - restrained cyan outline
+   - centered Chronicle mark
+   - five-pixel transparent safety margin
+
+   The icon is a `128×128 RGBA` PNG.
+
+   Automated checks require transparent, partially transparent and fully opaque pixels so rounded corners cannot regress into a square background.
+
+### Sound path field
+
+3. Fixed custom-sound text beginning directly on the field border.
+
+   The borderless `EditBox` now supports render-only horizontal padding while preserving:
+   - logical hit box
+   - narration bounds
+
+   The sound screen applies four pixels on each side.
+
+4. Added:
+   - localized empty-state hint in all five languages
+   - wider Browse action for long translations
+   - explicit disabled text color
+
+   Stored paths remain complete in configuration. Only on-screen rendering may clip or scroll them.
+
+### Verification
+
+5. Rechecked header geometry from the `320×240` floor through desktop layouts.
+
+   Static source checks find no remaining menu-logo draw calls or references to the removed GUI texture.
+
+6. Release verification:
+
+```text
+clean build --no-daemon --warning-mode all
+Chronicle 1.2.4
+PASS
+```
+
+</details>
+
+<details>
+<summary><strong>fixed81 · Notification identity, audio layout and MP3</strong></summary>
+
+## fixed81
+
+### Notification identity
+
+1. Removed Chronicle branding from both notification styles and their live previews.
+
+   **Modern**
+   - reclaims reserved text width
+   - retains the configurable user icon tile
+
+   **Vanilla**
+   - returns to Minecraft's native `18px` text inset
+   - returns to compact native width calculation
+
+2. Re-exported the UI logo and Fabric / Mod Menu icon as real 32-bit PNGs with transparency outside the supplied cyan mark.
+
+   Automated alpha bounds:
+
+```text
+UI crop:       12..115
+Metadata icon: 25..102
+```
+
+### Sound layout
+
+3. Non-compact sound layouts now place an `8px` gutter after the entire format-help line before the `VOLUME` caption.
+
+   Widget construction and rendering use the same geometry helper.
+
+### Test audio
+
+4. Main-screen `TEST` and Customizer `SHOW TOAST` use the saved audio configuration.
+
+   - `OFF` invalidates stale async playback.
+   - `VANILLA` uses the configured quiet cue.
+   - `CUSTOM` uses the bounded background decoder.
+   - Older decode work cannot begin playback after a newer request.
+
+### MP3
+
+5. Added:
+   - `.mp3` validation
+   - native file-dialog filtering
+   - bounded JLayer decoding to little-endian 16-bit PCM
+
+   Existing limits also apply to MP3:
+   - `16 MiB` input
+   - `30 seconds` decoded duration
+   - mono / stereo only
+   - up to `192 kHz`
+
+   The decoded clip cache now checks file size in addition to path and modification time.
+
+6. MP3 smoke test:
+
+```text
+14,267 MPEG frames
+32,871,168 PCM samples
+44.1 kHz
+stereo
+```
+
+   The production path rejects the long fixture once decoded PCM crosses the 30-second limit instead of buffering the complete file.
+
+7. Release verification:
+
+```text
+clean build --no-daemon --warning-mode all
+Chronicle 1.2.3
+PASS
+```
+
+The remapped JAR includes:
+- JLayer as a nested library
+- third-party notice
+- transparent logos
+- five locales
+- expected Fabric metadata
+
+</details>
+
+<details>
+<summary><strong>fixed80 · Logo sampling, J key and test action</strong></summary>
+
+## fixed80
+
+### Texture-region fix
+
+1. Fixed the invisible header/toast logo at the rendering source.
+
+   Minecraft 26.2's short `GuiGraphicsExtractor.blit` overload uses destination width and height as the sampled source-region dimensions.
+
+   At `20–28` logical pixels, Chronicle therefore sampled only the empty top-left corner of the `128px` texture.
+
+   Chronicle now calls the explicit overload with independent:
+   - destination dimensions
+   - `128×128` source region
+   - `128×128` texture dimensions
+
+2. Re-exported the Fabric / Mod Menu metadata icon as a standard opaque `128×128` PNG.
+
+   Automated mark bounds:
+
+```text
+x = 25..102
+y = 24..103
+```
+
+   This leaves approximately `24–25px` safe margins on every side.
+
+   The separate UI crop retains `11–13px` margins for small-screen readability.
+
+### Key mapping
+
+3. Changed Chronicle's default menu key:
+
+```text
+L → J
+```
+
+The mapping remains fully rebindable through Minecraft Controls.
+
+### Test action
+
+4. Restored a short localized `TEST` action in the Toast Customizer and added the same action to the fixed main-screen header.
+
+   Header geometry reserves the button's actual width before clipping title and subtitle text.
+
+5. Main-screen `TEST` uses current saved:
+   - colors
+   - frame
+   - animation setting
+   - placeholders
+
+   It deliberately:
+   - skips audio
+   - bypasses scheduler duplicate filtering
+   - uses a `500ms` click debounce
+
+6. Rechecked:
+   - all five `145-key` locale files
+   - format parameters
+   - static Java translation references
+   - key mapping source
+   - test-button presence
+   - image alpha / dimensions / bounds
+   - responsive header geometry from `244×240` through `1920×1080`
+
+7. Release verification:
+
+```text
+clean build --no-daemon --warning-mode all
+Chronicle 1.2.2
+PASS
+```
+
+Compiled bytecode uses GLFW key code `74` (`J`).
+
+</details>
+
+<details>
+<summary><strong>fixed79 · Logo integration and final audit</strong></summary>
+
+## fixed79
+
+### Branding
+
+1. Replaced the Fabric / Mod Menu icon with the supplied Chronicle clock artwork.
+
+   Added a tighter `128px` UI texture derived from the same source so the mark remains readable at small header sizes without changing its geometry or colors.
+
+2. Added Chronicle branding to:
+   - main reminder list
+   - reminder editor
+   - Toast Customizer
+   - sound screen
+
+   Header text begins after the logo and clips against the actual remaining width at compact GUI scales.
+
+3. Added a reserved right-side Chronicle mark to Modern notifications while preserving the user's custom icon tile.
+
+   The mark is omitted only if an exceptionally narrow toast cannot preserve a safe text column.
+
+4. Added a compact Chronicle tile to Vanilla notifications.
+
+   Vanilla retains:
+   - resource-pack-aware `toast/system`
+   - native typography
+
+   Its text inset and width calculation reserve the exact logo width and gap.
+
+### Focus semantics
+
+5. Separated:
+   - mouse hover
+   - keyboard focus
+   - persistent selected state
+
+   Keyboard focus uses a quiet outline only after keyboard input.
+
+### Navigation
+
+6. Fixed the Chronicle key mapping creating nested main screens when pressed inside another Chronicle screen.
+
+   The menu opens only when no Chronicle screen is already active.
+
+### Audio state
+
+7. Prevented stale asynchronous sound errors from reappearing after sound-mode changes.
+
+   Requests use a generation token. Clearing or switching modes invalidates late worker results.
+
+   Sound-screen controls are also ignored during close transitions.
+
+8. Restyled the sound path field using Chronicle's shared:
+   - border
+   - surface
+   - baseline
+   - focus treatment
+
+   Added shared press feedback.
+
+   Disabling global animations also disables all press pulses.
+
+### Verification
+
+9. Verified:
+   - all five `145-key` localization files
+   - matching format placeholders
+   - static Java translation references
+   - both PNG dimensions
+   - responsive header and toast geometry from `320×240` through `1920×1080`
+   - required JAR entries
+
+10. Release verification:
+
+```text
+clean build --no-daemon --warning-mode all
+Chronicle 1.2.1
+PASS
+```
+
+</details>
+
+<details>
+<summary><strong>fixed78 · Smart reminders</strong></summary>
+
+## fixed78
+
+### Native key mapping
+
+1. Added a Minecraft-native Chronicle key mapping under the Chronicle category.
+
+   Initial default:
+
+```text
+L
+```
+
+It opens the reminder screen directly and is fully rebindable.
+
+### Post-trigger behavior
+
+2. Added per-reminder actions:
+
+- keep repeating
+- disable after first display
+- delete after first display
+
+Scheduler-side mutations safely refresh an already-open reminder list.
+
+### Placeholders
+
+3. Added friendly live placeholders for:
+   - player
+   - save / server name
+   - coordinates
+   - biome
+   - dimension
+
+Text Placeholder API is bundled, allowing compatible placeholders registered by other mods to be parsed as well.
+
+### Notification audio
+
+4. Added:
+
+- `OFF`
+- `VANILLA`
+- `CUSTOM`
+
+Custom audio supports:
+- native file selection
+- asynchronous decoding
+- one-clip caching
+- OGG
+- WAV
+- AIFF / AU-family formats
+
+Before playback Chronicle bounds:
+- file size
+- decoded duration
+- channel count
+- sample rate
+
+### Scheduler
+
+5. Scheduler work exits before allocating date/time objects on inactive client ticks.
+
+   Existing `15-minute` catch-up ceiling remains.
+
+   Identical toast bursts are suppressed within `2.5 seconds`.
+
+### Localization
+
+6. Added `145` matching translation keys in:
+
+- English
+- Russian
+- Simplified Chinese
+- Spanish
+- German
+
+Custom labels, errors, schedule summaries, palette names, sound settings and key mappings follow Minecraft's active language.
+
+### Sound-screen rebuilds
+
+7. Sound settings preserve draft values and focus through resize and GUI-scale changes.
+
+   Compact-height layout removes secondary captions and reduces spacing before controls can collide.
+
+</details>
+
+<details>
+<summary><strong>fixed77 · Vanilla geometry correction</strong></summary>
+
+## fixed77
+
+### Vanilla sizing
+
+1. Vanilla preview and real notifications no longer reuse Modern responsive dimensions.
+
+   Stretching Minecraft's `160×64` nine-slice sprite into the larger Modern card produced a disproportionate panel.
+
+2. Vanilla width now follows `SystemToast` behavior:
+
+- `160px` minimum
+- up to `200px` of text
+- `30px` margins
+- clamped to current logical GUI width
+
+A one-line title and message produce the native `32px` height.
+
+Wrapped message lines add `12px` each.
+
+### Native typography
+
+3. Vanilla rendering uses:
+
+```text
+left text inset: 18px
+title baseline:  y=7
+line rhythm:     12px
+title color:     yellow
+message color:   white
+```
+
+Intentionally omitted:
+- non-Vanilla icon tile
+- custom font scaling
+- custom progress line
+
+### Preview behavior
+
+4. Live preview centers the compact Vanilla toast inside its reserved region instead of stretching it.
+
+   Irrelevant controls display:
+
+```text
+1.00x
+NO ICON
+```
+
+and remain disabled until Modern style is selected.
+
+</details>
+
+<details>
+<summary><strong>fixed76 · Notification redesign and motion</strong></summary>
+
+## fixed76
+
+### Color workspace
+
+1. Wide compact layouts place the HSV picker on the left and use the free right-side space for:
+   - active target selector
+   - eight presets
+
+   Narrow layouts preserve the same logical order in one column.
+
+2. Palette presets are now full-width cards containing:
+   - swatch
+   - name
+
+   Removed:
+   - detached `USE` column
+   - dark divider lines
+
+   Hue rendering is a continuous per-pixel gradient with a single outer boundary.
+
+### Live preview
+
+3. Compact live preview remains at the top and updates immediately.
+
+   `SHOW TOAST` remains fixed in the footer and can be triggered regardless of scroll position.
+
+### Notification styles
+
+4. Added:
+
+```text
+TOAST: MODERN / VANILLA
+```
+
+**Modern**
+- compact hierarchy
+- inset shadow
+- accent rail
+- one-pixel progress indicator
+
+**Vanilla**
+- Minecraft `toast/system` sprite
+- resource-pack awareness
+- pixel-bevel icon slot
+
+### Animation preference
+
+5. Added persisted:
+
+```text
+ANIMATIONS: ON / OFF
+```
+
+Enabled animations provide:
+- `220ms` screen opening settle
+- deferred `170ms` close
+- frame-rate-independent button hover / emphasis interpolation
+
+Disabled animations switch screens and button states immediately.
+
+### Navigation safety
+
+6. Navigation is ignored while a close transition is already active.
+
+   Resize and GUI-scale rebuilds:
+   - reset transient drags
+   - preserve meaningful field focus
+   - preserve draft values
+
+### Toast text
+
+7. Added:
+   - separate title/body rhythm
+   - adaptive one/two-line wrapping
+   - Unicode-safe clipping
+   - tiny-manager-bound protection
+
+Modern shadow remains inside the dimensions reported to Minecraft's toast manager.
+
+### Config migration
+
+8. Older configuration files receive:
+
+```text
+frame = MODERN
+animations = enabled
+```
+
+Invalid future frame names normalize to Modern.
+
+Failed saves roll both new settings back in memory.
+
+### Static layout assertions
+
+9. Assertions cover:
+
+```text
+320×240
+427×240
+640×360
+920×384
+960×540
+720px desktop breakpoint
+1280×720
+1920×1080
+```
+
+All checked layouts preserve:
+- `8px` control gap
+- `12px` section gap
+- non-overlapping picker / palette columns
+
+</details>
+
+<details>
+<summary><strong>fixed75 · Usability and code audit</strong></summary>
+
+## fixed75
+
+1. Compact Toast Customizer begins with the live preview.
+
+   Order:
+
+```text
+Preview
+Style
+Text
+Size
+Colors
+Palettes
+HSV
+```
+
+`SHOW TOAST` remains fixed while the preview scrolls away.
+
+2. Color captions follow:
+
+```text
+28px control
++ 8px gutter
++ 17px caption offset
+```
+
+This prevents `ACCENT`, `TITLE COLOR`, `MESSAGE COLOR` and `ICON COLOR` from overlapping the preceding HEX field.
+
+3. Palette-target fields no longer show a permanent focus-like blue outline.
+
+   Active color target is represented explicitly by:
+
+```text
+EDIT COLOR: … >
+```
+
+4. Preview, style section, color rows, palettes and HSV use one compact scroll model.
+
+   Bottom scrolling retains `24px` before the fixed footer.
+
+5. HSV readout now displays the target's actual alpha instead of `00`.
+
+   Picker handles remain in bounds.
+
+   Palette hover and selection borders use computed state correctly.
+
+6. Scrolling the reminder editor captures current draft values before rebuilding widgets.
+
+   Partially entered:
+   - time
+   - interval
+   - message
+
+   values cannot be replaced by stale snapshots.
+
+7. Failed saves restore:
+   - in-memory 12/24-hour preference
+   - reminder state
+
+   Editing an interval reminder without changing its interval no longer restarts the countdown.
+
+8. Toast shadow is contained within the dimensions reported to Minecraft's toast manager.
+
+9. Config path now comes from Fabric Loader's config-directory API.
+
+</details>
+
+<details>
+<summary><strong>fixed74 · Interface polish</strong></summary>
+
+## fixed74
+
+1. `UiMetrics` now provides Chronicle's common geometry:
+
+```text
+control gap:       8px
+section gap:      12px
+content inset:    24px responsive
+field heights
+button heights
+header boundary
+text baseline
+```
+
+2. Reminder list, schedule editor and Toast Customizer share one button renderer.
+
+   Persistent selection is visible for:
+   - schedule modes
+   - weekly days
+   - toast styles
+   - primary actions
+
+   Keyboard focus receives the same highlight treatment.
+
+3. Compact reminder cards reserve:
+   - `5px` text-to-button gutter
+   - `8px` row gutter
+
+   The `320×240` layout still exposes one complete row.
+
+4. Long editor and customizer screens show a proportional scroll indicator.
+
+   Changing mode returns scroll position to the top.
+
+5. Reminder deletion requires a second confirmation click within **three seconds**.
+
+6. Clicking any HEX field selects it as the palette / HSV target.
+
+   Active field and matching palette swatch remain highlighted.
+
+   Narrow picker captions are width-clipped instead of colliding with the HEX value.
+
+7. Read-only scale values no longer behave like buttons.
+
+   Footer widths derive from shared inner content bounds and cannot escape the panel.
+
+8. Schedule-editor sections derive their Y position from the actual bottom of preceding controls.
+
+   Stacked:
+   - mode
+   - time
+   - day
+   - message
+
+   layouts therefore keep consistent gutters.
+
+9. Toast Customizer switches to scrolling layout below `680` logical pixels.
+
+   Desktop mode is used only if the complete palette fits above the footer.
+
+   HSV position derives from the real preview height.
+
+10. Truncated toast body text always receives an ellipsis.
+
+    The message editor shows a non-overlapping `80-character` counter when enough space exists.
+
+</details>
+
+---
+
+# Final verified state
+
+Chronicle `fixed85` is the culmination of the `fixed74 → fixed85` audit sequence.
+
+The verified release state includes:
+
+- pixel-stable screen transitions
+- responsive operation at `320×240`
+- consistent text-input geometry
+- viewport-safe scrolling and hit testing
+- native-correct Vanilla toast sizing
+- shared preview / real-toast rendering
+- exact millisecond scheduler deadlines
+- editor / scheduler race protection
+- safe persistence retries
+- recoverable corrupt-config backups
+- bounded reminder traffic
+- deterministic custom-audio cancellation
+- five synchronized localizations
+- Java 25 lint-clean release validation
+
+```text
+Chronicle 1.2.7 / fixed85
+Minecraft 26.2
+Release audit: COMPLETE
+Clean build: PASS
+```
