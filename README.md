@@ -5,14 +5,16 @@
 [![Ko-fi](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png)](https://ko-fi.com/aspectra)
 [![Modrinth](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/modrinth.png)](https://modrinth.com/mod/chronicle-reminders)
 [![CurseForge](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/curse-forge.png)](https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders)
+
+![Minecraft](https://img.shields.io/badge/Minecraft_26.2-161B22?style=flat-square&logo=minecraft&logoColor=22D3EE)
+![Fabric](https://img.shields.io/badge/Fabric_Client-161B22?style=flat-square&logo=fabric&logoColor=22D3EE)
+![Java](https://img.shields.io/badge/Java_25-161B22?style=flat-square&logo=openjdk&logoColor=22D3EE)
+![Chronicle](https://img.shields.io/badge/Chronicle_1.2.7-161B22?style=flat-square&logoColor=22D3EE)
 > **Smart scheduled reminders for Minecraft.**  
 > Create reminders, customize notifications, repeat them automatically, and keep track of what matters without leaving the game.
 > 
 
-![Minecraft](https://img.shields.io/badge/Minecraft-26.2-62B47A?style=flat-square)
-![Fabric](https://img.shields.io/badge/Fabric-Client%20Mod-DBD0B4?style=flat-square)
-![Java](https://img.shields.io/badge/Java-25-E76F00?style=flat-square)
-![Version](https://img.shields.io/badge/Chronicle-1.2.7-31C4F3?style=flat-square)
+
 
 **Chronicle 1.2.7 · fixed85** is a client-side Fabric mod for Minecraft **26.2** that adds flexible scheduled reminders with customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 
