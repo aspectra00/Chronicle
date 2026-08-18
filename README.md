@@ -1,15 +1,19 @@
 ![Chronicle logo](src/main/resources/assets/chronicle/icon.png)
 
 #  Chronicle
-[![GitHub](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png)](https://github.com/aspectrea00/Chronicle)
-[![Ko-fi](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png)](https://ko-fi.com/aspectra)
-[![Modrinth](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/modrinth.png)](https://modrinth.com/mod/chronicle-reminders)
-[![CurseForge](https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/curse-forge.png)](https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders)
+<p align="center">
+  <a href="https://github.com/aspectrea00/Chronicle"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png" alt="GitHub" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://ko-fi.com/aspectra"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png" alt="Ko-fi" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://modrinth.com/mod/chronicle-reminders"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/modrinth.png" alt="Modrinth" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/curse-forge.png" alt="CurseForge" width="64" height="64"></a>
+</p>
 
-![Minecraft](https://img.shields.io/badge/Minecraft_26.2-161B22?style=flat-square&logo=minecraft&logoColor=22D3EE)
-![Fabric](https://img.shields.io/badge/Fabric_Client-161B22?style=flat-square&logo=fabric&logoColor=22D3EE)
-![Java](https://img.shields.io/badge/Java_25-161B22?style=flat-square&logo=openjdk&logoColor=22D3EE)
-![Chronicle](https://img.shields.io/badge/Chronicle_1.2.7-161B22?style=flat-square&logoColor=22D3EE)
+<p align="center">
+<img src="badges-for-readme/minecraft.svg" height="38">
+<img src="badges-for-readme/fabric.svg" height="38">
+<img src="badges-for-readme/java.svg" height="38">
+<img src="badges-for-readme/chronicle.svg" height="38">
+</p>
 > **Smart scheduled reminders for Minecraft.**  
 > Create reminders, customize notifications, repeat them automatically, and keep track of what matters without leaving the game.
 > 
