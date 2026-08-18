@@ -16,19 +16,21 @@
 <img src="badges-for-readme/java.svg" height="38">
 <img src="badges-for-readme/chronicle.svg" height="38">
 </p>
-> **Smart scheduled reminders for Minecraft.**  
-> Create reminders, customize notifications, repeat them automatically, and keep track of what matters without leaving the game.
-> 
 
-
-
-**Chronicle 1.2.7 · fixed85** is a client-side Fabric mod for Minecraft **26.2** that adds flexible scheduled reminders with customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+<br>
 
 ---
 
-##  Features
+### About Chronicle
 
-###  Smart reminders
+**Chronicle 1.2.7 · fixed85** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+<br>
+
+---
+
+### Features
+
+#### Smart reminders
 
 Create reminders directly in Minecraft and decide exactly how they behave.
 
