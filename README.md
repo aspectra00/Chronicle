@@ -1,4 +1,6 @@
-![Chronicle logo](src/main/resources/assets/chronicle/icon.png)
+<p align="center">
+  <img src="src/main/resources/assets/chronicle/icon.png" alt="Chronicle logo">
+</p>
 
 <h1 align="center">Chronicle</h1>
 <p align="center">
