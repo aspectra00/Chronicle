@@ -1,8 +1,12 @@
-<p align="center">
-  <img src="src/main/resources/assets/chronicle/icon.png" alt="Chronicle logo">
-</p>
 
-<h1 align="center">Chronicle</h1>
+
+<p align="center">
+  <img
+    src="https://cdn.modrinth.com/data/cached_images/849c602a1ac00208e0371ed231540da69e4fbfb3.png"
+    alt="Chronicle"
+    width="600"
+  >
+</p>
 <p align="center">
   <a href="https://github.com/aspectrea00/Chronicle"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png" alt="GitHub" width="64" height="64"></a>&nbsp;&nbsp;
   <a href="https://ko-fi.com/aspectra"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png" alt="Ko-fi" width="64" height="64"></a>&nbsp;&nbsp;
