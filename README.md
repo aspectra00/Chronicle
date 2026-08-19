@@ -8,10 +8,10 @@
   >
 </p>
 <p align="center">
-  <a href="https://github.com/aspectrea00/Chronicle"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/github.png" alt="GitHub" width="64" height="64"></a>&nbsp;&nbsp;
-  <a href="https://ko-fi.com/aspectra"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/kofi.png" alt="Ko-fi" width="64" height="64"></a>&nbsp;&nbsp;
-  <a href="https://modrinth.com/mod/chronicle-reminders"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/modrinth.png" alt="Modrinth" width="64" height="64"></a>&nbsp;&nbsp;
-  <a href="https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders"><img src="https://voxelforge-oss.github.io/voxicons/voxicons/icons-64/brands/curse-forge.png" alt="CurseForge" width="64" height="64"></a>
+  <a href="https://github.com/aspectra00/Chronicle"><img src="https://i.imgur.com/vFmBpDq.png" alt="GitHub" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://ko-fi.com/aspectra"><img src="https://i.imgur.com/H08GkHi.png" alt="Ko-fi" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://modrinth.com/mod/chronicle-reminders"><img src="https://i.imgur.com/VROd79E.png" alt="Modrinth" width="64" height="64"></a>&nbsp;&nbsp;
+  <a href="https://www.curseforge.com/minecraft/mc-mods/chronicle-reminders"><img src="https://i.imgur.com/IDs74bZ.png" alt="CurseForge" width="64" height="64"></a>
 </p>
 
 <p align="center">
