@@ -155,18 +155,28 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static int responsiveHeight(int guiHeight) {
-        return responsiveHeight(guiHeight, true);
+        return responsiveHeight(guiHeight, true, 9, 1.00f, 1.00f);
     }
 
-    private static int responsiveHeight(int guiHeight, boolean showActions) {
+    private static int responsiveHeight(int guiHeight, boolean showActions, int lineHeight,
+                                        float titleScale, float messageScale) {
         int logical = Math.max(1, guiHeight);
         int available = Math.max(1, logical - 12);
         if (available < 56) {
             return available;
         }
         int calculated = Math.round(logical * 0.095f);
-        int minimum = showActions ? 80 : 68;
-        int maximum = 92;
+        int minimum = 68;
+        if (showActions) {
+            int safeLineHeight = Math.max(1, lineHeight);
+            int titleHeight = Math.max(safeLineHeight,
+                    (int) Math.ceil(safeLineHeight * crispScale(titleScale, 1.00f)));
+            int messageHeight = Math.max(safeLineHeight,
+                    (int) Math.ceil(safeLineHeight * crispScale(messageScale, 1.00f)));
+            int contentHeight = Math.max(40, titleHeight + 5 + messageHeight + 8);
+            minimum = contentHeight + ACTION_AREA_HEIGHT + 4;
+        }
+        int maximum = Math.min(92, minimum + 4);
         return clampInt(calculated, Math.min(minimum, available), Math.min(maximum, available));
     }
 
@@ -208,7 +218,8 @@ public final class CustomReminderToast implements Toast {
         int currentWidth = layoutWidth(minecraft.font, title, message, frameStyle,
                 minecraft.getWindow().getGuiScaledWidth());
         return layoutHeight(minecraft.font, message, frameStyle, currentWidth,
-                minecraft.getWindow().getGuiScaledHeight(), snoozeAction != null);
+                minecraft.getWindow().getGuiScaledHeight(), snoozeAction != null,
+                titleScale, messageScale);
     }
 
     /** All Chronicle layouts are at most 92px high, so reserve three stable 32px slots. */
@@ -247,10 +258,18 @@ public final class CustomReminderToast implements Toast {
 
     static int layoutHeight(Font font, String message, String frameStyle, int width,
                             int guiHeight, boolean showActions) {
+        return layoutHeight(font, message, frameStyle, width, guiHeight, showActions,
+                1.00f, 1.00f);
+    }
+
+    static int layoutHeight(Font font, String message, String frameStyle, int width,
+                            int guiHeight, boolean showActions,
+                            float titleScale, float messageScale) {
         int available = Math.max(1, guiHeight - 12);
         return "VANILLA".equalsIgnoreCase(frameStyle)
                 ? vanillaHeightWithin(font, message, width, available, showActions)
-                : responsiveHeight(guiHeight, showActions);
+                : responsiveHeight(guiHeight, showActions, font.lineHeight,
+                        titleScale, messageScale);
     }
 
     @Override
@@ -459,10 +478,10 @@ public final class CustomReminderToast implements Toast {
         ActionBounds actionBounds = actionBounds(font, w, h, showActions);
         int contentBottom = actionBounds == null ? cardH - 4 : actionBounds.y() - 4;
         int contentHeight = Math.max(1, contentBottom);
-        boolean showIcon = cardW >= 150 && contentHeight >= 48;
+        boolean showIcon = cardW >= 150 && contentHeight >= 38;
         int textX = 14;
         if (showIcon) {
-            int iconBox = Math.max(24, Math.min(34, contentHeight - 16));
+            int iconBox = Math.max(24, Math.min(34, contentHeight - 8));
             int iconX = 14;
             int iconY = Math.max(7, (contentHeight - iconBox) / 2);
             drawModernIconTile(graphics, iconX, iconY, iconBox, safeTheme);
