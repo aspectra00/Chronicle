@@ -1,6 +1,6 @@
 # Chronicle Deep Audit
 
-> **Minecraft 26.2 · Chronicle 1.2.7 · fixed85**  
+> **Minecraft 26.2 · Chronicle 1.2.8 · fixed86**
 > Whole-project correctness, UI geometry, scheduler, persistence and audio audit.
 
 Chronicle's Java and resource sources were reviewed against Minecraft 26.2 behavior for GUI lifecycle, font metrics, resize and GUI-scale changes, clipping, input routing, scheduler state, notification delivery, custom audio and configuration persistence.
@@ -27,12 +27,45 @@ A clean Gradle build completed successfully against the declared Minecraft 26.2 
 ### Release gate
 
 ```text
-Chronicle 1.2.7
-fixed85
+Chronicle 1.2.8
+fixed86
 Minecraft 26.2
 Java 25
 clean build: PASS
 ```
+
+---
+
+# fixed86
+
+## MIT release and 26.2 compatibility verification
+
+`fixed86` publishes Chronicle 1.2.8 under the MIT License and revalidates the complete release surface against the declared Minecraft 26.2 toolchain.
+
+### License surface
+
+- Replaced the project-level CC0 dedication with the standard MIT License text.
+- Updated `fabric.mod.json` to the SPDX `MIT` identifier exposed by Fabric Loader and Mod Menu.
+- Confirmed that the release JAR embeds the matching project license.
+- Preserved the independent license notices for bundled third-party components.
+
+### Release metadata
+
+- Bumped the Gradle project version to **1.2.8**.
+- Synchronized the README release heading and Chronicle SVG badge.
+- Prepared the repository for the matching `1.2.8` Git tag.
+- Excluded local Gradle, runtime and analysis artifacts from release commits.
+
+### Compatibility gate
+
+- Minecraft **26.2**
+- Fabric Loader **0.19.3**
+- Fabric API **0.157.0+26.2**
+- Fabric Loom **1.17.19**
+- Java **25**
+- Gradle **9.5.1**
+
+The full Java and resource source set remains lint-clean, and a clean release build completes successfully with the declared compatibility matrix.
 
 ---
 
@@ -1081,7 +1114,7 @@ text baseline
 
 # Final verified state
 
-Chronicle `fixed85` is the culmination of the `fixed74 → fixed85` audit sequence.
+Chronicle `fixed86` extends the `fixed74 → fixed85` reliability sequence with a synchronized MIT-licensed 1.2.8 release.
 
 The verified release state includes:
 
@@ -1101,7 +1134,7 @@ The verified release state includes:
 - Java 25 lint-clean release validation
 
 ```text
-Chronicle 1.2.7 / fixed85
+Chronicle 1.2.8 / fixed86
 Minecraft 26.2
 Release audit: COMPLETE
 Clean build: PASS

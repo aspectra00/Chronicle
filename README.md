@@ -27,7 +27,7 @@
 
 ### About Chronicle
 
-**Chronicle 1.2.7 · fixed85** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+**Chronicle 1.2.8 · fixed86** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 <br>
 
 ---
@@ -234,12 +234,16 @@ Chronicle is a **client-side mod**.
 
 ##  Current release
 
-### Chronicle 1.2.7 — fixed85
+### Chronicle 1.2.8 — fixed86
 
-`fixed85` completes a project-wide reliability, responsive-layout and pixel-geometry audit.
+`fixed86` moves Chronicle to the MIT License and revalidates the complete Minecraft 26.2 release surface.
 
 Highlights include:
 
+- MIT licensing in the repository, packaged mod and Fabric / Mod Menu metadata
+- Chronicle 1.2.8 release metadata and synchronized SVG badge
+- Verified Minecraft 26.2 and Fabric Loader 0.19.3 compatibility
+- Clean Java 25 release build
 - Fade-only screen transitions with pixel-stable rendering
 - Full usability at Minecraft's 320×240 logical GUI floor
 - Correct text-field padding for caret, selection, mouse and IME input
@@ -258,7 +262,15 @@ For the full verified audit, see [`AUDIT_NOTES.md`](AUDIT_NOTES.md).
 ---
 
 <details>
-<summary><strong> fixed76–fixed85 revision history</strong></summary>
+<summary><strong> fixed76–fixed86 revision history</strong></summary>
+
+### fixed86
+
+Publishes Chronicle 1.2.8 under the MIT License.
+
+Fabric metadata now exposes the SPDX `MIT` identifier to Fabric Loader and Mod Menu, while the packaged JAR carries the matching license text. Release metadata, documentation and the Chronicle SVG badge now share the same 1.2.8 version.
+
+The complete source and resource set was revalidated against Minecraft 26.2, Fabric Loader 0.19.3 and Java 25 with a clean release build.
 
 ### fixed85
 
@@ -375,6 +387,14 @@ A saved animation preference controls button feedback, screen transitions and no
 The verified UI, scheduler, input, persistence, notification and audio findings for this revision are documented in:
 
 [`AUDIT_NOTES.md`](AUDIT_NOTES.md)
+
+---
+
+##  License
+
+Chronicle is released under the [`MIT License`](LICENSE).
+
+Bundled third-party components retain their own licenses as listed in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ---
 
