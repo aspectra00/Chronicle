@@ -64,9 +64,9 @@ public final class ReminderConfig {
     public int toastIconColor = 0xFFE7ECF2;
     public String toastIcon = "!";
     public String toastTitle = "CHRONICLE";
-    public float toastTitleScale = 1.35f;
-    public float toastMessageScale = 1.15f;
-    public float toastIconScale = 1.90f;
+    public float toastTitleScale = 1.00f;
+    public float toastMessageScale = 1.00f;
+    public float toastIconScale = 2.00f;
     /** Overall notification shell: MODERN or VANILLA. */
     public String toastFrameStyle = "MODERN";
     /** Chronicle screen, button and toast micro-animations. */
@@ -337,9 +337,9 @@ public final class ReminderConfig {
         int iconEnd = toastIcon.offsetByCodePoints(0, Math.min(2, toastIcon.codePointCount(0, toastIcon.length())));
         toastIcon = toastIcon.substring(0, iconEnd);
         toastTitle = truncateSafely(toastTitle.trim(), 40);
-        toastTitleScale = clampScale(toastTitleScale, 0.90f, 1.60f, 1.35f);
-        toastMessageScale = clampScale(toastMessageScale, 0.90f, 1.45f, 1.15f);
-        toastIconScale = clampScale(toastIconScale, 1.00f, 2.20f, 1.90f);
+        toastTitleScale = crispScale(toastTitleScale, 1.00f);
+        toastMessageScale = crispScale(toastMessageScale, 1.00f);
+        toastIconScale = crispScale(toastIconScale, 2.00f);
         toastFrameStyle = toastFrameStyle == null ? "MODERN"
                 : switch (toastFrameStyle.toUpperCase(java.util.Locale.ROOT)) {
                     case "MODERN", "VANILLA" -> toastFrameStyle.toUpperCase(java.util.Locale.ROOT);
@@ -356,11 +356,11 @@ public final class ReminderConfig {
         notificationSoundVolume = Math.max(0.0f, Math.min(1.0f, notificationSoundVolume));
     }
 
-    private static float clampScale(float value, float min, float max, float fallback) {
+    private static float crispScale(float value, float fallback) {
         if (!Float.isFinite(value) || value <= 0.0f) {
             value = fallback;
         }
-        return Math.max(min, Math.min(max, value));
+        return Math.max(1.0f, Math.min(2.0f, Math.round(value)));
     }
 
     private static String truncateSafely(String value, int maxUtf16Length) {

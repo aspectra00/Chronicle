@@ -262,18 +262,18 @@ public final class ToastCustomizerScreen extends Screen {
         int sizeSideW = Math.min(28, Math.max(1, (sizeGroupW - 10) / 3));
         int sizeControlW = Math.max(1, sizeGroupW - sizeSideW * 2 - 8);
         int titlePlusX = controlsLeft + sizeSideW + 4 + sizeControlW + 4;
-        titleMinus = styledButton("−", controlsLeft, sizeY, sizeSideW, 24, b -> adjustTitleScale(-0.05f));
+        titleMinus = styledButton("−", controlsLeft, sizeY, sizeSideW, 24, b -> adjustTitleScale(-1.00f));
         titleSize = readoutButton(scaleLabel("title", draftTitleScale), controlsLeft + sizeSideW + 4,
                 sizeY, sizeControlW, 24);
-        titlePlus = styledButton("+", titlePlusX, sizeY, sizeSideW, 24, b -> adjustTitleScale(0.05f));
+        titlePlus = styledButton("+", titlePlusX, sizeY, sizeSideW, 24, b -> adjustTitleScale(1.00f));
         int messageBaseX = twoColumnSizes ? col2 : controlsLeft;
         int sizeRowStep = 24 + UiMetrics.GAP_SM;
         int messageSizeY = twoColumnSizes ? sizeY : sizeY + sizeRowStep;
         int messagePlusX = messageBaseX + sizeSideW + 4 + sizeControlW + 4;
-        messageMinus = styledButton("−", messageBaseX, messageSizeY, sizeSideW, 24, b -> adjustMessageScale(-0.05f));
+        messageMinus = styledButton("−", messageBaseX, messageSizeY, sizeSideW, 24, b -> adjustMessageScale(-1.00f));
         messageSize = readoutButton(scaleLabel("message", draftMessageScale), messageBaseX + sizeSideW + 4,
                 messageSizeY, sizeControlW, 24);
-        messagePlus = styledButton("+", messagePlusX, messageSizeY, sizeSideW, 24, b -> adjustMessageScale(0.05f));
+        messagePlus = styledButton("+", messagePlusX, messageSizeY, sizeSideW, 24, b -> adjustMessageScale(1.00f));
         addRenderableWidget(titleMinus);
         addRenderableWidget(titleSize);
         addRenderableWidget(titlePlus);
@@ -282,11 +282,11 @@ public final class ToastCustomizerScreen extends Screen {
         addRenderableWidget(messagePlus);
 
         int iconSizeY = sizeY + (twoColumnSizes ? sizeRowStep : sizeRowStep * 2);
-        iconMinus = styledButton("−", controlsLeft, iconSizeY, sizeSideW, 24, b -> adjustIconScale(-0.10f));
+        iconMinus = styledButton("−", controlsLeft, iconSizeY, sizeSideW, 24, b -> adjustIconScale(-1.00f));
         iconSize = readoutButton(scaleLabel("icon", draftIconScale), controlsLeft + sizeSideW + 4,
                 iconSizeY, sizeControlW, 24);
         iconPlus = styledButton("+", controlsLeft + sizeSideW + 4 + sizeControlW + 4,
-                iconSizeY, sizeSideW, 24, b -> adjustIconScale(0.10f));
+                iconSizeY, sizeSideW, 24, b -> adjustIconScale(1.00f));
         addRenderableWidget(iconMinus);
         addRenderableWidget(iconSize);
         addRenderableWidget(iconPlus);
@@ -720,17 +720,17 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private void adjustTitleScale(float delta) {
-        draftTitleScale = clampScale(draftTitleScale + delta, 0.90f, 1.60f);
+        draftTitleScale = clampScale(draftTitleScale + delta, 1.00f, 2.00f);
         if (titleSize != null) titleSize.setMessage(Component.literal(scaleLabel("title", draftTitleScale)));
     }
 
     private void adjustMessageScale(float delta) {
-        draftMessageScale = clampScale(draftMessageScale + delta, 0.90f, 1.45f);
+        draftMessageScale = clampScale(draftMessageScale + delta, 1.00f, 2.00f);
         if (messageSize != null) messageSize.setMessage(Component.literal(scaleLabel("message", draftMessageScale)));
     }
 
     private void adjustIconScale(float delta) {
-        draftIconScale = clampScale(draftIconScale + delta, 1.00f, 2.20f);
+        draftIconScale = clampScale(draftIconScale + delta, 1.00f, 2.00f);
         if (iconSize != null) iconSize.setMessage(Component.literal(scaleLabel("icon", draftIconScale)));
     }
 
@@ -1193,13 +1193,13 @@ public final class ToastCustomizerScreen extends Screen {
         String previewIcon = sanitizeIcon(iconBox == null ? ChronicleClient.CONFIG.toastIcon : iconBox.getValue());
         String previewTitle = resolvePreviewTitle(
                 titleBox == null ? ChronicleClient.CONFIG.toastTitle : titleBox.getValue());
-        int logicalPreviewW = CustomReminderToast.layoutWidth(this.font, previewTitle, previewMessage,
+        int previewAreaW = compactStyles ? controlW : rightColumnW;
+        int naturalPreviewW = CustomReminderToast.layoutWidth(this.font, previewTitle, previewMessage,
                 draftFrameStyle, this.width);
+        int logicalPreviewW = Math.max(1, Math.min(naturalPreviewW, previewAreaW));
         int logicalPreviewH = CustomReminderToast.layoutHeight(this.font, previewMessage,
                 draftFrameStyle, logicalPreviewW, this.height);
-        int previewAreaW = compactStyles ? controlW : rightColumnW;
-        float previewScale = Math.min(1.0f, previewAreaW / (float) Math.max(1, logicalPreviewW));
-        int previewW = Math.max(1, Math.round(logicalPreviewW * previewScale));
+        int previewW = logicalPreviewW;
         int px = compactStyles
                 ? controlsLeft + Math.max(0, (controlW - previewW) / 2)
                 : rightColumnX + Math.max(0, (rightColumnW - previewW) / 2);
@@ -1219,7 +1219,7 @@ public final class ToastCustomizerScreen extends Screen {
         int titleColor = parseHex(titleColorBox == null ? hex(draftTitleColor) : titleColorBox.getValue(), draftTitleColor);
         int messageColor = parseHex(messageColorBox == null ? hex(draftMessageColor) : messageColorBox.getValue(), draftMessageColor);
         int iconColor = parseHex(iconColorBox == null ? hex(draftIconColor) : iconColorBox.getValue(), draftIconColor);
-        renderPreviewAt(graphics, px, py, logicalPreviewW, logicalPreviewH, previewScale,
+        renderPreviewAt(graphics, px, py, logicalPreviewW, logicalPreviewH,
                 previewMessage, previewTitle, previewIcon,
                 new ReminderToastTheme(bg, border, previewAccent, titleColor, messageColor, iconColor),
                 draftTitleScale, draftMessageScale, draftIconScale);
@@ -1353,12 +1353,10 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private void renderPreviewAt(GuiGraphicsExtractor graphics, int x, int y, int width, int height,
-                                 float previewScale,
                                  String message, String title, String icon, ReminderToastTheme theme,
                                  float titleScale, float messageScale, float iconScale) {
         graphics.pose().pushMatrix();
         graphics.pose().translate(x, y);
-        graphics.pose().scale(previewScale, previewScale);
         CustomReminderToast.renderPreview(
                 graphics, this.font, width, height, message, title, icon, theme,
                 titleScale, messageScale, iconScale, draftFrameStyle

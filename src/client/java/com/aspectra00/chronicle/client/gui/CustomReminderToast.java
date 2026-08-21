@@ -54,15 +54,15 @@ public final class CustomReminderToast implements Toast {
                 resolvedTitle,
                 config == null ? "!" : config.toastIcon,
                 config == null ? ReminderToastTheme.defaultMinimal() : ReminderToastTheme.fromConfig(config),
-                config == null ? 1.35f : config.toastTitleScale,
-                config == null ? 1.15f : config.toastMessageScale,
-                config == null ? 1.90f : config.toastIconScale,
+                config == null ? 1.00f : config.toastTitleScale,
+                config == null ? 1.00f : config.toastMessageScale,
+                config == null ? 2.00f : config.toastIconScale,
                 config == null ? "MODERN" : config.toastFrameStyle,
                 config == null || config.animationsEnabled);
     }
 
     public CustomReminderToast(String message, String title, String icon, ReminderToastTheme theme) {
-        this(message, title, icon, theme, 1.35f, 1.15f, 1.90f);
+        this(message, title, icon, theme, 1.00f, 1.00f, 2.00f);
     }
 
     public CustomReminderToast(String message, String title, String icon, ReminderToastTheme theme,
@@ -77,9 +77,9 @@ public final class CustomReminderToast implements Toast {
         this.title = title == null || title.isBlank() ? "CHRONICLE" : title.trim();
         this.icon = icon == null || icon.isBlank() ? "!" : icon.trim();
         this.theme = theme == null ? ReminderToastTheme.defaultMinimal() : theme;
-        this.titleScale = clamp(titleScale, 0.90f, 1.60f, 1.35f);
-        this.messageScale = clamp(messageScale, 0.90f, 1.45f, 1.15f);
-        this.iconScale = clamp(iconScale, 1.00f, 2.20f, 1.90f);
+        this.titleScale = crispScale(titleScale, 1.00f);
+        this.messageScale = crispScale(messageScale, 1.00f);
+        this.iconScale = crispScale(iconScale, 2.00f);
         this.frameStyle = "VANILLA".equalsIgnoreCase(frameStyle) ? "VANILLA" : "MODERN";
         this.animationsEnabled = animationsEnabled;
 
@@ -91,8 +91,11 @@ public final class CustomReminderToast implements Toast {
         return localized == null || localized.isBlank() ? "Reminder" : localized;
     }
 
-    private static float clamp(float value, float min, float max, float fallback) {
-        return Float.isFinite(value) && value > 0.0f ? Math.max(min, Math.min(max, value)) : fallback;
+    private static float crispScale(float value, float fallback) {
+        if (!Float.isFinite(value) || value <= 0.0f) {
+            value = fallback;
+        }
+        return Math.max(1.0f, Math.min(2.0f, Math.round(value)));
     }
 
     private static int clampInt(int value, int min, int max) {
@@ -278,9 +281,9 @@ public final class CustomReminderToast implements Toast {
         renderCard(
                 graphics, font, cardWidth, cardHeight,
                 message, title, icon, theme,
-                clamp(titleScale, 0.90f, 1.60f, 1.35f),
-                clamp(messageScale, 0.90f, 1.45f, 1.15f),
-                clamp(iconScale, 1.00f, 2.20f, 1.90f),
+                crispScale(titleScale, 1.00f),
+                crispScale(messageScale, 1.00f),
+                crispScale(iconScale, 2.00f),
                 frameStyle,
                 !vanilla, 0L, DISPLAY_TIME_MS
         );
@@ -349,11 +352,11 @@ public final class CustomReminderToast implements Toast {
             int iconY = Math.max(9, (cardH - iconBox) / 2);
             drawModernIconTile(graphics, iconX, iconY, iconBox, safeTheme);
 
-            float requestedIconScale = Math.max(0.90f, iconScale * 0.62f);
             int iconTextWidth = font.width(Component.literal(safeIcon));
-            float iconDrawScale = Math.max(0.25f, Math.min(requestedIconScale,
-                    Math.min((iconBox - 10) / (float) Math.max(1, iconTextWidth),
-                            (iconBox - 10) / (float) Math.max(1, font.lineHeight))));
+            int fittedIconScale = Math.max(1, Math.min(2,
+                    Math.min((iconBox - 10) / Math.max(1, iconTextWidth),
+                            (iconBox - 10) / Math.max(1, font.lineHeight))));
+            float iconDrawScale = Math.min(iconScale, fittedIconScale);
             int iconTextX = iconX + Math.max(1,
                     (iconBox - Math.round(iconTextWidth * iconDrawScale)) / 2);
             int iconTextY = iconY + Math.max(1,
@@ -383,7 +386,7 @@ public final class CustomReminderToast implements Toast {
         int bodyStartY = titleY + titlePixelHeight + 5;
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
-                safeTheme.title(), true);
+                safeTheme.title(), false);
         for (int i = 0; i < lines.size(); i++) {
             int lineY = bodyStartY + i * bodyLineHeight;
             if (lineY + bodyPixelHeight > cardH - 7) {
