@@ -8,14 +8,9 @@ import net.minecraft.client.input.MouseButtonEvent;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-import java.util.WeakHashMap;
 
 public final class ToastInteractionManager {
     private static final ArrayList<WeakReference<CustomReminderToast>> TOASTS = new ArrayList<>();
-    private static final Set<Screen> REGISTERED_SCREENS =
-            Collections.newSetFromMap(new WeakHashMap<>());
     private static boolean initialized;
 
     private ToastInteractionManager() {
@@ -28,7 +23,7 @@ public final class ToastInteractionManager {
     }
 
     private static void registerScreen(Screen screen) {
-        if (screen == null || !REGISTERED_SCREENS.add(screen)) return;
+        if (screen == null) return;
         ScreenMouseEvents.allowMouseClick(screen).register((currentScreen, event) ->
                 !handleMouseClick(Minecraft.getInstance(), event));
     }

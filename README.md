@@ -75,10 +75,10 @@ Choose how Chronicle reminders appear in-game.
 
 Notification actions can be enabled or disabled in the toast customizer. When enabled, every real reminder includes:
 
-- **Snooze 5 min** — saves a one-shot follow-up reminder
+- **Snooze** — saves a one-shot follow-up using the selected 5, 10, 15, 30 or 60 minute delay
 - **Dismiss** — closes the current notification without changing its schedule
 
-The compact actions sit beside the notification message and are clickable whenever Minecraft's cursor is available, including inventory, pause and other screens. Failed snooze saves keep the notification open and show an inline error instead of silently losing the action.
+The compact actions sit beside the notification message and are clickable whenever Minecraft's cursor is available, including inventory, pause and other screens. Successful actions close the notification immediately. Failed snooze saves keep it open and show an inline error instead of silently losing the action.
 
 ### Modern
 

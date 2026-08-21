@@ -303,7 +303,7 @@ public class ChronicleClient implements ClientModInitializer {
     private static void applyAfterTrigger(Reminder reminder, List<Reminder> deleteAfterTrigger) {
         Reminder.ScheduleType type = reminder.scheduleType == null
                 ? Reminder.ScheduleType.DAILY : reminder.scheduleType;
-        if (type == Reminder.ScheduleType.DAILY || type == Reminder.ScheduleType.WEEKLY) return;
+        if (type == Reminder.ScheduleType.WEEKLY) return;
         Reminder.AfterTriggerAction action = reminder.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : reminder.afterTriggerAction;
         switch (action) {
@@ -353,7 +353,7 @@ public class ChronicleClient implements ClientModInitializer {
             case INTERVAL -> ChronicleI18n.tr("summary.every", formatInterval(reminder.intervalMinutes));
             case TRIGGER -> triggerSummary(reminder.trigger);
         };
-        if (type == Reminder.ScheduleType.DAILY || type == Reminder.ScheduleType.WEEKLY) {
+        if (type == Reminder.ScheduleType.WEEKLY) {
             return schedule;
         }
         Reminder.AfterTriggerAction after = reminder.afterTriggerAction == null
@@ -415,8 +415,9 @@ public class ChronicleClient implements ClientModInitializer {
 
     private static void displayResolvedReminder(Minecraft client, String resolvedMessage,
                                                 String resolvedTitle, String sourceMessage) {
+        int snoozeMinutes = CONFIG.toastSnoozeMinutes;
         CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
-                ? () -> snoozeReminder(sourceMessage)
+                ? () -> snoozeReminder(sourceMessage, snoozeMinutes)
                 : null;
         client.gui.toastManager().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action));
@@ -424,6 +425,12 @@ public class ChronicleClient implements ClientModInitializer {
     }
 
     public static boolean snoozeReminder(String message) {
+        int minutes = CONFIG == null
+                ? ReminderConfig.DEFAULT_SNOOZE_MINUTES : CONFIG.toastSnoozeMinutes;
+        return snoozeReminder(message, minutes);
+    }
+
+    public static boolean snoozeReminder(String message, int minutes) {
         if (CONFIG == null) return false;
         if (CONFIG.reminders.size() >= ReminderConfig.MAX_REMINDERS) {
             runtimeConfigError = ChronicleI18n.tr("error.reminder_limit", ReminderConfig.MAX_REMINDERS);
@@ -433,7 +440,7 @@ public class ChronicleClient implements ClientModInitializer {
                 message == null || message.isBlank() ? ChronicleI18n.tr("default.reminder") : message.trim(),
                 true);
         snoozed.scheduleType = Reminder.ScheduleType.INTERVAL;
-        snoozed.intervalMinutes = CustomReminderToast.SNOOZE_MINUTES;
+        snoozed.intervalMinutes = Math.max(1, Math.min(24 * 60, minutes));
         snoozed.afterTriggerAction = Reminder.AfterTriggerAction.DELETE;
         snoozed.resetIntervalTimer();
         CONFIG.reminders.add(snoozed);
@@ -459,8 +466,9 @@ public class ChronicleClient implements ClientModInitializer {
         String previewMessage = ChronicleI18n.tr("toast.preview.reminder");
         String resolvedMessage = ChroniclePlaceholders.resolve(previewMessage);
         String resolvedTitle = ChroniclePlaceholders.resolve(CONFIG.toastTitle);
+        int snoozeMinutes = CONFIG.toastSnoozeMinutes;
         CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
-                ? () -> snoozeReminder(previewMessage)
+                ? () -> snoozeReminder(previewMessage, snoozeMinutes)
                 : null;
         client.gui.toastManager().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action));

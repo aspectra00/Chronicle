@@ -62,19 +62,21 @@ The editor retains trigger input and focus through scrolling, resizing and GUI-s
 
 ## Interactive notification actions
 
-Chronicle notifications can render compact **Snooze 5 min** and **Dismiss** actions inside both Modern and Vanilla frames. The toast customizer persists an explicit on/off preference and previews both states accurately.
+Chronicle notifications can render compact **Snooze** and **Dismiss** actions inside both Modern and Vanilla frames. The toast customizer persists the on/off preference and a selectable 5, 10, 15, 30 or 60 minute delay, and previews the selected state accurately.
 
 - Hit boxes derive from the same local geometry used to render each action.
 - Toast slide position and slot position are recorded from Minecraft's own `Toast` transforms.
 - Hovering an interactive toast pauses its lifetime and progress indicator.
 - Screen mouse input is intercepted only when an action is hit, so underlying controls receive every unrelated click.
-- Snooze creates an exact five-minute interval reminder with automatic deletion after display.
+- Snooze creates an exact one-shot interval reminder using the selected delay.
 - The new reminder is persisted before the original toast closes.
 - Reminder limits and save failures keep the toast visible and surface an inline failure state.
-- Dismiss hides only the current toast and leaves the reminder's future schedule unchanged.
+- Successful Snooze and Dismiss actions hide the current toast immediately.
+- Dismiss leaves the reminder's future schedule unchanged.
+- Screen input hooks are restored after window and GUI-scale reinitialization.
 - Weak interaction references cannot retain toasts removed by Minecraft's manager.
 
-Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The compact frame removes unused space below the inline row, while Vanilla retains its native text inset and line rhythm. Daily and Weekly schedules always repeat; post-trigger behavior is shown only for condition triggers. All five locale files contain the same **193 translation keys**.
+Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The compact frame uses balanced insets and a single icon accent, while Vanilla retains its native text inset and line rhythm. Weekly schedules always repeat; post-trigger behavior is available for Daily and condition-trigger schedules. All five locale files contain the same **194 translation keys**.
 
 ---
 

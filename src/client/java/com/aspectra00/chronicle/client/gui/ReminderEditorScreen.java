@@ -102,7 +102,8 @@ public final class ReminderEditorScreen extends Screen {
         this.intervalUsesHours = draft.intervalMinutes >= 60 && draft.intervalMinutes % 60 == 0;
         this.afterTriggerAction = draft.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : draft.afterTriggerAction;
-        if (this.scheduleType != Reminder.ScheduleType.TRIGGER) {
+        if (this.scheduleType != Reminder.ScheduleType.DAILY
+                && this.scheduleType != Reminder.ScheduleType.TRIGGER) {
             this.afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
         }
         this.trigger = draft.trigger == null ? new ReminderTrigger() : draft.trigger.copy();
@@ -404,7 +405,8 @@ public final class ReminderEditorScreen extends Screen {
         addRenderableWidget(messageBox);
         cursorY = messageY + messageBox.getHeight() + this.font.lineHeight + UiMetrics.GAP_MD;
         afterTriggerButton = null;
-        if (scheduleType == Reminder.ScheduleType.TRIGGER) {
+        if (scheduleType == Reminder.ScheduleType.DAILY
+                || scheduleType == Reminder.ScheduleType.TRIGGER) {
             int afterY = cursorY + UiMetrics.LABEL_OFFSET;
             afterTriggerButton = uiButton(afterTriggerLabel(), innerLeft, afterY, innerW,
                     UiMetrics.CONTROL_HEIGHT, this::cycleAfterTrigger);
@@ -680,7 +682,8 @@ public final class ReminderEditorScreen extends Screen {
         scheduleType = type;
         scrollOffset = 0;
         validationError = null;
-        if (scheduleType != Reminder.ScheduleType.TRIGGER) {
+        if (scheduleType != Reminder.ScheduleType.DAILY
+                && scheduleType != Reminder.ScheduleType.TRIGGER) {
             afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
         }
         if (scheduleType == Reminder.ScheduleType.WEEKLY && !hasAnyWeeklyDay()) {
@@ -804,7 +807,9 @@ public final class ReminderEditorScreen extends Screen {
         try {
             draft.message = messageText == null || messageText.isBlank()
                     ? ChronicleI18n.tr("default.reminder") : messageText.trim();
-            if (scheduleType == Reminder.ScheduleType.TRIGGER && afterTriggerAction != null) {
+            if ((scheduleType == Reminder.ScheduleType.DAILY
+                    || scheduleType == Reminder.ScheduleType.TRIGGER)
+                    && afterTriggerAction != null) {
                 draft.afterTriggerAction = afterTriggerAction;
             } else if (!isNew && scheduleType == Reminder.ScheduleType.INTERVAL
                     && originalSnapshot.scheduleType == Reminder.ScheduleType.INTERVAL

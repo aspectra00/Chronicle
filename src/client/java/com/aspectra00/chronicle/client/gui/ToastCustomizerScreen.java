@@ -20,6 +20,7 @@ import java.util.Map;
 public final class ToastCustomizerScreen extends Screen {
     private static final int DESKTOP_LAYOUT_MIN_HEIGHT = 744;
     private static final long DRAFT_TEST_DEBOUNCE_MS = 500L;
+    private static final int[] SNOOZE_OPTIONS = {5, 10, 15, 30, 60};
     private static final int ACCENT = 0xFF8FB3E8;
     private static final int ACCENT_ALT = 0xFF8995A4;
     private static final int MUTED = 0xFF8995A4;
@@ -57,8 +58,9 @@ public final class ToastCustomizerScreen extends Screen {
     private String draftFrameStyle;
     private boolean draftAnimationsEnabled;
     private boolean draftToastActionsEnabled;
+    private int draftToastSnoozeMinutes;
     private Button titleMinus, titleSize, titlePlus, messageMinus, messageSize, messagePlus, iconMinus, iconSize, iconPlus;
-    private Button frameStyleButton, animationsButton, actionsButton;
+    private Button frameStyleButton, animationsButton, actionsButton, snoozeDurationButton;
     private Button applyButton, testButton, cancelButton;
     private String paletteTarget = "BACKGROUND";
     private Button paletteTargetButton;
@@ -93,6 +95,7 @@ public final class ToastCustomizerScreen extends Screen {
         this.draftFrameStyle = ChronicleClient.CONFIG.toastFrameStyle;
         this.draftAnimationsEnabled = ChronicleClient.CONFIG.animationsEnabled;
         this.draftToastActionsEnabled = ChronicleClient.CONFIG.toastActionsEnabled;
+        this.draftToastSnoozeMinutes = ChronicleClient.CONFIG.toastSnoozeMinutes;
         updatePickerFromTarget();
     }
 
@@ -237,16 +240,22 @@ public final class ToastCustomizerScreen extends Screen {
                 appearanceColumns == 1 ? controlsLeft : controlsLeft + appearanceW + appearanceGap,
                 appearanceColumns == 1 ? appearanceY + UiMetrics.CONTROL_HEIGHT + appearanceGap : appearanceY,
                 appearanceW, UiMetrics.CONTROL_HEIGHT, b -> toggleAnimations());
-        actionsButton = styledButton(actionsLabel(),
-                appearanceColumns == 3 ? controlsLeft + (appearanceW + appearanceGap) * 2 : controlsLeft,
-                appearanceColumns == 3 ? appearanceY
-                        : appearanceY + (UiMetrics.CONTROL_HEIGHT + appearanceGap)
-                        * (appearanceColumns == 2 ? 1 : 2),
+        int actionsX = appearanceColumns == 3
+                ? controlsLeft + (appearanceW + appearanceGap) * 2 : controlsLeft;
+        int actionsY = appearanceColumns == 3 ? appearanceY
+                : appearanceY + (UiMetrics.CONTROL_HEIGHT + appearanceGap)
+                * (appearanceColumns == 2 ? 1 : 2);
+        actionsButton = styledButton(actionsLabel(), actionsX, actionsY,
                 appearanceColumns == 2 ? controlW : appearanceW,
                 UiMetrics.CONTROL_HEIGHT, b -> toggleToastActions());
+        snoozeDurationButton = styledButton(snoozeDurationLabel(), controlsLeft,
+                actionsY + UiMetrics.CONTROL_HEIGHT + appearanceGap,
+                controlW, UiMetrics.CONTROL_HEIGHT, b -> cycleSnoozeDuration());
+        snoozeDurationButton.active = draftToastActionsEnabled;
         addRenderableWidget(frameStyleButton);
         addRenderableWidget(animationsButton);
         addRenderableWidget(actionsButton);
+        addRenderableWidget(snoozeDurationButton);
 
         int contentShift = (compactStyles ? styleRowStep + previewFirstShift : 0)
                 + appearanceContentShift(compactStyles, controlW);
@@ -454,6 +463,11 @@ public final class ToastCustomizerScreen extends Screen {
                 ChronicleI18n.tr(draftToastActionsEnabled ? "action.on" : "action.off"));
     }
 
+    private String snoozeDurationLabel() {
+        return ChronicleI18n.tr("toast.snooze.label",
+                ChronicleClient.formatInterval(draftToastSnoozeMinutes));
+    }
+
     private void toggleFrameStyle() {
         draftFrameStyle = "VANILLA".equals(draftFrameStyle) ? "MODERN" : "VANILLA";
         if (frameStyleButton != null) {
@@ -512,6 +526,23 @@ public final class ToastCustomizerScreen extends Screen {
         draftToastActionsEnabled = !draftToastActionsEnabled;
         if (actionsButton != null) {
             actionsButton.setMessage(Component.literal(actionsLabel()));
+        }
+        if (snoozeDurationButton != null) {
+            snoozeDurationButton.active = draftToastActionsEnabled;
+        }
+    }
+
+    private void cycleSnoozeDuration() {
+        int next = 0;
+        for (int i = 0; i < SNOOZE_OPTIONS.length; i++) {
+            if (SNOOZE_OPTIONS[i] == draftToastSnoozeMinutes) {
+                next = (i + 1) % SNOOZE_OPTIONS.length;
+                break;
+            }
+        }
+        draftToastSnoozeMinutes = SNOOZE_OPTIONS[next];
+        if (snoozeDurationButton != null) {
+            snoozeDurationButton.setMessage(Component.literal(snoozeDurationLabel()));
         }
     }
 
@@ -685,6 +716,7 @@ public final class ToastCustomizerScreen extends Screen {
         String oldFrameStyle = config.toastFrameStyle;
         boolean oldAnimationsEnabled = config.animationsEnabled;
         boolean oldToastActionsEnabled = config.toastActionsEnabled;
+        int oldToastSnoozeMinutes = config.toastSnoozeMinutes;
 
         config.toastStyle = draftStyle;
         config.toastBackgroundColor = draftBackground;
@@ -701,6 +733,7 @@ public final class ToastCustomizerScreen extends Screen {
         config.toastFrameStyle = draftFrameStyle;
         config.animationsEnabled = draftAnimationsEnabled;
         config.toastActionsEnabled = draftToastActionsEnabled;
+        config.toastSnoozeMinutes = draftToastSnoozeMinutes;
         config.ensureValid();
         if (config.save()) {
             onClose();
@@ -720,6 +753,7 @@ public final class ToastCustomizerScreen extends Screen {
             config.toastFrameStyle = oldFrameStyle;
             config.animationsEnabled = oldAnimationsEnabled;
             config.toastActionsEnabled = oldToastActionsEnabled;
+            config.toastSnoozeMinutes = oldToastSnoozeMinutes;
             validationError = config.getLastSaveError();
         }
     }
@@ -737,14 +771,16 @@ public final class ToastCustomizerScreen extends Screen {
         );
         String icon = sanitizeIcon(iconBox.getValue());
         String title = ChroniclePlaceholders.resolve(sanitizeTitle(titleBox.getValue()));
+        int snoozeMinutes = draftToastSnoozeMinutes;
         CustomReminderToast.SnoozeAction action = draftToastActionsEnabled
-                ? () -> ChronicleClient.snoozeReminder(ChronicleI18n.tr("toast.preview.reminder"))
+                ? () -> ChronicleClient.snoozeReminder(
+                ChronicleI18n.tr("toast.preview.reminder"), snoozeMinutes)
                 : null;
         this.minecraft.gui.toastManager().addToast(new CustomReminderToast(
                 ChronicleI18n.tr("toast.preview.reminder"), title, icon, theme,
                 draftTitleScale, draftMessageScale, draftIconScale,
                 draftFrameStyle, draftAnimationsEnabled,
-                action
+                action, snoozeMinutes
         ));
         CustomSoundPlayer.playConfigured(this.minecraft, ChronicleClient.CONFIG);
     }
@@ -902,7 +938,7 @@ public final class ToastCustomizerScreen extends Screen {
         // The old desktop-only 37px shift placed ICON / TITLE six pixels inside it.
         int shift = 55;
         int rows = appearanceColumnCount(controlWidth) == 3
-                ? 1 : appearanceColumnCount(controlWidth) == 2 ? 2 : 3;
+                ? 2 : appearanceColumnCount(controlWidth) == 2 ? 3 : 4;
         return shift + (rows - 1) * (UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM);
     }
 
@@ -1396,7 +1432,8 @@ public final class ToastCustomizerScreen extends Screen {
         graphics.pose().translate(x, y);
         CustomReminderToast.renderPreview(
                 graphics, this.font, width, height, message, title, icon, theme,
-                titleScale, messageScale, iconScale, draftFrameStyle, draftToastActionsEnabled
+                titleScale, messageScale, iconScale, draftFrameStyle,
+                draftToastActionsEnabled, draftToastSnoozeMinutes
         );
         graphics.pose().popMatrix();
     }

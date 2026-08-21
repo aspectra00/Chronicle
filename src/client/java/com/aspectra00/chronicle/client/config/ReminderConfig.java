@@ -59,6 +59,7 @@ public final class ReminderConfig {
     private static final String LEGACY_FILE_NAME = "daily-reminders.json";
     private static final long MAX_CONFIG_BYTES = 4L * 1024L * 1024L;
     public static final int MAX_REMINDERS = 512;
+    public static final int DEFAULT_SNOOZE_MINUTES = 5;
     public List<Reminder> reminders = new ArrayList<>();
     /** User-facing time format preference. Reminder values stay 24-hour internally. */
     public boolean use24HourFormat = true;
@@ -81,6 +82,7 @@ public final class ReminderConfig {
     /** Chronicle screen, button and toast micro-animations. */
     public boolean animationsEnabled = true;
     public boolean toastActionsEnabled = true;
+    public int toastSnoozeMinutes = DEFAULT_SNOOZE_MINUTES;
 
     // Notification sound: OFF, VANILLA or CUSTOM.
     public String notificationSoundMode = "VANILLA";
@@ -188,6 +190,9 @@ public final class ReminderConfig {
         }
         if (root.has("toastActionsEnabled") && !root.get("toastActionsEnabled").isJsonNull()) {
             toastActionsEnabled = loaded.toastActionsEnabled;
+        }
+        if (root.has("toastSnoozeMinutes") && !root.get("toastSnoozeMinutes").isJsonNull()) {
+            toastSnoozeMinutes = loaded.toastSnoozeMinutes;
         }
         if (root.has("notificationSoundMode") && loaded.notificationSoundMode != null) {
             notificationSoundMode = loaded.notificationSoundMode;
@@ -380,6 +385,7 @@ public final class ReminderConfig {
                     case "MODERN", "VANILLA" -> toastFrameStyle.toUpperCase(java.util.Locale.ROOT);
                     default -> "MODERN";
                 };
+        toastSnoozeMinutes = Math.max(1, Math.min(24 * 60, toastSnoozeMinutes));
         notificationSoundMode = notificationSoundMode == null ? "VANILLA"
                 : switch (notificationSoundMode.toUpperCase(java.util.Locale.ROOT)) {
                     case "OFF", "VANILLA", "CUSTOM" -> notificationSoundMode.toUpperCase(java.util.Locale.ROOT);
