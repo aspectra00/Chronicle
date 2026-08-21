@@ -468,6 +468,10 @@ public final class ToastCustomizerScreen extends Screen {
                 ChronicleClient.formatInterval(draftToastSnoozeMinutes));
     }
 
+    private boolean draftActionsVisible() {
+        return draftToastActionsEnabled && !"VANILLA".equals(draftFrameStyle);
+    }
+
     private void toggleFrameStyle() {
         draftFrameStyle = "VANILLA".equals(draftFrameStyle) ? "MODERN" : "VANILLA";
         if (frameStyleButton != null) {
@@ -478,6 +482,10 @@ public final class ToastCustomizerScreen extends Screen {
 
     private void syncFrameSpecificControls() {
         boolean modern = !"VANILLA".equals(draftFrameStyle);
+        if (actionsButton != null) actionsButton.active = modern;
+        if (snoozeDurationButton != null) {
+            snoozeDurationButton.active = modern && draftToastActionsEnabled;
+        }
         for (Button button : java.util.List.of(titleMinus, titlePlus, messageMinus, messagePlus,
                 iconMinus, iconPlus)) {
             if (button != null) button.active = modern;
@@ -528,7 +536,7 @@ public final class ToastCustomizerScreen extends Screen {
             actionsButton.setMessage(Component.literal(actionsLabel()));
         }
         if (snoozeDurationButton != null) {
-            snoozeDurationButton.active = draftToastActionsEnabled;
+            snoozeDurationButton.active = draftActionsVisible();
         }
     }
 
@@ -772,7 +780,7 @@ public final class ToastCustomizerScreen extends Screen {
         String icon = sanitizeIcon(iconBox.getValue());
         String title = ChroniclePlaceholders.resolve(sanitizeTitle(titleBox.getValue()));
         int snoozeMinutes = draftToastSnoozeMinutes;
-        CustomReminderToast.SnoozeAction action = draftToastActionsEnabled
+        CustomReminderToast.SnoozeAction action = draftActionsVisible()
                 ? () -> ChronicleClient.snoozeReminder(
                 ChronicleI18n.tr("toast.preview.reminder"), snoozeMinutes)
                 : null;
@@ -1264,10 +1272,10 @@ public final class ToastCustomizerScreen extends Screen {
                 titleBox == null ? ChronicleClient.CONFIG.toastTitle : titleBox.getValue());
         int previewAreaW = compactStyles ? controlW : rightColumnW;
         int naturalPreviewW = CustomReminderToast.layoutWidth(this.font, previewTitle, previewMessage,
-                draftFrameStyle, this.width, draftToastActionsEnabled);
+                draftFrameStyle, this.width, draftActionsVisible());
         int logicalPreviewW = Math.max(1, Math.min(naturalPreviewW, previewAreaW));
         int logicalPreviewH = CustomReminderToast.layoutHeight(this.font, previewMessage,
-                draftFrameStyle, logicalPreviewW, this.height, draftToastActionsEnabled);
+                draftFrameStyle, logicalPreviewW, this.height, draftActionsVisible());
         int previewW = logicalPreviewW;
         int px = compactStyles
                 ? controlsLeft + Math.max(0, (controlW - previewW) / 2)
@@ -1362,7 +1370,7 @@ public final class ToastCustomizerScreen extends Screen {
         String style = styleButtonValues.get(button);
         String paletteName = paletteButtonValues.get(button);
         boolean activeToggle = button == animationsButton && draftAnimationsEnabled
-                || button == actionsButton && draftToastActionsEnabled;
+                || button == actionsButton && draftActionsVisible();
         int buttonAccent = button == applyButton || button == testButton ? ACCENT
                 : button == cancelButton ? ACCENT_ALT
                 : activeToggle ? ACCENT
@@ -1433,7 +1441,7 @@ public final class ToastCustomizerScreen extends Screen {
         CustomReminderToast.renderPreview(
                 graphics, this.font, width, height, message, title, icon, theme,
                 titleScale, messageScale, iconScale, draftFrameStyle,
-                draftToastActionsEnabled, draftToastSnoozeMinutes
+                draftActionsVisible(), draftToastSnoozeMinutes
         );
         graphics.pose().popMatrix();
     }

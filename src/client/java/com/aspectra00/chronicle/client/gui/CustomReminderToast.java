@@ -137,7 +137,7 @@ public final class CustomReminderToast implements Toast {
         this.snoozeMinutes = normalizeSnoozeMinutes(snoozeMinutes);
 
         this.shownAt = 0L;
-        if (snoozeAction != null) ToastInteractionManager.register(this);
+        if (showsActions()) ToastInteractionManager.register(this);
     }
 
     private static String fallbackMessage() {
@@ -158,6 +158,10 @@ public final class CustomReminderToast implements Toast {
 
     private static int normalizeSnoozeMinutes(int minutes) {
         return clampInt(minutes, 1, 24 * 60);
+    }
+
+    private boolean showsActions() {
+        return snoozeAction != null && !"VANILLA".equals(frameStyle);
     }
 
     public static int responsiveWidth(int guiWidth) {
@@ -211,16 +215,16 @@ public final class CustomReminderToast implements Toast {
     public int width() {
         Minecraft minecraft = Minecraft.getInstance();
         return layoutWidth(minecraft.font, title, message, frameStyle,
-                minecraft.getWindow().getGuiScaledWidth(), snoozeAction != null);
+                minecraft.getWindow().getGuiScaledWidth(), showsActions());
     }
 
     @Override
     public int height() {
         Minecraft minecraft = Minecraft.getInstance();
         int currentWidth = layoutWidth(minecraft.font, title, message, frameStyle,
-                minecraft.getWindow().getGuiScaledWidth(), snoozeAction != null);
+                minecraft.getWindow().getGuiScaledWidth(), showsActions());
         return layoutHeight(minecraft.font, message, frameStyle, currentWidth,
-                minecraft.getWindow().getGuiScaledHeight(), snoozeAction != null);
+                minecraft.getWindow().getGuiScaledHeight(), showsActions());
     }
 
     /** All Chronicle layouts are at most 92px high, so reserve three stable 32px slots. */
@@ -253,10 +257,12 @@ public final class CustomReminderToast implements Toast {
     static int layoutWidth(Font font, String title, String message, String frameStyle, int guiWidth,
                            boolean showActions) {
         int available = Math.max(1, guiWidth - 12);
-        int naturalWidth = "VANILLA".equalsIgnoreCase(frameStyle)
+        boolean vanilla = "VANILLA".equalsIgnoreCase(frameStyle);
+        int naturalWidth = vanilla
                 ? vanillaWidthWithin(font, title, message, available)
                 : responsiveWidth(guiWidth);
-        return showActions ? Math.min(available, Math.max(300, naturalWidth)) : naturalWidth;
+        return showActions && !vanilla
+                ? Math.min(available, Math.max(300, naturalWidth)) : naturalWidth;
     }
 
     static int layoutHeight(Font font, String message, String frameStyle, int width, int guiHeight) {
@@ -267,7 +273,7 @@ public final class CustomReminderToast implements Toast {
                             int guiHeight, boolean showActions) {
         int available = Math.max(1, guiHeight - 12);
         return "VANILLA".equalsIgnoreCase(frameStyle)
-                ? vanillaHeightWithin(font, message, width, available, showActions)
+                ? vanillaHeightWithin(font, message, width, available, false)
                 : responsiveHeight(guiHeight);
     }
 
@@ -318,7 +324,8 @@ public final class CustomReminderToast implements Toast {
             localMouseX = minecraft.mouseHandler.getScaledXPos(minecraft.getWindow()) - renderedX;
             localMouseY = minecraft.mouseHandler.getScaledYPos(minecraft.getWindow()) - renderedY;
         }
-        pointerOverToast = localMouseX >= 0.0 && localMouseX < currentWidth
+        boolean showActions = showsActions();
+        pointerOverToast = showActions && localMouseX >= 0.0 && localMouseX < currentWidth
                 && localMouseY >= 0.0 && localMouseY < currentHeight;
         renderCard(
                 graphics, font, currentWidth, currentHeight,
@@ -326,7 +333,7 @@ public final class CustomReminderToast implements Toast {
                 titleScale, messageScale, iconScale,
                 frameStyle,
                 true, elapsedDisplayMs, displayDurationMs,
-                snoozeAction != null, localMouseX, localMouseY,
+                showActions, localMouseX, localMouseY,
                 Util.getMillis() < actionFailedUntil,
                 snoozeMinutes
         );
@@ -414,6 +421,7 @@ public final class CustomReminderToast implements Toast {
             int snoozeMinutes
     ) {
         boolean vanilla = "VANILLA".equalsIgnoreCase(frameStyle);
+        showActions = showActions && !vanilla;
         int cardWidth = width;
         int cardHeight = height;
         if (vanilla) {
@@ -683,7 +691,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     boolean handleMouseClick(Minecraft minecraft, double mouseX, double mouseY) {
-        if (minecraft == null || snoozeAction == null || dismissed
+        if (minecraft == null || !showsActions() || dismissed
                 || visibility != Visibility.SHOW
                 || !Float.isFinite(renderedX) || !Float.isFinite(renderedY)
                 || minecraft.gui.hud.isHidden()

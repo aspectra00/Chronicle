@@ -417,6 +417,7 @@ public class ChronicleClient implements ClientModInitializer {
                                                 String resolvedTitle, String sourceMessage) {
         int snoozeMinutes = CONFIG.toastSnoozeMinutes;
         CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
+                && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(sourceMessage, snoozeMinutes)
                 : null;
         client.gui.toastManager().addToast(new CustomReminderToast(
@@ -468,6 +469,7 @@ public class ChronicleClient implements ClientModInitializer {
         String resolvedTitle = ChroniclePlaceholders.resolve(CONFIG.toastTitle);
         int snoozeMinutes = CONFIG.toastSnoozeMinutes;
         CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
+                && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(previewMessage, snoozeMinutes)
                 : null;
         client.gui.toastManager().addToast(new CustomReminderToast(

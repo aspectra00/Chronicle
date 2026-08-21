@@ -62,7 +62,7 @@ The editor retains trigger input and focus through scrolling, resizing and GUI-s
 
 ## Interactive notification actions
 
-Chronicle notifications can render compact **Snooze** and **Dismiss** actions inside both Modern and Vanilla frames. The toast customizer persists the on/off preference and a selectable 5, 10, 15, 30 or 60 minute delay, and previews the selected state accurately.
+Chronicle Modern notifications can render compact **Snooze** and **Dismiss** actions. Vanilla notifications remain action-free regardless of the saved Modern preference. The toast customizer persists the on/off preference and a selectable 5, 10, 15, 30 or 60 minute delay, and previews each frame accurately.
 
 - Hit boxes derive from the same local geometry used to render each action.
 - Toast slide position and slot position are recorded from Minecraft's own `Toast` transforms.

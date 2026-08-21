@@ -73,7 +73,7 @@ Additional placeholders registered through **Text Placeholder API** are supporte
 
 Choose how Chronicle reminders appear in-game.
 
-Notification actions can be enabled or disabled in the toast customizer. When enabled, every real reminder includes:
+Notification actions can be enabled or disabled for the Modern frame in the toast customizer. Vanilla notifications always use their native action-free layout. When Modern actions are enabled, every real reminder includes:
 
 - **Snooze** — saves a one-shot follow-up using the selected 5, 10, 15, 30 or 60 minute delay
 - **Dismiss** — closes the current notification without changing its schedule
