@@ -2,6 +2,7 @@ package com.aspectra00.chronicle.client;
 
 import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderConfig;
+import com.aspectra00.chronicle.client.config.ReminderTrigger;
 import com.aspectra00.chronicle.client.gui.CustomReminderToast;
 import com.aspectra00.chronicle.client.gui.NotificationSoundScreen;
 import com.aspectra00.chronicle.client.gui.ReminderConfigScreen;
@@ -38,6 +39,8 @@ public class ChronicleClient implements ClientModInitializer {
     private static final ArrayDeque<PendingNotification> PENDING_NOTIFICATIONS = new ArrayDeque<>();
     private static final IdentityHashMap<Reminder, PendingNotification> PENDING_BY_REMINDER =
             new IdentityHashMap<>();
+    private static final IdentityHashMap<Reminder, TriggerRuntimeState> TRIGGER_STATES =
+            new IdentityHashMap<>();
 
     public static ReminderConfig CONFIG;
     public static KeyMapping OPEN_MENU_KEY;
@@ -64,6 +67,16 @@ public class ChronicleClient implements ClientModInitializer {
         }
     }
 
+    private static final class TriggerRuntimeState {
+        private final ReminderTrigger definition;
+        private boolean matched;
+
+        private TriggerRuntimeState(ReminderTrigger definition, boolean matched) {
+            this.definition = definition.copy();
+            this.matched = matched;
+        }
+    }
+
     @Override
     public void onInitializeClient() {
         Path configDir = FabricLoader.getInstance().getConfigDir();
@@ -72,6 +85,7 @@ public class ChronicleClient implements ClientModInitializer {
         PENDING_NOTIFICATIONS.clear();
         PENDING_BY_REMINDER.clear();
         overflowNotificationCount = 0;
+        TRIGGER_STATES.clear();
         runtimeConfigError = CONFIG.getLoadStatus() == ReminderConfig.LoadStatus.IO_ERROR
                 && CONFIG.getLoadError() != null
                 ? ChronicleI18n.tr("error.load_config", CONFIG.getLoadError()) : null;
@@ -131,6 +145,31 @@ public class ChronicleClient implements ClientModInitializer {
                     configChanged = true;
                 }
             }
+            for (Reminder reminder : CONFIG.reminders) {
+                if (reminder == null || !reminder.enabled
+                        || reminder.scheduleType != Reminder.ScheduleType.TRIGGER) continue;
+                ReminderTrigger trigger = reminder.trigger;
+                ReminderTriggerEvaluator.Result result = ReminderTriggerEvaluator.evaluate(client, trigger);
+                if (result == ReminderTriggerEvaluator.Result.UNAVAILABLE) continue;
+                boolean matched = result == ReminderTriggerEvaluator.Result.MATCH;
+                TriggerRuntimeState state = TRIGGER_STATES.get(reminder);
+                if (state == null || !state.definition.sameDefinition(trigger)) {
+                    TRIGGER_STATES.put(reminder, new TriggerRuntimeState(trigger, matched));
+                    continue;
+                }
+                if (matched && !state.matched) {
+                    enqueueReminder(reminder, reminder.message);
+                    Reminder.AfterTriggerAction action = reminder.afterTriggerAction == null
+                            ? Reminder.AfterTriggerAction.KEEP : reminder.afterTriggerAction;
+                    applyAfterTrigger(reminder, deleteAfterTrigger);
+                    if (action != Reminder.AfterTriggerAction.KEEP) configChanged = true;
+                }
+                state.matched = matched;
+            }
+            TRIGGER_STATES.keySet().removeIf(reminder -> reminder == null
+                    || !reminder.enabled
+                    || reminder.scheduleType != Reminder.ScheduleType.TRIGGER
+                    || !CONFIG.reminders.contains(reminder));
         }
 
         if (currentEpochMinute != lastCheckedEpochMinute) {
@@ -157,7 +196,8 @@ public class ChronicleClient implements ClientModInitializer {
                     if (reminder == null || !reminder.enabled) continue;
                     Reminder.ScheduleType type = reminder.scheduleType == null
                             ? Reminder.ScheduleType.DAILY : reminder.scheduleType;
-                    if (type == Reminder.ScheduleType.INTERVAL) continue;
+                    if (type == Reminder.ScheduleType.INTERVAL
+                            || type == Reminder.ScheduleType.TRIGGER) continue;
 
                     boolean due = switch (type) {
                         case DAILY -> reminder.hour == now.getHour()
@@ -165,7 +205,7 @@ public class ChronicleClient implements ClientModInitializer {
                         case WEEKLY -> reminder.hasWeeklyDay(weekDayIndex)
                                 && reminder.hour == now.getHour()
                                 && reminder.minute == now.getMinute();
-                        case INTERVAL -> false;
+                        case INTERVAL, TRIGGER -> false;
                     };
                     if (due && reminder.lastTriggeredWallClockMinute != wallClockMinute) {
                         enqueueReminder(reminder, reminder.message);
@@ -275,6 +315,10 @@ public class ChronicleClient implements ClientModInitializer {
         if (reminder != null) reminder.resetIntervalTimer();
     }
 
+    public static void invalidateTriggerState(Reminder reminder) {
+        if (reminder != null) TRIGGER_STATES.remove(reminder);
+    }
+
     public static String weekDaysSummary(Reminder reminder) {
         if (reminder == null || reminder.scheduleType != Reminder.ScheduleType.WEEKLY) return "";
         String[] labels = {
@@ -302,6 +346,7 @@ public class ChronicleClient implements ClientModInitializer {
             case WEEKLY -> ChronicleI18n.tr("summary.weekly", weekDaysSummary(reminder),
                     displayTime(reminder, use24HourFormat));
             case INTERVAL -> ChronicleI18n.tr("summary.every", formatInterval(reminder.intervalMinutes));
+            case TRIGGER -> triggerSummary(reminder.trigger);
         };
         Reminder.AfterTriggerAction after = reminder.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : reminder.afterTriggerAction;
@@ -309,6 +354,21 @@ public class ChronicleClient implements ClientModInitializer {
             case KEEP -> schedule;
             case DISABLE -> schedule + " • " + ChronicleI18n.tr("summary.once_disable");
             case DELETE -> schedule + " • " + ChronicleI18n.tr("summary.once_delete");
+        };
+    }
+
+    public static String triggerSummary(ReminderTrigger trigger) {
+        if (trigger == null || trigger.type == null) {
+            return ChronicleI18n.tr("summary.trigger.health", 25);
+        }
+        return switch (trigger.type) {
+            case HEALTH_BELOW -> ChronicleI18n.tr("summary.trigger.health", trigger.threshold);
+            case HUNGER_BELOW -> ChronicleI18n.tr("summary.trigger.hunger", trigger.threshold);
+            case AIR_BELOW -> ChronicleI18n.tr("summary.trigger.air", trigger.threshold);
+            case INVENTORY_FULL -> ChronicleI18n.tr("summary.trigger.inventory_full");
+            case DURABILITY_BELOW -> ChronicleI18n.tr("summary.trigger.durability", trigger.threshold);
+            case ENTER_DIMENSION -> ChronicleI18n.tr("summary.trigger.dimension", trigger.normalizedTarget());
+            case ENTER_AREA -> ChronicleI18n.tr("summary.trigger.area", trigger.x, trigger.z, trigger.radius);
         };
     }
 

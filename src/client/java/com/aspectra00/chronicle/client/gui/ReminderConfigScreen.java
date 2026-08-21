@@ -184,6 +184,7 @@ public class ReminderConfigScreen extends Screen {
                             saveError = ChronicleClient.CONFIG.getLastSaveError();
                         } else {
                             saveError = null;
+                            ChronicleClient.invalidateTriggerState(reminder);
                         }
                         b.setMessage(ChronicleI18n.component(reminder.enabled ? "action.on" : "action.off"));
                     }
@@ -217,6 +218,7 @@ public class ReminderConfigScreen extends Screen {
                                 saveError = ChronicleClient.CONFIG.getLastSaveError();
                             } else {
                                 saveError = null;
+                                ChronicleClient.invalidateTriggerState(removed);
                             }
                             init(this.width, this.height);
                         }
@@ -398,9 +400,11 @@ public class ReminderConfigScreen extends Screen {
 
             Reminder.ScheduleType safeType = reminder.scheduleType == null
                     ? Reminder.ScheduleType.DAILY : reminder.scheduleType;
-            String time = safeType == Reminder.ScheduleType.INTERVAL
-                    ? "↻"
-                    : ChronicleClient.displayTime(reminder, ChronicleClient.CONFIG.use24HourFormat);
+            String time = switch (safeType) {
+                case INTERVAL -> "↻";
+                case TRIGGER -> ChronicleI18n.tr("summary.trigger.badge");
+                default -> ChronicleClient.displayTime(reminder, ChronicleClient.CONFIG.use24HourFormat);
+            };
             boolean stackedText = rowRight - rowLeft < 150;
             int timeY = y + (stackedText ? 3 : 8);
             graphics.text(this.font, Component.literal(time), rowLeft + 10, timeY,

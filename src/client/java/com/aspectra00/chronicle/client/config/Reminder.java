@@ -6,7 +6,8 @@ public class Reminder {
     public enum ScheduleType {
         DAILY,
         WEEKLY,
-        INTERVAL
+        INTERVAL,
+        TRIGGER
     }
 
     public enum AfterTriggerAction {
@@ -31,6 +32,8 @@ public class Reminder {
 
     /** Monday..Sunday, used when scheduleType == WEEKLY. */
     public boolean[] weeklyDays = new boolean[]{true, true, true, true, true, true, true};
+
+    public ReminderTrigger trigger = new ReminderTrigger();
 
     /** Last interval trigger, stored as epoch minutes. */
     public long lastTriggeredEpochMinute = 0L;
@@ -69,6 +72,7 @@ public class Reminder {
         copy.afterTriggerAction = this.afterTriggerAction;
         copy.intervalMinutes = this.intervalMinutes;
         copy.weeklyDays = this.weeklyDays == null ? null : Arrays.copyOf(this.weeklyDays, 7);
+        copy.trigger = this.trigger == null ? new ReminderTrigger() : this.trigger.copy();
         copy.lastTriggeredEpochMinute = this.lastTriggeredEpochMinute;
         copy.nextTriggerEpochMillis = this.nextTriggerEpochMillis;
         copy.lastTriggeredWallClockMinute = this.lastTriggeredWallClockMinute;

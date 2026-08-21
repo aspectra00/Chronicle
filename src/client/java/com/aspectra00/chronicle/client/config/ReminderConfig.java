@@ -7,6 +7,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -42,6 +43,14 @@ public final class ReminderConfig {
                             return Reminder.AfterTriggerAction.valueOf(json.getAsString().toUpperCase(Locale.ROOT));
                         } catch (RuntimeException ignored) {
                             return Reminder.AfterTriggerAction.KEEP;
+                        }
+                    })
+            .registerTypeAdapter(ReminderTrigger.Type.class,
+                    (JsonDeserializer<ReminderTrigger.Type>) (json, type, context) -> {
+                        try {
+                            return ReminderTrigger.Type.valueOf(json.getAsString().toUpperCase(Locale.ROOT));
+                        } catch (RuntimeException ignored) {
+                            return ReminderTrigger.Type.HEALTH_BELOW;
                         }
                     })
             .setPrettyPrinting()
@@ -297,6 +306,28 @@ public final class ReminderConfig {
             if (r.afterTriggerAction == null) {
                 r.afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
             }
+            if (r.trigger == null) {
+                r.trigger = new ReminderTrigger();
+            }
+            if (r.trigger.type == null) {
+                r.trigger.type = ReminderTrigger.Type.HEALTH_BELOW;
+            }
+            r.trigger.threshold = switch (r.trigger.type) {
+                case HEALTH_BELOW, AIR_BELOW, DURABILITY_BELOW ->
+                        Math.max(1, Math.min(100, r.trigger.threshold));
+                case HUNGER_BELOW -> Math.max(0, Math.min(20, r.trigger.threshold));
+                default -> r.trigger.threshold;
+            };
+            Identifier triggerTarget = r.trigger.target == null
+                    ? null : Identifier.tryParse(r.trigger.normalizedTarget());
+            if (triggerTarget == null || triggerTarget.toString().length() > 128) {
+                r.trigger.target = "minecraft:overworld";
+            } else {
+                r.trigger.target = triggerTarget.toString();
+            }
+            r.trigger.x = Math.max(-30_000_000, Math.min(30_000_000, r.trigger.x));
+            r.trigger.z = Math.max(-30_000_000, Math.min(30_000_000, r.trigger.z));
+            r.trigger.radius = Math.max(1, Math.min(30_000_000, r.trigger.radius));
             r.intervalMinutes = Math.max(1, Math.min(7 * 24 * 60, r.intervalMinutes));
             if (r.scheduleType == Reminder.ScheduleType.INTERVAL) {
                 long intervalMillis = r.intervalMinutes * 60_000L;

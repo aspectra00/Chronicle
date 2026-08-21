@@ -45,6 +45,19 @@ Create reminders directly in Minecraft and decide exactly how they behave.
 - Edit and manage reminders in-game
 - Handles reminder bursts without flooding the screen
 
+#### When → Then trigger rules
+
+Build condition-based reminders directly in the same editor:
+
+- **When** health, hunger or air reaches a threshold
+- **When** the inventory has no empty slot
+- **When** the held item's durability reaches a threshold
+- **When** entering a dimension
+- **When** entering a configurable X/Z area
+- **Then** show the configured Chronicle notification
+
+Trigger rules fire on the transition into a condition, remain quiet while it stays true, and re-arm only after the condition becomes false. Existing keep, disable and delete actions remain available.
+
 Chronicle also supports context-aware placeholders:
 
 - `{world}`
@@ -190,6 +203,7 @@ The current release includes:
 - Protection against disabled reminders firing again
 - Safe retry behavior after failed saves
 - Bounded notification burst handling
+- Edge-triggered condition rules with reconnect-safe initialization
 - Recoverable configuration backups
 - Separate handling for temporary I/O errors and malformed JSON
 - Deterministic custom-audio cancellation

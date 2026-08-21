@@ -19,6 +19,7 @@ A clean Gradle build completed successfully against the declared Minecraft 26.2 
 | Scissor / clipping | ✅ Verified |
 | Toast geometry | ✅ Verified |
 | Scheduler state | ✅ Verified |
+| Trigger rule state | ✅ Verified |
 | Config persistence | ✅ Verified |
 | Custom audio lifecycle | ✅ Verified |
 | Localization consistency | ✅ Verified |
@@ -33,6 +34,28 @@ Minecraft 26.2
 Java 25
 clean build: PASS
 ```
+
+---
+
+## When → Then trigger builder verification
+
+The reminder editor now includes a fourth schedule mode for condition-based rules.
+
+Verified trigger conditions:
+
+- Health percentage at or below a configured threshold
+- Hunger points at or below a configured threshold
+- Remaining air percentage at or below a configured threshold
+- Inventory with no empty slot
+- Main-hand item durability at or below a configured threshold
+- Entry into a namespaced dimension identifier
+- Entry into a configurable X/Z radius
+
+Runtime evaluation uses transition state instead of repeated level polling notifications. A rule initializes silently, fires only on `false → true`, stays quiet while the condition remains true, and re-arms after a false observation. Disabling, deleting, editing or changing a trigger definition resets its runtime state safely.
+
+Configuration validation bounds percentages, hunger, coordinates and radius; canonicalizes dimension identifiers; and preserves compatibility with every pre-trigger `chronicle.json` file. All five locale files contain the same **189 translation keys**.
+
+The editor retains trigger input and focus through scrolling, resizing and GUI-scale rebuilds. The four schedule modes use a readable responsive grid at the `320×240` logical floor, while long trigger forms remain inside the existing clipped scroll viewport.
 
 ---
 

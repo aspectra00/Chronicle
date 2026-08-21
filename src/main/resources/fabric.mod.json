@@ -3,7 +3,7 @@
   "id": "chronicle",
   "version": "${version}",
   "name": "Chronicle",
-  "description": "Smart in-game reminders with schedules, placeholders and customizable notifications.",
+  "description": "Smart scheduled and condition-based reminders with placeholders and customizable notifications.",
   "authors": [
     "aspectra00"
   ],

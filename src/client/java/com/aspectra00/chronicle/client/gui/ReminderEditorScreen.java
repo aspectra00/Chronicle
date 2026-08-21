@@ -3,6 +3,7 @@ package com.aspectra00.chronicle.client.gui;
 import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.Reminder;
+import com.aspectra00.chronicle.client.config.ReminderTrigger;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -10,6 +11,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 
 import java.util.ArrayList;
@@ -44,16 +46,23 @@ public final class ReminderEditorScreen extends Screen {
     private boolean isPm;
     private boolean intervalUsesHours;
     private Reminder.AfterTriggerAction afterTriggerAction;
+    private ReminderTrigger trigger;
     private final boolean[] weeklyDays = new boolean[7];
 
     private EditBox hourBox;
     private EditBox minuteBox;
     private EditBox intervalBox;
+    private EditBox triggerValueBox;
+    private EditBox triggerXBox;
+    private EditBox triggerZBox;
+    private EditBox triggerRadiusBox;
     private VerticallyCenteredEditBox messageBox;
 
     private Button dailyButton;
     private Button weeklyButton;
     private Button intervalButton;
+    private Button triggerButton;
+    private Button triggerTypeButton;
     private Button timeFormatButton;
     private Button periodButton;
     private Button intervalUnitButton;
@@ -65,6 +74,10 @@ public final class ReminderEditorScreen extends Screen {
     private String hourText;
     private String minuteText;
     private String intervalText;
+    private String triggerValueText;
+    private String triggerXText;
+    private String triggerZText;
+    private String triggerRadiusText;
     private String messageText;
 
     private int scrollOffset;
@@ -89,6 +102,7 @@ public final class ReminderEditorScreen extends Screen {
         this.intervalUsesHours = draft.intervalMinutes >= 60 && draft.intervalMinutes % 60 == 0;
         this.afterTriggerAction = draft.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : draft.afterTriggerAction;
+        this.trigger = draft.trigger == null ? new ReminderTrigger() : draft.trigger.copy();
 
         if (draft.weeklyDays == null) {
             Arrays.fill(weeklyDays, true);
@@ -107,6 +121,7 @@ public final class ReminderEditorScreen extends Screen {
         this.intervalText = intervalUsesHours
                 ? Integer.toString(Math.max(1, draft.intervalMinutes / 60))
                 : Integer.toString(Math.max(1, draft.intervalMinutes));
+        syncTriggerTexts();
         this.messageText = draft.message == null || draft.message.isBlank()
                 ? ChronicleI18n.tr("default.reminder") : draft.message;
     }
@@ -159,6 +174,10 @@ public final class ReminderEditorScreen extends Screen {
         if (focused == hourBox) return "hour";
         if (focused == minuteBox) return "minute";
         if (focused == intervalBox) return "interval";
+        if (focused == triggerValueBox) return "trigger_value";
+        if (focused == triggerXBox) return "trigger_x";
+        if (focused == triggerZBox) return "trigger_z";
+        if (focused == triggerRadiusBox) return "trigger_radius";
         if (focused == messageBox) return "message";
         return null;
     }
@@ -169,6 +188,10 @@ public final class ReminderEditorScreen extends Screen {
             case "hour" -> hourBox;
             case "minute" -> minuteBox;
             case "interval" -> intervalBox;
+            case "trigger_value" -> triggerValueBox;
+            case "trigger_x" -> triggerXBox;
+            case "trigger_z" -> triggerZBox;
+            case "trigger_radius" -> triggerRadiusBox;
             case "message" -> messageBox;
             default -> null;
         };
@@ -204,38 +227,46 @@ public final class ReminderEditorScreen extends Screen {
         int scheduleY = panelTop + UiMetrics.HEADER_HEIGHT
                 + UiMetrics.GAP_SM + UiMetrics.LABEL_OFFSET;
         int modeGap = UiMetrics.GAP_SM;
-        // Three 64px actions plus the shared 8px gaps fit at Minecraft's
-        // supported 320x240 logical floor. Stacking them at 248px inner width
-        // pushed INTERVAL below the viewport and left only seven pixels visible.
-        boolean stackedModes = innerW < 3 * 64 + modeGap * 2;
-        int modeW = stackedModes ? innerW : Math.max(44, (innerW - modeGap * 2) / 3);
-        int modeX = innerLeft;
+        int modeColumns = innerW >= 4 * 72 + modeGap * 3 ? 4 : innerW >= 2 * 64 + modeGap ? 2 : 1;
+        int modeW = Math.max(1, (innerW - modeGap * (modeColumns - 1)) / modeColumns);
+        int modeStepY = UiMetrics.PRIMARY_BUTTON_HEIGHT + modeGap;
 
-        dailyButton = uiButton(ChronicleI18n.tr("schedule.daily"), modeX, scheduleY, modeW, 30,
+        dailyButton = uiButton(ChronicleI18n.tr("schedule.daily"), innerLeft, scheduleY, modeW, 30,
                 () -> switchSchedule(Reminder.ScheduleType.DAILY));
+        weeklyButton = uiButton(ChronicleI18n.tr("schedule.weekly"),
+                innerLeft + (1 % modeColumns) * (modeW + modeGap),
+                scheduleY + (1 / modeColumns) * modeStepY, modeW, 30,
+                () -> switchSchedule(Reminder.ScheduleType.WEEKLY));
+        intervalButton = uiButton(ChronicleI18n.tr("schedule.interval"),
+                innerLeft + (2 % modeColumns) * (modeW + modeGap),
+                scheduleY + (2 / modeColumns) * modeStepY, modeW, 30,
+                () -> switchSchedule(Reminder.ScheduleType.INTERVAL));
+        triggerButton = uiButton(ChronicleI18n.tr("schedule.trigger"),
+                innerLeft + (3 % modeColumns) * (modeW + modeGap),
+                scheduleY + (3 / modeColumns) * modeStepY, modeW, 30,
+                () -> switchSchedule(Reminder.ScheduleType.TRIGGER));
         addRenderableWidget(dailyButton);
-        if (stackedModes) {
-            weeklyButton = uiButton(ChronicleI18n.tr("schedule.weekly"), modeX,
-                    scheduleY + UiMetrics.PRIMARY_BUTTON_HEIGHT + modeGap, modeW, 30,
-                    () -> switchSchedule(Reminder.ScheduleType.WEEKLY));
-            intervalButton = uiButton(ChronicleI18n.tr("schedule.interval"), modeX,
-                    scheduleY + (UiMetrics.PRIMARY_BUTTON_HEIGHT + modeGap) * 2, modeW, 30,
-                    () -> switchSchedule(Reminder.ScheduleType.INTERVAL));
-        } else {
-            weeklyButton = uiButton(ChronicleI18n.tr("schedule.weekly"), modeX + modeW + modeGap, scheduleY, modeW, 30,
-                    () -> switchSchedule(Reminder.ScheduleType.WEEKLY));
-            intervalButton = uiButton(ChronicleI18n.tr("schedule.interval"), modeX + (modeW + modeGap) * 2, scheduleY, modeW, 30,
-                    () -> switchSchedule(Reminder.ScheduleType.INTERVAL));
-        }
         addRenderableWidget(weeklyButton);
         addRenderableWidget(intervalButton);
+        addRenderableWidget(triggerButton);
 
-        int modeBottom = scheduleY + (stackedModes ? (UiMetrics.PRIMARY_BUTTON_HEIGHT + modeGap) * 2 : 0)
-                + UiMetrics.PRIMARY_BUTTON_HEIGHT;
-        // Section labels are rendered LABEL_OFFSET pixels above their first control.
+        int modeRows = (4 + modeColumns - 1) / modeColumns;
+        int modeBottom = scheduleY + (modeRows - 1) * modeStepY + UiMetrics.PRIMARY_BUTTON_HEIGHT;
         int cursorY = modeBottom + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
 
-        if (scheduleType == Reminder.ScheduleType.INTERVAL) {
+        if (scheduleType == Reminder.ScheduleType.TRIGGER) {
+            triggerTypeButton = uiButton(triggerTypeLabel(), innerLeft, cursorY, innerW,
+                    UiMetrics.CONTROL_HEIGHT, this::cycleTriggerType);
+            addRenderableWidget(triggerTypeButton);
+            cursorY += UiMetrics.CONTROL_HEIGHT;
+            cursorY = addTriggerValueWidgets(innerLeft, innerRight, innerW, cursorY);
+            hourBox = null;
+            minuteBox = null;
+            intervalBox = null;
+            intervalUnitButton = null;
+            timeFormatButton = null;
+            periodButton = null;
+        } else if (scheduleType == Reminder.ScheduleType.INTERVAL) {
             boolean stackedInterval = innerW < 150;
             int intervalW = stackedInterval ? innerW : Math.min(120, Math.max(1, (innerW - UiMetrics.GAP_SM) / 2));
             intervalBox = editBox(innerLeft, cursorY, Math.max(1, intervalW), UiMetrics.CONTROL_HEIGHT,
@@ -260,6 +291,8 @@ public final class ReminderEditorScreen extends Screen {
             minuteBox = null;
             timeFormatButton = null;
             periodButton = null;
+            triggerTypeButton = null;
+            clearTriggerValueWidgets();
         } else {
             int gap = UiMetrics.GAP_SM;
             // 64 + 8 + 64 + 8 + 76 fits comfortably in the 248px inner
@@ -327,6 +360,8 @@ public final class ReminderEditorScreen extends Screen {
                 }
             }
             cursorY = timeControlsBottom;
+            triggerTypeButton = null;
+            clearTriggerValueWidgets();
         }
 
         if (scheduleType == Reminder.ScheduleType.WEEKLY) {
@@ -438,6 +473,155 @@ public final class ReminderEditorScreen extends Screen {
                 ChronicleI18n.tr("editor.after." + safe.name().toLowerCase(java.util.Locale.ROOT)));
     }
 
+    private int addTriggerValueWidgets(int innerLeft, int innerRight, int innerW, int cursorY) {
+        clearTriggerValueWidgets();
+        ReminderTrigger.Type type = triggerType();
+        if (type == ReminderTrigger.Type.INVENTORY_FULL) return cursorY;
+        int valueY = cursorY + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
+        if (type == ReminderTrigger.Type.ENTER_AREA) {
+            int gap = UiMetrics.GAP_SM;
+            if (innerW >= 180) {
+                int fieldW = Math.max(1, (innerW - gap * 2) / 3);
+                triggerXBox = editBox(innerLeft, valueY, fieldW, UiMetrics.CONTROL_HEIGHT,
+                        triggerXText, 9, "editor.field.trigger_x");
+                triggerZBox = editBox(innerLeft + fieldW + gap, valueY, fieldW,
+                        UiMetrics.CONTROL_HEIGHT, triggerZText, 9, "editor.field.trigger_z");
+                triggerRadiusBox = editBox(Math.min(innerRight - fieldW, innerLeft + (fieldW + gap) * 2),
+                        valueY, fieldW, UiMetrics.CONTROL_HEIGHT, triggerRadiusText, 8,
+                        "editor.field.trigger_radius");
+            } else {
+                int fieldStep = UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
+                triggerXBox = editBox(innerLeft, valueY, innerW, UiMetrics.CONTROL_HEIGHT,
+                        triggerXText, 9, "editor.field.trigger_x");
+                triggerZBox = editBox(innerLeft, valueY + fieldStep,
+                        innerW, UiMetrics.CONTROL_HEIGHT, triggerZText, 9, "editor.field.trigger_z");
+                triggerRadiusBox = editBox(innerLeft, valueY + fieldStep * 2,
+                        innerW, UiMetrics.CONTROL_HEIGHT, triggerRadiusText, 8,
+                        "editor.field.trigger_radius");
+            }
+            addRenderableWidget(triggerXBox);
+            addRenderableWidget(triggerZBox);
+            addRenderableWidget(triggerRadiusBox);
+            return triggerRadiusBox.getY() + triggerRadiusBox.getHeight();
+        }
+        int maxLength = type == ReminderTrigger.Type.ENTER_DIMENSION ? 128 : 3;
+        String narrationKey = type == ReminderTrigger.Type.ENTER_DIMENSION
+                ? "editor.field.trigger_dimension" : "editor.field.trigger_threshold";
+        triggerValueBox = editBox(innerLeft, valueY, innerW, UiMetrics.CONTROL_HEIGHT,
+                triggerValueText, maxLength, narrationKey);
+        triggerValueBox.setCentered(type != ReminderTrigger.Type.ENTER_DIMENSION);
+        if (type == ReminderTrigger.Type.ENTER_DIMENSION) {
+            ((VerticallyCenteredEditBox) triggerValueBox).setHorizontalPadding(UiMetrics.GAP_XS);
+        }
+        addRenderableWidget(triggerValueBox);
+        return valueY + triggerValueBox.getHeight();
+    }
+
+    private void clearTriggerValueWidgets() {
+        triggerValueBox = null;
+        triggerXBox = null;
+        triggerZBox = null;
+        triggerRadiusBox = null;
+    }
+
+    private void cycleTriggerType() {
+        captureValues();
+        ReminderTrigger.Type[] values = ReminderTrigger.Type.values();
+        trigger.type = values[(triggerType().ordinal() + 1) % values.length];
+        normalizeTriggerForType();
+        syncTriggerTexts();
+        validationError = null;
+        rebuildWidgetsInternal();
+    }
+
+    private ReminderTrigger.Type triggerType() {
+        return trigger == null || trigger.type == null
+                ? ReminderTrigger.Type.HEALTH_BELOW : trigger.type;
+    }
+
+    private String triggerTypeLabel() {
+        return ChronicleI18n.tr("editor.trigger.type."
+                + triggerType().name().toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private void normalizeTriggerForType() {
+        if (trigger == null) trigger = new ReminderTrigger();
+        switch (triggerType()) {
+            case HEALTH_BELOW, AIR_BELOW, DURABILITY_BELOW -> {
+                if (trigger.threshold < 1 || trigger.threshold > 100) trigger.threshold = 25;
+            }
+            case HUNGER_BELOW -> {
+                if (trigger.threshold < 0 || trigger.threshold > 20) trigger.threshold = 6;
+            }
+            case ENTER_DIMENSION -> {
+                if (trigger.target == null || trigger.target.isBlank()) {
+                    trigger.target = "minecraft:overworld";
+                }
+            }
+            case ENTER_AREA -> {
+                if (trigger.radius < 1 || trigger.radius > 30_000_000) trigger.radius = 16;
+            }
+            case INVENTORY_FULL -> { }
+        }
+    }
+
+    private void syncTriggerTexts() {
+        normalizeTriggerForType();
+        triggerValueText = triggerType() == ReminderTrigger.Type.ENTER_DIMENSION
+                ? trigger.target : Integer.toString(trigger.threshold);
+        triggerXText = Integer.toString(trigger.x);
+        triggerZText = Integer.toString(trigger.z);
+        triggerRadiusText = Integer.toString(trigger.radius);
+    }
+
+    private boolean applyTriggerValues() {
+        normalizeTriggerForType();
+        switch (triggerType()) {
+            case HEALTH_BELOW, AIR_BELOW, DURABILITY_BELOW -> {
+                int value = Integer.parseInt(triggerValueText.trim());
+                if (value < 1 || value > 100) {
+                    validationError = ChronicleI18n.tr("error.trigger_percent");
+                    return false;
+                }
+                trigger.threshold = value;
+            }
+            case HUNGER_BELOW -> {
+                int value = Integer.parseInt(triggerValueText.trim());
+                if (value < 0 || value > 20) {
+                    validationError = ChronicleI18n.tr("error.trigger_hunger");
+                    return false;
+                }
+                trigger.threshold = value;
+            }
+            case ENTER_DIMENSION -> {
+                Identifier identifier = Identifier.tryParse(triggerValueText.trim());
+                if (identifier == null) {
+                    validationError = ChronicleI18n.tr("error.trigger_dimension");
+                    return false;
+                }
+                trigger.target = identifier.toString();
+            }
+            case ENTER_AREA -> {
+                int x = Integer.parseInt(triggerXText.trim());
+                int z = Integer.parseInt(triggerZText.trim());
+                int radius = Integer.parseInt(triggerRadiusText.trim());
+                if (x < -30_000_000 || x > 30_000_000 || z < -30_000_000 || z > 30_000_000) {
+                    validationError = ChronicleI18n.tr("error.trigger_coordinates");
+                    return false;
+                }
+                if (radius < 1 || radius > 30_000_000) {
+                    validationError = ChronicleI18n.tr("error.trigger_radius");
+                    return false;
+                }
+                trigger.x = x;
+                trigger.z = z;
+                trigger.radius = radius;
+            }
+            case INVENTORY_FULL -> { }
+        }
+        return true;
+    }
+
     private int panelBottomForLayout() {
         return this.height - 12;
     }
@@ -500,6 +684,10 @@ public final class ReminderEditorScreen extends Screen {
         if (hourBox != null) hourText = hourBox.getValue();
         if (minuteBox != null) minuteText = minuteBox.getValue();
         if (intervalBox != null) intervalText = intervalBox.getValue();
+        if (triggerValueBox != null) triggerValueText = triggerValueBox.getValue();
+        if (triggerXBox != null) triggerXText = triggerXBox.getValue();
+        if (triggerZBox != null) triggerZText = triggerZBox.getValue();
+        if (triggerRadiusBox != null) triggerRadiusText = triggerRadiusBox.getValue();
         if (messageBox != null) messageText = messageBox.getValue();
     }
 
@@ -610,7 +798,14 @@ public final class ReminderEditorScreen extends Screen {
             draft.afterTriggerAction = afterTriggerAction == null
                     ? Reminder.AfterTriggerAction.KEEP : afterTriggerAction;
 
-            if (scheduleType == Reminder.ScheduleType.INTERVAL) {
+            if (scheduleType == Reminder.ScheduleType.TRIGGER) {
+                if (!applyTriggerValues()) {
+                    rebuildWidgetsInternal();
+                    return;
+                }
+                draft.trigger = trigger.copy();
+                draft.scheduleType = Reminder.ScheduleType.TRIGGER;
+            } else if (scheduleType == Reminder.ScheduleType.INTERVAL) {
                 int value = Integer.parseInt(intervalText.trim());
                 if (value < 1) {
                     validationError = ChronicleI18n.tr("error.interval_min");
@@ -679,6 +874,7 @@ public final class ReminderEditorScreen extends Screen {
             ChronicleClient.CONFIG.use24HourFormat = use24HourFormat;
             ChronicleClient.CONFIG.ensureValid();
             if (ChronicleClient.CONFIG.save()) {
+                ChronicleClient.invalidateTriggerState(isNew ? draft : original);
                 onClose();
             } else {
                 if (isNew) {
@@ -712,6 +908,7 @@ public final class ReminderEditorScreen extends Screen {
         target.afterTriggerAction = source.afterTriggerAction;
         target.intervalMinutes = source.intervalMinutes;
         target.weeklyDays = source.weeklyDays == null ? null : Arrays.copyOf(source.weeklyDays, 7);
+        target.trigger = source.trigger == null ? new ReminderTrigger() : source.trigger.copy();
     }
 
     private static void copyAllFields(Reminder source, Reminder target) {
@@ -831,6 +1028,7 @@ public final class ReminderEditorScreen extends Screen {
         String helpText = switch (scheduleType) {
             case WEEKLY -> ChronicleI18n.tr("editor.help.weekly");
             case INTERVAL -> ChronicleI18n.tr("editor.help.interval");
+            case TRIGGER -> ChronicleI18n.tr("editor.help.trigger");
             default -> ChronicleI18n.tr("editor.help.daily");
         };
         graphics.text(this.font, Component.literal(trimToWidth(helpText,
@@ -852,7 +1050,13 @@ public final class ReminderEditorScreen extends Screen {
             graphics.text(this.font, ChronicleI18n.component("editor.section.schedule"), dailyButton.getX(),
                     dailyButton.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
-        if (scheduleType == Reminder.ScheduleType.INTERVAL && intervalBox != null
+        if (scheduleType == Reminder.ScheduleType.TRIGGER && triggerTypeButton != null
+                && inVerticalClip(triggerTypeButton.getY() - UiMetrics.LABEL_OFFSET,
+                contentClipTop, contentClipBottom)) {
+            graphics.text(this.font, ChronicleI18n.component("editor.section.when"),
+                    triggerTypeButton.getX(), triggerTypeButton.getY() - UiMetrics.LABEL_OFFSET,
+                    MUTED, false);
+        } else if (scheduleType == Reminder.ScheduleType.INTERVAL && intervalBox != null
                 && inVerticalClip(intervalBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.interval"), intervalBox.getX(),
                     intervalBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
@@ -860,6 +1064,7 @@ public final class ReminderEditorScreen extends Screen {
             graphics.text(this.font, ChronicleI18n.component("editor.section.time"), hourBox.getX(),
                     hourBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
+        drawTriggerValueLabels(graphics, contentClipTop, contentClipBottom);
         if (scheduleType == Reminder.ScheduleType.WEEKLY && !dayButtons.isEmpty()
                 && inVerticalClip(dayButtons.get(0).getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.days"), dayButtons.get(0).getX(),
@@ -867,7 +1072,8 @@ public final class ReminderEditorScreen extends Screen {
         }
         if (messageBox != null && inVerticalClip(messageBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             int labelY = messageBox.getY() - UiMetrics.LABEL_OFFSET;
-            String messageLabel = ChronicleI18n.tr("editor.section.message");
+            String messageLabel = ChronicleI18n.tr(scheduleType == Reminder.ScheduleType.TRIGGER
+                    ? "editor.section.then" : "editor.section.message");
             graphics.text(this.font, Component.literal(messageLabel), messageBox.getX(), labelY, MUTED, false);
             String value = messageBox.getValue() == null ? "" : messageBox.getValue();
             // EditBox and config persistence both enforce an 80 UTF-16-unit
@@ -944,6 +1150,31 @@ public final class ReminderEditorScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
+    private void drawTriggerValueLabels(GuiGraphicsExtractor graphics, int clipTop, int clipBottom) {
+        if (scheduleType != Reminder.ScheduleType.TRIGGER) return;
+        if (triggerValueBox != null
+                && inVerticalClip(triggerValueBox.getY() - UiMetrics.LABEL_OFFSET, clipTop, clipBottom)) {
+            String key = switch (triggerType()) {
+                case HEALTH_BELOW, AIR_BELOW, DURABILITY_BELOW -> "editor.trigger.value.percent";
+                case HUNGER_BELOW -> "editor.trigger.value.hunger";
+                case ENTER_DIMENSION -> "editor.trigger.value.dimension";
+                default -> "editor.trigger.value";
+            };
+            graphics.text(this.font, ChronicleI18n.component(key), triggerValueBox.getX(),
+                    triggerValueBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
+        }
+        drawTriggerFieldLabel(graphics, triggerXBox, "editor.trigger.value.x", clipTop, clipBottom);
+        drawTriggerFieldLabel(graphics, triggerZBox, "editor.trigger.value.z", clipTop, clipBottom);
+        drawTriggerFieldLabel(graphics, triggerRadiusBox, "editor.trigger.value.radius", clipTop, clipBottom);
+    }
+
+    private void drawTriggerFieldLabel(GuiGraphicsExtractor graphics, EditBox box, String key,
+                                       int clipTop, int clipBottom) {
+        if (box == null || !inVerticalClip(box.getY() - UiMetrics.LABEL_OFFSET, clipTop, clipBottom)) return;
+        graphics.text(this.font, ChronicleI18n.component(key), box.getX(),
+                box.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
+    }
+
     private void drawEditorButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
         if (button == null || !button.visible) return;
         int accent = button == cancelButton ? MUTED : ACCENT;
@@ -958,7 +1189,10 @@ public final class ReminderEditorScreen extends Screen {
             accent = BORDER;
         } else if (button == intervalButton && scheduleType != Reminder.ScheduleType.INTERVAL) {
             accent = BORDER;
-        } else if (button == dailyButton || button == weeklyButton || button == intervalButton) {
+        } else if (button == triggerButton && scheduleType != Reminder.ScheduleType.TRIGGER) {
+            accent = BORDER;
+        } else if (button == dailyButton || button == weeklyButton || button == intervalButton
+                || button == triggerButton) {
             emphasized = true;
         } else if (button == afterTriggerButton) {
             emphasized = afterTriggerAction != Reminder.AfterTriggerAction.KEEP;
