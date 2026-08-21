@@ -8,6 +8,7 @@ import com.aspectra00.chronicle.client.gui.NotificationSoundScreen;
 import com.aspectra00.chronicle.client.gui.ReminderConfigScreen;
 import com.aspectra00.chronicle.client.gui.ReminderEditorScreen;
 import com.aspectra00.chronicle.client.gui.ToastCustomizerScreen;
+import com.aspectra00.chronicle.client.gui.ToastInteractionManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
@@ -102,6 +103,7 @@ public class ChronicleClient implements ClientModInitializer {
         ));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         ClientLifecycleEvents.CLIENT_STOPPING.register(this::onClientStopping);
+        ToastInteractionManager.initialize();
     }
 
     private void onClientTick(Minecraft client) {
@@ -402,13 +404,39 @@ public class ChronicleClient implements ClientModInitializer {
         if (client == null || CONFIG == null) return;
         String resolvedMessage = ChroniclePlaceholders.resolve(message);
         String resolvedTitle = ChroniclePlaceholders.resolve(CONFIG.toastTitle);
-        displayResolvedReminder(client, resolvedMessage, resolvedTitle);
+        displayResolvedReminder(client, resolvedMessage, resolvedTitle, message);
     }
 
     private static void displayResolvedReminder(Minecraft client, String resolvedMessage,
-                                                String resolvedTitle) {
-        client.gui.toastManager().addToast(new CustomReminderToast(CONFIG, resolvedMessage, resolvedTitle));
+                                                String resolvedTitle, String sourceMessage) {
+        client.gui.toastManager().addToast(new CustomReminderToast(
+                CONFIG, resolvedMessage, resolvedTitle, () -> snoozeReminder(sourceMessage)));
         CustomSoundPlayer.playConfigured(client, CONFIG);
+    }
+
+    public static boolean snoozeReminder(String message) {
+        if (CONFIG == null) return false;
+        if (CONFIG.reminders.size() >= ReminderConfig.MAX_REMINDERS) {
+            runtimeConfigError = ChronicleI18n.tr("error.reminder_limit", ReminderConfig.MAX_REMINDERS);
+            return false;
+        }
+        Reminder snoozed = new Reminder(0, 0,
+                message == null || message.isBlank() ? ChronicleI18n.tr("default.reminder") : message.trim(),
+                true);
+        snoozed.scheduleType = Reminder.ScheduleType.INTERVAL;
+        snoozed.intervalMinutes = CustomReminderToast.SNOOZE_MINUTES;
+        snoozed.afterTriggerAction = Reminder.AfterTriggerAction.DELETE;
+        snoozed.resetIntervalTimer();
+        CONFIG.reminders.add(snoozed);
+        CONFIG.ensureValid();
+        if (!CONFIG.save()) {
+            CONFIG.reminders.remove(snoozed);
+            runtimeConfigError = CONFIG.getLastSaveError();
+            return false;
+        }
+        CONFIG_REVISION++;
+        runtimeConfigError = null;
+        return true;
     }
 
     /** User-invoked test: bypasses scheduler anti-spam and uses the saved sound settings. */
@@ -419,11 +447,11 @@ public class ChronicleClient implements ClientModInitializer {
             return;
         }
         lastTestToastAt = now;
-        String resolvedMessage = ChroniclePlaceholders.resolve(
-                ChronicleI18n.tr("toast.preview.reminder"));
+        String previewMessage = ChronicleI18n.tr("toast.preview.reminder");
+        String resolvedMessage = ChroniclePlaceholders.resolve(previewMessage);
         String resolvedTitle = ChroniclePlaceholders.resolve(CONFIG.toastTitle);
         client.gui.toastManager().addToast(new CustomReminderToast(
-                CONFIG, resolvedMessage, resolvedTitle));
+                CONFIG, resolvedMessage, resolvedTitle, () -> snoozeReminder(previewMessage)));
         CustomSoundPlayer.playConfigured(client, CONFIG);
     }
 }

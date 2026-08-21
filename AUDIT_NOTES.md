@@ -18,6 +18,7 @@ A clean Gradle build completed successfully against the declared Minecraft 26.2 
 | Input / focus routing | ✅ Verified |
 | Scissor / clipping | ✅ Verified |
 | Toast geometry | ✅ Verified |
+| Toast actions | ✅ Verified |
 | Scheduler state | ✅ Verified |
 | Trigger rule state | ✅ Verified |
 | Config persistence | ✅ Verified |
@@ -56,6 +57,24 @@ Runtime evaluation uses transition state instead of repeated level polling notif
 Configuration validation bounds percentages, hunger, coordinates and radius; canonicalizes dimension identifiers; and preserves compatibility with every pre-trigger `chronicle.json` file. All five locale files contain the same **189 translation keys**.
 
 The editor retains trigger input and focus through scrolling, resizing and GUI-scale rebuilds. The four schedule modes use a readable responsive grid at the `320×240` logical floor, while long trigger forms remain inside the existing clipped scroll viewport.
+
+---
+
+## Interactive notification actions
+
+Real Chronicle notifications now render compact **Snooze 5 min** and **Dismiss** actions inside both Modern and Vanilla frames.
+
+- Hit boxes derive from the same local geometry used to render each action.
+- Toast slide position and slot position are recorded from Minecraft's own `Toast` transforms.
+- Hovering an interactive toast pauses its lifetime and progress indicator.
+- Screen mouse input is intercepted only when an action is hit, so underlying controls receive every unrelated click.
+- Snooze creates an exact five-minute interval reminder with automatic deletion after display.
+- The new reminder is persisted before the original toast closes.
+- Reminder limits and save failures keep the toast visible and surface an inline failure state.
+- Dismiss hides only the current toast and leaves the reminder's future schedule unchanged.
+- Weak interaction references cannot retain toasts removed by Minecraft's manager.
+
+Modern action layouts reserve a dedicated bottom row without overlapping title, message, icon or progress geometry. Vanilla notification height includes the action row while retaining its native text inset and line rhythm. All five locale files contain the same **192 translation keys**.
 
 ---
 

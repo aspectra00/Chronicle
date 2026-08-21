@@ -73,6 +73,13 @@ Additional placeholders registered through **Text Placeholder API** are supporte
 
 Choose how Chronicle reminders appear in-game.
 
+Every real reminder includes two direct actions:
+
+- **Snooze 5 min** — saves a one-shot follow-up reminder
+- **Dismiss** — closes the current notification without changing its schedule
+
+The buttons are clickable whenever Minecraft's cursor is available, including inventory, pause and other screens. Failed snooze saves keep the notification open and show an inline error instead of silently losing the action.
+
 ### Modern
 
 A compact custom notification with:
@@ -204,6 +211,7 @@ The current release includes:
 - Safe retry behavior after failed saves
 - Bounded notification burst handling
 - Edge-triggered condition rules with reconnect-safe initialization
+- Persisted one-shot snooze actions with save-failure feedback
 - Recoverable configuration backups
 - Separate handling for temporary I/O errors and malformed JSON
 - Deterministic custom-audio cancellation

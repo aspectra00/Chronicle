@@ -8,8 +8,11 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +23,9 @@ import java.util.List;
  * The shell follows Minecraft's logical GUI size while typography remains user-configurable.
  */
 public final class CustomReminderToast implements Toast {
-    private static final long DISPLAY_TIME_MS = 7000L;
+    public static final int SNOOZE_MINUTES = 5;
+    private static final long DISPLAY_TIME_MS = 10_000L;
+    private static final int ACTION_AREA_HEIGHT = 26;
     private static final Identifier VANILLA_TOAST_BACKGROUND =
             Identifier.withDefaultNamespace("toast/system");
     private static final int VANILLA_MIN_WIDTH = 160;
@@ -38,18 +43,43 @@ public final class CustomReminderToast implements Toast {
     private final float iconScale;
     private final String frameStyle;
     private final boolean animationsEnabled;
+    private final SnoozeAction snoozeAction;
     private final Object token = new Object();
 
     private Visibility visibility = Visibility.HIDE;
     private long shownAt;
     private long elapsedDisplayMs;
     private long displayDurationMs = DISPLAY_TIME_MS;
+    private long lastUpdateTime;
+    private long actionFailedUntil;
+    private float renderedX = Float.NaN;
+    private float renderedY = Float.NaN;
+    private int renderedWidth;
+    private int renderedHeight;
+    private int renderedGuiWidth;
+    private int renderedGuiHeight;
+    private long lastRenderedAt;
+    private boolean dismissed;
+    private boolean pointerOverToast;
+
+    @FunctionalInterface
+    public interface SnoozeAction {
+        boolean snooze();
+    }
+
+    private record ActionBounds(int snoozeX, int dismissX, int y, int buttonWidth, int height) {
+    }
 
     public CustomReminderToast(ReminderConfig config, String message) {
         this(config, message, config == null ? "CHRONICLE" : config.toastTitle);
     }
 
     public CustomReminderToast(ReminderConfig config, String message, String resolvedTitle) {
+        this(config, message, resolvedTitle, null);
+    }
+
+    public CustomReminderToast(ReminderConfig config, String message, String resolvedTitle,
+                               SnoozeAction snoozeAction) {
         this(message,
                 resolvedTitle,
                 config == null ? "!" : config.toastIcon,
@@ -58,7 +88,8 @@ public final class CustomReminderToast implements Toast {
                 config == null ? 1.00f : config.toastMessageScale,
                 config == null ? 2.00f : config.toastIconScale,
                 config == null ? "MODERN" : config.toastFrameStyle,
-                config == null || config.animationsEnabled);
+                config == null || config.animationsEnabled,
+                snoozeAction);
     }
 
     public CustomReminderToast(String message, String title, String icon, ReminderToastTheme theme) {
@@ -73,6 +104,14 @@ public final class CustomReminderToast implements Toast {
     public CustomReminderToast(String message, String title, String icon, ReminderToastTheme theme,
                                float titleScale, float messageScale, float iconScale,
                                String frameStyle, boolean animationsEnabled) {
+        this(message, title, icon, theme, titleScale, messageScale, iconScale,
+                frameStyle, animationsEnabled, null);
+    }
+
+    public CustomReminderToast(String message, String title, String icon, ReminderToastTheme theme,
+                               float titleScale, float messageScale, float iconScale,
+                               String frameStyle, boolean animationsEnabled,
+                               SnoozeAction snoozeAction) {
         this.message = message == null || message.isBlank() ? fallbackMessage() : message.trim();
         this.title = title == null || title.isBlank() ? "CHRONICLE" : title.trim();
         this.icon = icon == null || icon.isBlank() ? "!" : icon.trim();
@@ -82,8 +121,10 @@ public final class CustomReminderToast implements Toast {
         this.iconScale = crispScale(iconScale, 2.00f);
         this.frameStyle = "VANILLA".equalsIgnoreCase(frameStyle) ? "VANILLA" : "MODERN";
         this.animationsEnabled = animationsEnabled;
+        this.snoozeAction = snoozeAction;
 
         this.shownAt = 0L;
+        if (snoozeAction != null) ToastInteractionManager.register(this);
     }
 
     private static String fallbackMessage() {
@@ -113,13 +154,19 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static int responsiveHeight(int guiHeight) {
+        return responsiveHeight(guiHeight, true);
+    }
+
+    private static int responsiveHeight(int guiHeight, boolean showActions) {
         int logical = Math.max(1, guiHeight);
         int available = Math.max(1, logical - 12);
         if (available < 56) {
             return available;
         }
         int calculated = Math.round(logical * 0.095f);
-        return clampInt(calculated, Math.min(68, available), Math.min(92, available));
+        int minimum = showActions ? 84 : 68;
+        int maximum = 92;
+        return clampInt(calculated, Math.min(minimum, available), Math.min(maximum, available));
     }
 
     private static int vanillaWidthWithin(Font font, String title, String message, int availableWidth) {
@@ -135,13 +182,15 @@ public final class CustomReminderToast implements Toast {
                 textWidth + VANILLA_TEXT_X + VANILLA_TEXT_RIGHT_MARGIN));
     }
 
-    private static int vanillaHeightWithin(Font font, String message, int width, int availableHeight) {
+    private static int vanillaHeightWithin(Font font, String message, int width, int availableHeight,
+                                           boolean showActions) {
         int available = Math.max(1, availableHeight);
         String safeMessage = message == null || message.isBlank() ? fallbackMessage() : message.trim();
         int textWidth = Math.max(1, Math.min(VANILLA_MAX_LINE_WIDTH,
                 width - VANILLA_TEXT_X - VANILLA_TEXT_RIGHT_MARGIN));
         int messageLines = Math.max(1, wrapText(font, safeMessage, textWidth, 4).size());
-        return Math.min(available, 20 + messageLines * VANILLA_LINE_SPACING);
+        int contentHeight = 20 + messageLines * VANILLA_LINE_SPACING;
+        return Math.min(available, contentHeight + (showActions ? ACTION_AREA_HEIGHT : 0));
     }
 
 
@@ -158,7 +207,7 @@ public final class CustomReminderToast implements Toast {
         int currentWidth = layoutWidth(minecraft.font, title, message, frameStyle,
                 minecraft.getWindow().getGuiScaledWidth());
         return layoutHeight(minecraft.font, message, frameStyle, currentWidth,
-                minecraft.getWindow().getGuiScaledHeight());
+                minecraft.getWindow().getGuiScaledHeight(), snoozeAction != null);
     }
 
     /** All Chronicle layouts are at most 92px high, so reserve three stable 32px slots. */
@@ -170,17 +219,18 @@ public final class CustomReminderToast implements Toast {
     /** ToastManager allocates physical 32px slots; never multiply the slot index by this toast's height. */
     @Override
     public float yPos(int firstSlotIndex) {
-        return firstSlotIndex * (float) Toast.SLOT_HEIGHT;
+        renderedY = firstSlotIndex * (float) Toast.SLOT_HEIGHT;
+        return renderedY;
     }
 
     /** Minecraft owns the slide animation. Disabling motion makes show/hide instantaneous. */
     @Override
     public float xPos(int guiWidth, float visiblePortion) {
         int currentWidth = width();
-        if (animationsEnabled) {
-            return guiWidth - currentWidth * visiblePortion;
-        }
-        return visibility == Visibility.SHOW ? guiWidth - currentWidth : guiWidth;
+        renderedX = animationsEnabled
+                ? guiWidth - currentWidth * visiblePortion
+                : visibility == Visibility.SHOW ? guiWidth - currentWidth : guiWidth;
+        return renderedX;
     }
 
     static int layoutWidth(Font font, String title, String message, String frameStyle, int guiWidth) {
@@ -191,10 +241,15 @@ public final class CustomReminderToast implements Toast {
     }
 
     static int layoutHeight(Font font, String message, String frameStyle, int width, int guiHeight) {
+        return layoutHeight(font, message, frameStyle, width, guiHeight, true);
+    }
+
+    private static int layoutHeight(Font font, String message, String frameStyle, int width,
+                                    int guiHeight, boolean showActions) {
         int available = Math.max(1, guiHeight - 12);
         return "VANILLA".equalsIgnoreCase(frameStyle)
-                ? vanillaHeightWithin(font, message, width, available)
-                : responsiveHeight(guiHeight);
+                ? vanillaHeightWithin(font, message, width, available, showActions)
+                : responsiveHeight(guiHeight, showActions);
     }
 
     @Override
@@ -209,8 +264,17 @@ public final class CustomReminderToast implements Toast {
 
     @Override
     public void update(ToastManager toastManager, long time) {
+        long previousUpdateTime = lastUpdateTime;
+        lastUpdateTime = time;
+        if (dismissed) {
+            visibility = Visibility.HIDE;
+            return;
+        }
         if (shownAt == 0L) {
             shownAt = time;
+        }
+        if (pointerOverToast && previousUpdateTime > 0L && time > previousUpdateTime) {
+            shownAt += time - previousUpdateTime;
         }
         double multiplier = Math.max(0.1D, toastManager.getNotificationDisplayTimeMultiplier());
         long duration = Math.max(500L, (long) (DISPLAY_TIME_MS * multiplier));
@@ -223,13 +287,34 @@ public final class CustomReminderToast implements Toast {
     public void extractRenderState(GuiGraphicsExtractor graphics, Font font, long fullyVisibleForMs) {
         int currentWidth = width();
         int currentHeight = height();
+        renderedWidth = currentWidth;
+        renderedHeight = currentHeight;
+        Minecraft minecraft = Minecraft.getInstance();
+        renderedGuiWidth = minecraft.getWindow().getGuiScaledWidth();
+        renderedGuiHeight = minecraft.getWindow().getGuiScaledHeight();
+        lastRenderedAt = Util.getMillis();
+        double localMouseX = Double.NaN;
+        double localMouseY = Double.NaN;
+        if (minecraft.gui.screen() != null && !minecraft.mouseHandler.isMouseGrabbed()) {
+            localMouseX = minecraft.mouseHandler.getScaledXPos(minecraft.getWindow()) - renderedX;
+            localMouseY = minecraft.mouseHandler.getScaledYPos(minecraft.getWindow()) - renderedY;
+        }
+        pointerOverToast = localMouseX >= 0.0 && localMouseX < currentWidth
+                && localMouseY >= 0.0 && localMouseY < currentHeight;
         renderCard(
                 graphics, font, currentWidth, currentHeight,
                 message, title, icon, theme,
                 titleScale, messageScale, iconScale,
                 frameStyle,
-                true, elapsedDisplayMs, displayDurationMs
+                true, elapsedDisplayMs, displayDurationMs,
+                snoozeAction != null, localMouseX, localMouseY,
+                Util.getMillis() < actionFailedUntil
         );
+    }
+
+    @Override
+    public void onFinishedRendering() {
+        ToastInteractionManager.unregister(this);
     }
 
     /**
@@ -273,7 +358,7 @@ public final class CustomReminderToast implements Toast {
         int cardHeight = height;
         if (vanilla) {
             cardWidth = vanillaWidthWithin(font, title, message, width);
-            cardHeight = vanillaHeightWithin(font, message, cardWidth, height);
+            cardHeight = vanillaHeightWithin(font, message, cardWidth, height, true);
             graphics.pose().pushMatrix();
             graphics.pose().translate(Math.max(0, (width - cardWidth) / 2),
                     Math.max(0, (height - cardHeight) / 2));
@@ -285,7 +370,8 @@ public final class CustomReminderToast implements Toast {
                 crispScale(messageScale, 1.00f),
                 crispScale(iconScale, 2.00f),
                 frameStyle,
-                !vanilla, 0L, DISPLAY_TIME_MS
+                !vanilla, 0L, DISPLAY_TIME_MS,
+                true, Double.NaN, Double.NaN, false
         );
         if (vanilla) {
             graphics.pose().popMatrix();
@@ -307,7 +393,11 @@ public final class CustomReminderToast implements Toast {
             String frameStyle,
             boolean showProgress,
             long progressTimeMs,
-            long displayDurationMs
+            long displayDurationMs,
+            boolean showActions,
+            double mouseX,
+            double mouseY,
+            boolean actionFailed
     ) {
         int h = Math.max(1, height);
         int w = Math.max(1, width);
@@ -320,7 +410,9 @@ public final class CustomReminderToast implements Toast {
                 : 1.0f;
 
         if (vanilla) {
-            renderVanillaCard(graphics, font, w, h, message, title);
+            renderVanillaCard(graphics, font, w, h, message, title, showActions);
+            renderActionButtons(graphics, font, w, h, safeTheme, true, showActions,
+                    mouseX, mouseY, actionFailed);
             return;
         }
         String safeIcon = icon == null || icon.isBlank()
@@ -344,12 +436,15 @@ public final class CustomReminderToast implements Toast {
 
         int cardW = Math.max(1, w - 3);
         int cardH = Math.max(1, h - 3);
-        boolean showIcon = cardW >= 150 && cardH >= 52;
+        ActionBounds actionBounds = actionBounds(w, h, showActions);
+        int contentBottom = actionBounds == null ? cardH - 4 : actionBounds.y() - 4;
+        int contentHeight = Math.max(1, contentBottom);
+        boolean showIcon = cardW >= 150 && contentHeight >= 48;
         int textX = 14;
         if (showIcon) {
-            int iconBox = Math.max(28, Math.min(34, cardH - 28));
+            int iconBox = Math.max(24, Math.min(34, contentHeight - 16));
             int iconX = 14;
-            int iconY = Math.max(9, (cardH - iconBox) / 2);
+            int iconY = Math.max(7, (contentHeight - iconBox) / 2);
             drawModernIconTile(graphics, iconX, iconY, iconBox, safeTheme);
 
             int iconTextWidth = font.width(Component.literal(safeIcon));
@@ -375,26 +470,138 @@ public final class CustomReminderToast implements Toast {
         int titleMaxWidth = Math.max(1, (int) (available / titleScale));
         String clippedTitle = trimToWidth(font, safeTitle, titleMaxWidth);
 
-        int maxLines = cardH >= titlePixelHeight + bodyPixelHeight * 2 + 26 ? 2 : 1;
+        int maxLines = contentHeight >= titlePixelHeight + bodyPixelHeight * 2 + 18 ? 2 : 1;
         int bodyMaxWidth = Math.max(1, (int) (available / messageScale));
         List<String> lines = wrapText(font, safeMessage, bodyMaxWidth, maxLines);
 
         int bodyLineHeight = bodyPixelHeight + 1;
         int totalBodyHeight = lines.size() * bodyLineHeight;
         int totalTextHeight = titlePixelHeight + 5 + totalBodyHeight;
-        int titleY = Math.max(9, (cardH - totalTextHeight) / 2);
+        int titleY = Math.max(7, (contentHeight - totalTextHeight) / 2);
         int bodyStartY = titleY + titlePixelHeight + 5;
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
                 safeTheme.title(), false);
         for (int i = 0; i < lines.size(); i++) {
             int lineY = bodyStartY + i * bodyLineHeight;
-            if (lineY + bodyPixelHeight > cardH - 7) {
+            if (lineY + bodyPixelHeight > contentBottom) {
                 break;
             }
             drawScaled(graphics, font, lines.get(i), textX, lineY,
                     messageScale, safeTheme.message(), false);
         }
+        renderActionButtons(graphics, font, w, h, safeTheme, false, showActions,
+                mouseX, mouseY, actionFailed);
+    }
+
+    private static ActionBounds actionBounds(int width, int height, boolean showActions) {
+        if (!showActions || width < 150 || height < 54) return null;
+        int cardWidth = Math.max(1, width - 3);
+        int cardHeight = Math.max(1, height - 3);
+        int side = 10;
+        int gap = 6;
+        int buttonWidth = Math.max(1, (cardWidth - side * 2 - gap) / 2);
+        int buttonHeight = 18;
+        int y = Math.max(1, cardHeight - buttonHeight - 5);
+        return new ActionBounds(side, side + buttonWidth + gap, y, buttonWidth, buttonHeight);
+    }
+
+    private static void renderActionButtons(GuiGraphicsExtractor graphics, Font font,
+                                            int width, int height, ReminderToastTheme theme,
+                                            boolean vanilla, boolean showActions,
+                                            double mouseX, double mouseY,
+                                            boolean actionFailed) {
+        ActionBounds bounds = actionBounds(width, height, showActions);
+        if (bounds == null) return;
+        boolean snoozeHovered = inside(bounds.snoozeX(), bounds.y(), bounds.buttonWidth(),
+                bounds.height(), mouseX, mouseY);
+        boolean dismissHovered = inside(bounds.dismissX(), bounds.y(), bounds.buttonWidth(),
+                bounds.height(), mouseX, mouseY);
+        String snooze = actionFailed
+                ? ChronicleI18n.tr("toast.action.snooze_failed")
+                : ChronicleI18n.tr("toast.action.snooze", SNOOZE_MINUTES);
+        String dismiss = ChronicleI18n.tr("toast.action.dismiss");
+        drawActionButton(graphics, font, bounds.snoozeX(), bounds.y(), bounds.buttonWidth(),
+                bounds.height(), snooze, theme, vanilla, snoozeHovered, actionFailed);
+        drawActionButton(graphics, font, bounds.dismissX(), bounds.y(), bounds.buttonWidth(),
+                bounds.height(), dismiss, theme, vanilla, dismissHovered, false);
+    }
+
+    private static void drawActionButton(GuiGraphicsExtractor graphics, Font font,
+                                         int x, int y, int width, int height, String label,
+                                         ReminderToastTheme theme, boolean vanilla,
+                                         boolean hovered, boolean failed) {
+        int border = failed ? 0xFFD69A9A
+                : vanilla ? (hovered ? 0xFFFFFFFF : 0xFF8A8A8A)
+                : (hovered ? theme.accent() : theme.border());
+        int surface = vanilla ? (hovered ? 0xFF4A4A4A : 0xFF242424)
+                : blendColor(theme.background(), theme.accent(), hovered ? 0.20f : 0.08f);
+        graphics.fill(x, y, x + width, y + height, border);
+        if (width > 2 && height > 2) {
+            graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, surface);
+        }
+        String shown = trimToWidth(font, label, Math.max(1, width - 8));
+        int textX = x + Math.max(4, (width - font.width(shown)) / 2);
+        int textY = y + Math.max(1, (height - font.lineHeight) / 2);
+        graphics.text(font, Component.literal(shown), textX, textY,
+                failed ? 0xFFFFC2C2 : 0xFFFFFFFF, false);
+    }
+
+    private static boolean inside(int x, int y, int width, int height,
+                                  double mouseX, double mouseY) {
+        return Double.isFinite(mouseX) && Double.isFinite(mouseY)
+                && mouseX >= x && mouseX < x + width
+                && mouseY >= y && mouseY < y + height;
+    }
+
+    boolean handleMouseClick(Minecraft minecraft, double mouseX, double mouseY) {
+        if (minecraft == null || snoozeAction == null || dismissed
+                || visibility != Visibility.SHOW
+                || !Float.isFinite(renderedX) || !Float.isFinite(renderedY)
+                || minecraft.gui.hud.isHidden()
+                || renderedGuiWidth != minecraft.getWindow().getGuiScaledWidth()
+                || renderedGuiHeight != minecraft.getWindow().getGuiScaledHeight()
+                || Util.getMillis() - lastRenderedAt > 1_000L) {
+            return false;
+        }
+        ActionBounds bounds = actionBounds(renderedWidth, renderedHeight, true);
+        if (bounds == null) return false;
+        double localX = mouseX - renderedX;
+        double localY = mouseY - renderedY;
+        if (inside(bounds.dismissX(), bounds.y(), bounds.buttonWidth(), bounds.height(),
+                localX, localY)) {
+            playButtonSound(minecraft);
+            dismissed = true;
+            visibility = Visibility.HIDE;
+            return true;
+        }
+        if (!inside(bounds.snoozeX(), bounds.y(), bounds.buttonWidth(), bounds.height(),
+                localX, localY)) {
+            return false;
+        }
+        playButtonSound(minecraft);
+        boolean succeeded;
+        try {
+            succeeded = snoozeAction.snooze();
+        } catch (RuntimeException ignored) {
+            succeeded = false;
+        }
+        if (succeeded) {
+            dismissed = true;
+            visibility = Visibility.HIDE;
+        } else {
+            actionFailedUntil = Util.getMillis() + 3_000L;
+            long maximumElapsed = Math.max(0L, displayDurationMs - 3_000L);
+            if (elapsedDisplayMs > maximumElapsed) {
+                elapsedDisplayMs = maximumElapsed;
+                shownAt = Math.max(0L, lastUpdateTime - elapsedDisplayMs);
+            }
+        }
+        return true;
+    }
+
+    private static void playButtonSound(Minecraft minecraft) {
+        minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
     }
 
     private static void renderModernFrame(GuiGraphicsExtractor graphics, int width, int height,
@@ -441,7 +648,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     private static void renderVanillaCard(GuiGraphicsExtractor graphics, Font font, int width, int height,
-                                          String message, String title) {
+                                          String message, String title, boolean showActions) {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
         if (width < VANILLA_TEXT_X + 8 || height < font.lineHeight + 4) {
             return;
@@ -452,14 +659,15 @@ public final class CustomReminderToast implements Toast {
         int available = Math.max(1, Math.min(VANILLA_MAX_LINE_WIDTH,
                 width - VANILLA_TEXT_X - VANILLA_TEXT_RIGHT_MARGIN));
         String clippedTitle = trimToWidth(font, safeTitle, available);
-        int maxMessageLines = Math.max(1, (height - 20) / VANILLA_LINE_SPACING);
+        int textBottom = height - (showActions ? ACTION_AREA_HEIGHT : 0);
+        int maxMessageLines = Math.max(1, (textBottom - 20) / VANILLA_LINE_SPACING);
         List<String> lines = wrapText(font, safeMessage, available, maxMessageLines);
 
         // Match Minecraft 26.2 SystemToast's native text inset and vertical metrics.
         graphics.text(font, Component.literal(clippedTitle), VANILLA_TEXT_X, 7, 0xFFFFFF00, false);
         for (int i = 0; i < lines.size(); i++) {
             int y = 7 + VANILLA_LINE_SPACING * (i + 1);
-            if (y + font.lineHeight > height - 3) break;
+            if (y + font.lineHeight > textBottom - 3) break;
             graphics.text(font, Component.literal(lines.get(i)), VANILLA_TEXT_X, y, 0xFFFFFFFF, false);
         }
     }

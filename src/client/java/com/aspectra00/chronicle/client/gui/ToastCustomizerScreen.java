@@ -714,7 +714,8 @@ public final class ToastCustomizerScreen extends Screen {
         this.minecraft.gui.toastManager().addToast(new CustomReminderToast(
                 ChronicleI18n.tr("toast.preview.reminder"), title, icon, theme,
                 draftTitleScale, draftMessageScale, draftIconScale,
-                draftFrameStyle, draftAnimationsEnabled
+                draftFrameStyle, draftAnimationsEnabled,
+                () -> ChronicleClient.snoozeReminder(ChronicleI18n.tr("toast.preview.reminder"))
         ));
         CustomSoundPlayer.playConfigured(this.minecraft, ChronicleClient.CONFIG);
     }
