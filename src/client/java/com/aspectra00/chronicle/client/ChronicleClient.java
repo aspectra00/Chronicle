@@ -301,6 +301,9 @@ public class ChronicleClient implements ClientModInitializer {
     }
 
     private static void applyAfterTrigger(Reminder reminder, List<Reminder> deleteAfterTrigger) {
+        Reminder.ScheduleType type = reminder.scheduleType == null
+                ? Reminder.ScheduleType.DAILY : reminder.scheduleType;
+        if (type == Reminder.ScheduleType.DAILY || type == Reminder.ScheduleType.WEEKLY) return;
         Reminder.AfterTriggerAction action = reminder.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : reminder.afterTriggerAction;
         switch (action) {
@@ -350,6 +353,9 @@ public class ChronicleClient implements ClientModInitializer {
             case INTERVAL -> ChronicleI18n.tr("summary.every", formatInterval(reminder.intervalMinutes));
             case TRIGGER -> triggerSummary(reminder.trigger);
         };
+        if (type == Reminder.ScheduleType.DAILY || type == Reminder.ScheduleType.WEEKLY) {
+            return schedule;
+        }
         Reminder.AfterTriggerAction after = reminder.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : reminder.afterTriggerAction;
         return switch (after) {

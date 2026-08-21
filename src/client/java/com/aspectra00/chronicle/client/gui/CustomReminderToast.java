@@ -26,6 +26,7 @@ public final class CustomReminderToast implements Toast {
     public static final int SNOOZE_MINUTES = 5;
     private static final long DISPLAY_TIME_MS = 10_000L;
     private static final int ACTION_BUTTON_HEIGHT = 16;
+    private static final int INLINE_CONTENT_REFERENCE_HEIGHT = 61;
     private static final Identifier VANILLA_TOAST_BACKGROUND =
             Identifier.withDefaultNamespace("toast/system");
     private static final int VANILLA_MIN_WIDTH = 160;
@@ -161,7 +162,7 @@ public final class CustomReminderToast implements Toast {
             return available;
         }
         int calculated = Math.round(logical * 0.095f);
-        return clampInt(calculated, Math.min(68, available), Math.min(72, available));
+        return clampInt(calculated, Math.min(58, available), Math.min(60, available));
     }
 
     private static int vanillaWidthWithin(Font font, String title, String message, int availableWidth) {
@@ -503,8 +504,9 @@ public final class CustomReminderToast implements Toast {
 
         int bodyLineHeight = bodyPixelHeight + 1;
         int totalBodyHeight = lines.size() * bodyLineHeight;
-        int totalTextHeight = titlePixelHeight + 5 + totalBodyHeight;
-        int titleY = Math.max(7, (contentHeight - totalTextHeight) / 2);
+        int titleY = actionBounds == null
+                ? Math.max(7, (contentHeight - titlePixelHeight - 5 - totalBodyHeight) / 2)
+                : modernTitleY(font, cardH, titleScale, messageScale);
         int bodyStartY = titleY + titlePixelHeight + 5;
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
@@ -548,19 +550,30 @@ public final class CustomReminderToast implements Toast {
                 y, ACTION_BUTTON_HEIGHT);
     }
 
+    private static int modernTitleY(Font font, int cardHeight,
+                                    float titleScale, float messageScale) {
+        int contentHeight = Math.max(1, cardHeight - 4);
+        int titleHeight = Math.max(font.lineHeight,
+                (int) Math.ceil(font.lineHeight * titleScale));
+        int messageHeight = Math.max(font.lineHeight,
+                (int) Math.ceil(font.lineHeight * messageScale));
+        int totalTextHeight = titleHeight + 5 + messageHeight;
+        int preferred = Math.max(7,
+                (Math.max(contentHeight, INLINE_CONTENT_REFERENCE_HEIGHT) - totalTextHeight) / 2);
+        return clampInt(preferred, 2, Math.max(2, contentHeight - totalTextHeight));
+    }
+
     private static int inlineActionY(Font font, int cardHeight, boolean vanilla,
                                      float titleScale, float messageScale) {
         int preferred;
         if (vanilla) {
             preferred = 19 + (font.lineHeight - ACTION_BUTTON_HEIGHT) / 2;
         } else {
-            int contentHeight = Math.max(1, cardHeight - 4);
             int titleHeight = Math.max(font.lineHeight,
                     (int) Math.ceil(font.lineHeight * titleScale));
             int messageHeight = Math.max(font.lineHeight,
                     (int) Math.ceil(font.lineHeight * messageScale));
-            int totalTextHeight = titleHeight + 5 + messageHeight;
-            int titleY = Math.max(7, (contentHeight - totalTextHeight) / 2);
+            int titleY = modernTitleY(font, cardHeight, titleScale, messageScale);
             int messageY = titleY + titleHeight + 5;
             preferred = messageY + (messageHeight - ACTION_BUTTON_HEIGHT) / 2;
         }

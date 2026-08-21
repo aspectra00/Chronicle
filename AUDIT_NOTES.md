@@ -74,7 +74,7 @@ Chronicle notifications can render compact **Snooze 5 min** and **Dismiss** acti
 - Dismiss hides only the current toast and leaves the reminder's future schedule unchanged.
 - Weak interaction references cannot retain toasts removed by Minecraft's manager.
 
-Modern action layouts reserve a dedicated bottom row without overlapping title, message, icon or progress geometry. Actions use content-sized controls aligned to the lower-right edge instead of stretching across the card. Vanilla notification height includes the action row while retaining its native text inset and line rhythm. All five locale files contain the same **193 translation keys**.
+Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The compact frame removes unused space below the inline row, while Vanilla retains its native text inset and line rhythm. Daily and Weekly schedules always repeat; post-trigger behavior is shown only for condition triggers. All five locale files contain the same **193 translation keys**.
 
 ---
 

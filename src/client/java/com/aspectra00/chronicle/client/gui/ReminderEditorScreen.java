@@ -102,6 +102,9 @@ public final class ReminderEditorScreen extends Screen {
         this.intervalUsesHours = draft.intervalMinutes >= 60 && draft.intervalMinutes % 60 == 0;
         this.afterTriggerAction = draft.afterTriggerAction == null
                 ? Reminder.AfterTriggerAction.KEEP : draft.afterTriggerAction;
+        if (this.scheduleType != Reminder.ScheduleType.TRIGGER) {
+            this.afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
+        }
         this.trigger = draft.trigger == null ? new ReminderTrigger() : draft.trigger.copy();
 
         if (draft.weeklyDays == null) {
@@ -399,12 +402,15 @@ public final class ReminderEditorScreen extends Screen {
         messageBox.setCentered(false);
         messageBox.setHorizontalPadding(UiMetrics.GAP_XS);
         addRenderableWidget(messageBox);
-        int afterY = messageY + messageBox.getHeight() + this.font.lineHeight
-                + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
-        afterTriggerButton = uiButton(afterTriggerLabel(), innerLeft, afterY, innerW,
-                UiMetrics.CONTROL_HEIGHT, this::cycleAfterTrigger);
-        addRenderableWidget(afterTriggerButton);
-        cursorY = afterY + afterTriggerButton.getHeight() + 18;
+        cursorY = messageY + messageBox.getHeight() + this.font.lineHeight + UiMetrics.GAP_MD;
+        afterTriggerButton = null;
+        if (scheduleType == Reminder.ScheduleType.TRIGGER) {
+            int afterY = cursorY + UiMetrics.LABEL_OFFSET;
+            afterTriggerButton = uiButton(afterTriggerLabel(), innerLeft, afterY, innerW,
+                    UiMetrics.CONTROL_HEIGHT, this::cycleAfterTrigger);
+            addRenderableWidget(afterTriggerButton);
+            cursorY = afterY + afterTriggerButton.getHeight() + 18;
+        }
 
         int panelBottom = Math.max(panelTop + 1, panelBottomForLayout());
         panelBottom = Math.min(this.height, panelBottom);
@@ -674,6 +680,9 @@ public final class ReminderEditorScreen extends Screen {
         scheduleType = type;
         scrollOffset = 0;
         validationError = null;
+        if (scheduleType != Reminder.ScheduleType.TRIGGER) {
+            afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
+        }
         if (scheduleType == Reminder.ScheduleType.WEEKLY && !hasAnyWeeklyDay()) {
             Arrays.fill(weeklyDays, true);
         }
@@ -795,8 +804,15 @@ public final class ReminderEditorScreen extends Screen {
         try {
             draft.message = messageText == null || messageText.isBlank()
                     ? ChronicleI18n.tr("default.reminder") : messageText.trim();
-            draft.afterTriggerAction = afterTriggerAction == null
-                    ? Reminder.AfterTriggerAction.KEEP : afterTriggerAction;
+            if (scheduleType == Reminder.ScheduleType.TRIGGER && afterTriggerAction != null) {
+                draft.afterTriggerAction = afterTriggerAction;
+            } else if (!isNew && scheduleType == Reminder.ScheduleType.INTERVAL
+                    && originalSnapshot.scheduleType == Reminder.ScheduleType.INTERVAL
+                    && originalSnapshot.afterTriggerAction != null) {
+                draft.afterTriggerAction = originalSnapshot.afterTriggerAction;
+            } else {
+                draft.afterTriggerAction = Reminder.AfterTriggerAction.KEEP;
+            }
 
             if (scheduleType == Reminder.ScheduleType.TRIGGER) {
                 if (!applyTriggerValues()) {
