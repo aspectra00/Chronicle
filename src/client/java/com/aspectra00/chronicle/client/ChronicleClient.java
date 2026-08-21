@@ -409,8 +409,11 @@ public class ChronicleClient implements ClientModInitializer {
 
     private static void displayResolvedReminder(Minecraft client, String resolvedMessage,
                                                 String resolvedTitle, String sourceMessage) {
+        CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
+                ? () -> snoozeReminder(sourceMessage)
+                : null;
         client.gui.toastManager().addToast(new CustomReminderToast(
-                CONFIG, resolvedMessage, resolvedTitle, () -> snoozeReminder(sourceMessage)));
+                CONFIG, resolvedMessage, resolvedTitle, action));
         CustomSoundPlayer.playConfigured(client, CONFIG);
     }
 
@@ -450,8 +453,11 @@ public class ChronicleClient implements ClientModInitializer {
         String previewMessage = ChronicleI18n.tr("toast.preview.reminder");
         String resolvedMessage = ChroniclePlaceholders.resolve(previewMessage);
         String resolvedTitle = ChroniclePlaceholders.resolve(CONFIG.toastTitle);
+        CustomReminderToast.SnoozeAction action = CONFIG.toastActionsEnabled
+                ? () -> snoozeReminder(previewMessage)
+                : null;
         client.gui.toastManager().addToast(new CustomReminderToast(
-                CONFIG, resolvedMessage, resolvedTitle, () -> snoozeReminder(previewMessage)));
+                CONFIG, resolvedMessage, resolvedTitle, action));
         CustomSoundPlayer.playConfigured(client, CONFIG);
     }
 }

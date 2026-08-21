@@ -62,7 +62,7 @@ The editor retains trigger input and focus through scrolling, resizing and GUI-s
 
 ## Interactive notification actions
 
-Real Chronicle notifications now render compact **Snooze 5 min** and **Dismiss** actions inside both Modern and Vanilla frames.
+Chronicle notifications can render compact **Snooze 5 min** and **Dismiss** actions inside both Modern and Vanilla frames. The toast customizer persists an explicit on/off preference and previews both states accurately.
 
 - Hit boxes derive from the same local geometry used to render each action.
 - Toast slide position and slot position are recorded from Minecraft's own `Toast` transforms.
@@ -74,7 +74,7 @@ Real Chronicle notifications now render compact **Snooze 5 min** and **Dismiss**
 - Dismiss hides only the current toast and leaves the reminder's future schedule unchanged.
 - Weak interaction references cannot retain toasts removed by Minecraft's manager.
 
-Modern action layouts reserve a dedicated bottom row without overlapping title, message, icon or progress geometry. Vanilla notification height includes the action row while retaining its native text inset and line rhythm. All five locale files contain the same **192 translation keys**.
+Modern action layouts reserve a dedicated bottom row without overlapping title, message, icon or progress geometry. Actions use content-sized controls aligned to the lower-right edge instead of stretching across the card. Vanilla notification height includes the action row while retaining its native text inset and line rhythm. All five locale files contain the same **193 translation keys**.
 
 ---
 

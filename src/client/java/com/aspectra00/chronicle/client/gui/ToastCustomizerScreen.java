@@ -56,8 +56,9 @@ public final class ToastCustomizerScreen extends Screen {
     private float draftIconScale;
     private String draftFrameStyle;
     private boolean draftAnimationsEnabled;
+    private boolean draftToastActionsEnabled;
     private Button titleMinus, titleSize, titlePlus, messageMinus, messageSize, messagePlus, iconMinus, iconSize, iconPlus;
-    private Button frameStyleButton, animationsButton;
+    private Button frameStyleButton, animationsButton, actionsButton;
     private Button applyButton, testButton, cancelButton;
     private String paletteTarget = "BACKGROUND";
     private Button paletteTargetButton;
@@ -91,6 +92,7 @@ public final class ToastCustomizerScreen extends Screen {
         this.draftIconScale = ChronicleClient.CONFIG.toastIconScale;
         this.draftFrameStyle = ChronicleClient.CONFIG.toastFrameStyle;
         this.draftAnimationsEnabled = ChronicleClient.CONFIG.animationsEnabled;
+        this.draftToastActionsEnabled = ChronicleClient.CONFIG.toastActionsEnabled;
         updatePickerFromTarget();
     }
 
@@ -225,17 +227,26 @@ public final class ToastCustomizerScreen extends Screen {
         int appearanceY = stylesY
                 + (compactStyles ? styleRowStep + UiMetrics.CONTROL_HEIGHT : UiMetrics.CONTROL_HEIGHT)
                 + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
-        boolean stackedAppearance = usesStackedAppearanceControls(controlW);
+        int appearanceColumns = appearanceColumnCount(controlW);
         int appearanceGap = UiMetrics.GAP_SM;
-        int appearanceW = stackedAppearance ? controlW : Math.max(1, (controlW - appearanceGap) / 2);
+        int appearanceW = Math.max(1,
+                (controlW - appearanceGap * (appearanceColumns - 1)) / appearanceColumns);
         frameStyleButton = styledButton(frameStyleLabel(), controlsLeft, appearanceY,
                 appearanceW, UiMetrics.CONTROL_HEIGHT, b -> toggleFrameStyle());
         animationsButton = styledButton(animationsLabel(),
-                stackedAppearance ? controlsLeft : controlsLeft + appearanceW + appearanceGap,
-                stackedAppearance ? appearanceY + UiMetrics.CONTROL_HEIGHT + appearanceGap : appearanceY,
+                appearanceColumns == 1 ? controlsLeft : controlsLeft + appearanceW + appearanceGap,
+                appearanceColumns == 1 ? appearanceY + UiMetrics.CONTROL_HEIGHT + appearanceGap : appearanceY,
                 appearanceW, UiMetrics.CONTROL_HEIGHT, b -> toggleAnimations());
+        actionsButton = styledButton(actionsLabel(),
+                appearanceColumns == 3 ? controlsLeft + (appearanceW + appearanceGap) * 2 : controlsLeft,
+                appearanceColumns == 3 ? appearanceY
+                        : appearanceY + (UiMetrics.CONTROL_HEIGHT + appearanceGap)
+                        * (appearanceColumns == 2 ? 1 : 2),
+                appearanceColumns == 2 ? controlW : appearanceW,
+                UiMetrics.CONTROL_HEIGHT, b -> toggleToastActions());
         addRenderableWidget(frameStyleButton);
         addRenderableWidget(animationsButton);
+        addRenderableWidget(actionsButton);
 
         int contentShift = (compactStyles ? styleRowStep + previewFirstShift : 0)
                 + appearanceContentShift(compactStyles, controlW);
@@ -438,6 +449,11 @@ public final class ToastCustomizerScreen extends Screen {
                 ChronicleI18n.tr(draftAnimationsEnabled ? "action.on" : "action.off"));
     }
 
+    private String actionsLabel() {
+        return ChronicleI18n.tr("toast.actions.label",
+                ChronicleI18n.tr(draftToastActionsEnabled ? "action.on" : "action.off"));
+    }
+
     private void toggleFrameStyle() {
         draftFrameStyle = "VANILLA".equals(draftFrameStyle) ? "MODERN" : "VANILLA";
         if (frameStyleButton != null) {
@@ -489,6 +505,13 @@ public final class ToastCustomizerScreen extends Screen {
         draftAnimationsEnabled = !draftAnimationsEnabled;
         if (animationsButton != null) {
             animationsButton.setMessage(Component.literal(animationsLabel()));
+        }
+    }
+
+    private void toggleToastActions() {
+        draftToastActionsEnabled = !draftToastActionsEnabled;
+        if (actionsButton != null) {
+            actionsButton.setMessage(Component.literal(actionsLabel()));
         }
     }
 
@@ -661,6 +684,7 @@ public final class ToastCustomizerScreen extends Screen {
         float oldIconScale = config.toastIconScale;
         String oldFrameStyle = config.toastFrameStyle;
         boolean oldAnimationsEnabled = config.animationsEnabled;
+        boolean oldToastActionsEnabled = config.toastActionsEnabled;
 
         config.toastStyle = draftStyle;
         config.toastBackgroundColor = draftBackground;
@@ -676,6 +700,7 @@ public final class ToastCustomizerScreen extends Screen {
         config.toastIconScale = draftIconScale;
         config.toastFrameStyle = draftFrameStyle;
         config.animationsEnabled = draftAnimationsEnabled;
+        config.toastActionsEnabled = draftToastActionsEnabled;
         config.ensureValid();
         if (config.save()) {
             onClose();
@@ -694,6 +719,7 @@ public final class ToastCustomizerScreen extends Screen {
             config.toastIconScale = oldIconScale;
             config.toastFrameStyle = oldFrameStyle;
             config.animationsEnabled = oldAnimationsEnabled;
+            config.toastActionsEnabled = oldToastActionsEnabled;
             validationError = config.getLastSaveError();
         }
     }
@@ -711,11 +737,14 @@ public final class ToastCustomizerScreen extends Screen {
         );
         String icon = sanitizeIcon(iconBox.getValue());
         String title = ChroniclePlaceholders.resolve(sanitizeTitle(titleBox.getValue()));
+        CustomReminderToast.SnoozeAction action = draftToastActionsEnabled
+                ? () -> ChronicleClient.snoozeReminder(ChronicleI18n.tr("toast.preview.reminder"))
+                : null;
         this.minecraft.gui.toastManager().addToast(new CustomReminderToast(
                 ChronicleI18n.tr("toast.preview.reminder"), title, icon, theme,
                 draftTitleScale, draftMessageScale, draftIconScale,
                 draftFrameStyle, draftAnimationsEnabled,
-                () -> ChronicleClient.snoozeReminder(ChronicleI18n.tr("toast.preview.reminder"))
+                action
         ));
         CustomSoundPlayer.playConfigured(this.minecraft, ChronicleClient.CONFIG);
     }
@@ -862,17 +891,19 @@ public final class ToastCustomizerScreen extends Screen {
         return controlWidth >= 252;
     }
 
-    private static boolean usesStackedAppearanceControls(int controlWidth) {
-        return controlWidth < 180;
+    private static int appearanceColumnCount(int controlWidth) {
+        if (controlWidth >= 360) return 3;
+        if (controlWidth >= 220) return 2;
+        return 1;
     }
 
     private static int appearanceContentShift(boolean compact, int controlWidth) {
         // Both layouts need the same caption gutter below the appearance row.
         // The old desktop-only 37px shift placed ICON / TITLE six pixels inside it.
         int shift = 55;
-        return usesStackedAppearanceControls(controlWidth)
-                ? shift + UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM
-                : shift;
+        int rows = appearanceColumnCount(controlWidth) == 3
+                ? 1 : appearanceColumnCount(controlWidth) == 2 ? 2 : 3;
+        return shift + (rows - 1) * (UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM);
     }
 
     private static int colorFieldsBase(boolean compact, int controlWidth) {
@@ -1120,8 +1151,9 @@ public final class ToastCustomizerScreen extends Screen {
         contentShift += appearanceContentShift(compactStyles, controlW);
         int col2 = twoColumnFields ? controlsLeft + boxW + 16 : controlsLeft;
         boolean sideColorWorkspace = usesSideColorWorkspace(compactStyles, controlW);
-        if (frameStyleButton != null && animationsButton != null) {
-            int appearanceLabelY = Math.min(frameStyleButton.getY(), animationsButton.getY())
+        if (frameStyleButton != null && animationsButton != null && actionsButton != null) {
+            int appearanceLabelY = Math.min(frameStyleButton.getY(),
+                    Math.min(animationsButton.getY(), actionsButton.getY()))
                     - UiMetrics.LABEL_OFFSET;
             drawContentLabel(graphics, ChronicleI18n.tr("toast.section.look_motion"), controlsLeft, appearanceLabelY,
                     MUTED, contentClipTop, contentClipBottom);
@@ -1199,7 +1231,7 @@ public final class ToastCustomizerScreen extends Screen {
                 draftFrameStyle, this.width);
         int logicalPreviewW = Math.max(1, Math.min(naturalPreviewW, previewAreaW));
         int logicalPreviewH = CustomReminderToast.layoutHeight(this.font, previewMessage,
-                draftFrameStyle, logicalPreviewW, this.height);
+                draftFrameStyle, logicalPreviewW, this.height, draftToastActionsEnabled);
         int previewW = logicalPreviewW;
         int px = compactStyles
                 ? controlsLeft + Math.max(0, (controlW - previewW) / 2)
@@ -1293,13 +1325,17 @@ public final class ToastCustomizerScreen extends Screen {
                                       int mouseX, int mouseY) {
         String style = styleButtonValues.get(button);
         String paletteName = paletteButtonValues.get(button);
+        boolean activeToggle = button == animationsButton && draftAnimationsEnabled
+                || button == actionsButton && draftToastActionsEnabled;
         int buttonAccent = button == applyButton || button == testButton ? ACCENT
                 : button == cancelButton ? ACCENT_ALT
+                : activeToggle ? ACCENT
                 : style != null && styleMatches(style) ? ACCENT : 0xFF4A566A;
         if (paletteName != null) {
             drawPaletteCardButton(graphics, button, button.getMessage().getString(), paletteName, mouseX, mouseY);
         } else {
-            boolean emphasized = button == applyButton || (style != null && styleMatches(style));
+            boolean emphasized = button == applyButton || activeToggle
+                    || (style != null && styleMatches(style));
             UiFrame.drawButton(graphics, this.font, button, buttonAccent, emphasized, mouseX, mouseY);
         }
     }
@@ -1360,7 +1396,7 @@ public final class ToastCustomizerScreen extends Screen {
         graphics.pose().translate(x, y);
         CustomReminderToast.renderPreview(
                 graphics, this.font, width, height, message, title, icon, theme,
-                titleScale, messageScale, iconScale, draftFrameStyle
+                titleScale, messageScale, iconScale, draftFrameStyle, draftToastActionsEnabled
         );
         graphics.pose().popMatrix();
     }

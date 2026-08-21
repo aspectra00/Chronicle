@@ -80,6 +80,7 @@ public final class ReminderConfig {
     public String toastFrameStyle = "MODERN";
     /** Chronicle screen, button and toast micro-animations. */
     public boolean animationsEnabled = true;
+    public boolean toastActionsEnabled = true;
 
     // Notification sound: OFF, VANILLA or CUSTOM.
     public String notificationSoundMode = "VANILLA";
@@ -184,6 +185,9 @@ public final class ReminderConfig {
         }
         if (root.has("animationsEnabled") && !root.get("animationsEnabled").isJsonNull()) {
             animationsEnabled = loaded.animationsEnabled;
+        }
+        if (root.has("toastActionsEnabled") && !root.get("toastActionsEnabled").isJsonNull()) {
+            toastActionsEnabled = loaded.toastActionsEnabled;
         }
         if (root.has("notificationSoundMode") && loaded.notificationSoundMode != null) {
             notificationSoundMode = loaded.notificationSoundMode;
