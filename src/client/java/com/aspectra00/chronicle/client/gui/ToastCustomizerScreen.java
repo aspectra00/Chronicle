@@ -958,7 +958,7 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private static int previewVisualHeight(int screenHeight) {
-        return Math.max(82, Math.min(106, CustomReminderToast.responsiveHeight(screenHeight)));
+        return Math.max(72, Math.min(106, CustomReminderToast.responsiveHeight(screenHeight)));
     }
 
     private static int compactPreviewY(int top) {
@@ -1228,11 +1228,10 @@ public final class ToastCustomizerScreen extends Screen {
                 titleBox == null ? ChronicleClient.CONFIG.toastTitle : titleBox.getValue());
         int previewAreaW = compactStyles ? controlW : rightColumnW;
         int naturalPreviewW = CustomReminderToast.layoutWidth(this.font, previewTitle, previewMessage,
-                draftFrameStyle, this.width);
+                draftFrameStyle, this.width, draftToastActionsEnabled);
         int logicalPreviewW = Math.max(1, Math.min(naturalPreviewW, previewAreaW));
         int logicalPreviewH = CustomReminderToast.layoutHeight(this.font, previewMessage,
-                draftFrameStyle, logicalPreviewW, this.height, draftToastActionsEnabled,
-                draftTitleScale, draftMessageScale);
+                draftFrameStyle, logicalPreviewW, this.height, draftToastActionsEnabled);
         int previewW = logicalPreviewW;
         int px = compactStyles
                 ? controlsLeft + Math.max(0, (controlW - previewW) / 2)
