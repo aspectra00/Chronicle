@@ -27,7 +27,7 @@
 
 ### About Chronicle
 
-**Chronicle 1.2.8 · fixed86** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+**Chronicle 1.2.8 · fixed87** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 <br>
 
 ---
@@ -256,12 +256,18 @@ Chronicle is a **client-side mod**.
 
 ##  Current release
 
-### Chronicle 1.2.8 — fixed86
+### Chronicle 1.2.8 — fixed87
 
-`fixed86` moves Chronicle to the MIT License and revalidates the complete Minecraft 26.2 release surface.
+`fixed87` rebuilds the Modern notification around a restrained pixel-native surface and a precise shared layout grid.
 
 Highlights include:
 
+- Single-outline Modern frame with a contained two-pixel shadow
+- Balanced 9px horizontal insets and centered content rhythm
+- Lightweight flat icon surface without nested decoration
+- Compact content-sized actions with clear hover and failure states
+- Shared geometry for preview, live notifications and action hit boxes
+- Unchanged native Vanilla notification presentation
 - MIT licensing in the repository, packaged mod and Fabric / Mod Menu metadata
 - Chronicle 1.2.8 release metadata and synchronized SVG badge
 - Verified Minecraft 26.2 and Fabric Loader 0.19.3 compatibility
@@ -284,7 +290,13 @@ For the full verified audit, see [`AUDIT_NOTES.md`](AUDIT_NOTES.md).
 ---
 
 <details>
-<summary><strong> fixed76–fixed86 revision history</strong></summary>
+<summary><strong> fixed76–fixed87 revision history</strong></summary>
+
+### fixed87
+
+Rebuilds the Modern notification as a quiet, single-surface interface with one outline, a contained shadow and a thin lifetime indicator.
+
+The icon, title, message and optional actions now follow one consistent grid. Flat action surfaces replace nested bordered controls while preserving the same renderer-derived click targets, hover feedback, inline failure state and immediate Snooze / Dismiss behavior. Vanilla notifications remain unchanged.
 
 ### fixed86
 

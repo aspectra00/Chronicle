@@ -25,7 +25,15 @@ import java.util.List;
  */
 public final class CustomReminderToast implements Toast {
     private static final long DISPLAY_TIME_MS = 10_000L;
-    private static final int ACTION_BUTTON_HEIGHT = 16;
+    private static final int ACTION_BUTTON_HEIGHT = 15;
+    private static final int MODERN_SHADOW_SIZE = 2;
+    private static final int MODERN_HORIZONTAL_INSET = 9;
+    private static final int MODERN_CONTENT_TOP = 6;
+    private static final int MODERN_CONTENT_BOTTOM = 5;
+    private static final int MODERN_TEXT_GAP = 4;
+    private static final int MODERN_ICON_SIZE = 28;
+    private static final int MODERN_ICON_GAP = 9;
+    private static final int MODERN_ACTION_GAP = 5;
     private static final Identifier VANILLA_TOAST_BACKGROUND =
             Identifier.withDefaultNamespace("toast/system");
     private static final int VANILLA_MIN_WIDTH = 160;
@@ -504,19 +512,20 @@ public final class CustomReminderToast implements Toast {
             return;
         }
 
-        int cardW = Math.max(1, w - 3);
-        int cardH = Math.max(1, h - 3);
+        int cardW = Math.max(1, w - MODERN_SHADOW_SIZE);
+        int cardH = Math.max(1, h - MODERN_SHADOW_SIZE);
         ActionBounds actionBounds = actionBounds(font, w, h, showActions, false,
                 titleScale, messageScale, snoozeMinutes);
-        int contentBottom = cardH - 4;
-        int contentHeight = Math.max(1, contentBottom);
+        int contentBottom = Math.max(MODERN_CONTENT_TOP + 1, cardH - MODERN_CONTENT_BOTTOM);
+        int contentHeight = Math.max(1, contentBottom - MODERN_CONTENT_TOP);
+        int iconColumnEnd = MODERN_HORIZONTAL_INSET + MODERN_ICON_SIZE + MODERN_ICON_GAP;
         boolean showIcon = cardW >= 150 && contentHeight >= 38
-                && (actionBounds == null || actionBounds.snoozeX() >= 180);
-        int textX = 10;
+                && (actionBounds == null || actionBounds.snoozeX() - iconColumnEnd >= 100);
+        int textX = MODERN_HORIZONTAL_INSET;
         if (showIcon) {
-            int iconBox = Math.max(24, Math.min(34, contentHeight - 8));
-            int iconX = 10;
-            int iconY = Math.max(7, (contentHeight - iconBox) / 2);
+            int iconBox = Math.max(22, Math.min(MODERN_ICON_SIZE, contentHeight - 10));
+            int iconX = MODERN_HORIZONTAL_INSET;
+            int iconY = MODERN_CONTENT_TOP + Math.max(0, (contentHeight - iconBox) / 2);
             drawModernIconTile(graphics, iconX, iconY, iconBox, safeTheme);
 
             int iconTextWidth = font.width(Component.literal(safeIcon));
@@ -530,10 +539,10 @@ public final class CustomReminderToast implements Toast {
                     (iconBox - Math.round(font.lineHeight * iconDrawScale)) / 2);
             drawScaled(graphics, font, safeIcon, iconTextX, iconTextY, iconDrawScale,
                     safeTheme.icon(), false);
-            textX = iconX + iconBox + 10;
+            textX = iconX + iconBox + MODERN_ICON_GAP;
         }
 
-        int rightPad = 10;
+        int rightPad = MODERN_HORIZONTAL_INSET;
         int contentRight = cardW;
         int available = Math.max(1, contentRight - rightPad - textX);
 
@@ -543,18 +552,19 @@ public final class CustomReminderToast implements Toast {
         String clippedTitle = trimToWidth(font, safeTitle, titleMaxWidth);
 
         int maxLines = actionBounds == null
-                && contentHeight >= titlePixelHeight + bodyPixelHeight * 2 + 18 ? 2 : 1;
+                && contentHeight >= titlePixelHeight + bodyPixelHeight * 2 + 12 ? 2 : 1;
         int bodyAvailable = actionBounds == null ? available
-                : Math.max(1, Math.min(available, actionBounds.snoozeX() - textX - 8));
+                : Math.max(1, Math.min(available, actionBounds.snoozeX() - textX - 7));
         int bodyMaxWidth = Math.max(1, (int) (bodyAvailable / messageScale));
         List<String> lines = wrapText(font, safeMessage, bodyMaxWidth, maxLines);
 
         int bodyLineHeight = bodyPixelHeight + 1;
         int totalBodyHeight = lines.size() * bodyLineHeight;
         int titleY = actionBounds == null
-                ? Math.max(7, (contentHeight - titlePixelHeight - 5 - totalBodyHeight) / 2)
+                ? MODERN_CONTENT_TOP + Math.max(0,
+                (contentHeight - titlePixelHeight - MODERN_TEXT_GAP - totalBodyHeight) / 2)
                 : modernTitleY(font, cardH, titleScale, messageScale);
-        int bodyStartY = titleY + titlePixelHeight + 5;
+        int bodyStartY = titleY + titlePixelHeight + MODERN_TEXT_GAP;
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
                 safeTheme.title(), false);
@@ -574,17 +584,17 @@ public final class CustomReminderToast implements Toast {
                                              boolean vanilla, float titleScale,
                                              float messageScale, int snoozeMinutes) {
         if (!showActions || width < 150 || height < 32) return null;
-        int cardWidth = Math.max(1, width - 3);
-        int cardHeight = Math.max(1, height - 3);
-        int side = 10;
-        int gap = 6;
+        int cardWidth = Math.max(1, width - (vanilla ? 0 : MODERN_SHADOW_SIZE));
+        int cardHeight = Math.max(1, height - (vanilla ? 0 : MODERN_SHADOW_SIZE));
+        int side = vanilla ? 10 : MODERN_HORIZONTAL_INSET;
+        int gap = vanilla ? 6 : MODERN_ACTION_GAP;
         int available = Math.max(1, cardWidth - side * 2 - gap);
         String snooze = ChronicleI18n.tr("toast.action.snooze",
                 ChronicleClient.formatInterval(normalizeSnoozeMinutes(snoozeMinutes)));
         String failed = ChronicleI18n.tr("toast.action.snooze_failed");
         String dismiss = ChronicleI18n.tr("toast.action.dismiss");
-        int desiredSnooze = clampInt(Math.max(font.width(snooze), font.width(failed)) + 14, 68, 116);
-        int desiredDismiss = clampInt(font.width(dismiss) + 14, 52, 88);
+        int desiredSnooze = clampInt(Math.max(font.width(snooze), font.width(failed)) + 12, 66, 116);
+        int desiredDismiss = clampInt(font.width(dismiss) + 12, 50, 88);
         int snoozeWidth = desiredSnooze;
         int dismissWidth = desiredDismiss;
         if (snoozeWidth + dismissWidth > available) {
@@ -600,14 +610,18 @@ public final class CustomReminderToast implements Toast {
 
     private static int modernTitleY(Font font, int cardHeight,
                                     float titleScale, float messageScale) {
-        int contentHeight = Math.max(1, cardHeight - 4);
+        int contentBottom = Math.max(MODERN_CONTENT_TOP + 1,
+                cardHeight - MODERN_CONTENT_BOTTOM);
+        int contentHeight = Math.max(1, contentBottom - MODERN_CONTENT_TOP);
         int titleHeight = Math.max(font.lineHeight,
                 (int) Math.ceil(font.lineHeight * titleScale));
         int messageHeight = Math.max(font.lineHeight,
                 (int) Math.ceil(font.lineHeight * messageScale));
-        int totalTextHeight = titleHeight + 5 + messageHeight;
-        int preferred = Math.max(7, (contentHeight - totalTextHeight) / 2);
-        return clampInt(preferred, 2, Math.max(2, contentHeight - totalTextHeight));
+        int totalTextHeight = titleHeight + MODERN_TEXT_GAP + messageHeight;
+        int preferred = MODERN_CONTENT_TOP + Math.max(0,
+                (contentHeight - totalTextHeight) / 2);
+        return clampInt(preferred, MODERN_CONTENT_TOP,
+                Math.max(MODERN_CONTENT_TOP, contentBottom - totalTextHeight));
     }
 
     private static int inlineActionY(Font font, int cardHeight, boolean vanilla,
@@ -621,10 +635,12 @@ public final class CustomReminderToast implements Toast {
             int messageHeight = Math.max(font.lineHeight,
                     (int) Math.ceil(font.lineHeight * messageScale));
             int titleY = modernTitleY(font, cardHeight, titleScale, messageScale);
-            int messageY = titleY + titleHeight + 5;
+            int messageY = titleY + titleHeight + MODERN_TEXT_GAP;
             preferred = messageY + (messageHeight - ACTION_BUTTON_HEIGHT) / 2;
         }
-        return clampInt(preferred, 2, Math.max(2, cardHeight - ACTION_BUTTON_HEIGHT - 3));
+        int top = vanilla ? 2 : MODERN_CONTENT_TOP;
+        int bottom = vanilla ? cardHeight - 3 : cardHeight - MODERN_CONTENT_BOTTOM;
+        return clampInt(preferred, top, Math.max(top, bottom - ACTION_BUTTON_HEIGHT));
     }
 
     private static void renderActionButtons(GuiGraphicsExtractor graphics, Font font,
@@ -655,24 +671,31 @@ public final class CustomReminderToast implements Toast {
                                          int x, int y, int width, int height, String label,
                                          ReminderToastTheme theme, boolean vanilla,
                                          boolean primary, boolean hovered, boolean failed) {
-        int border = failed ? 0xFFD69A9A : vanilla
-                ? (hovered || primary ? 0xFFC8C8C8 : 0xFF696969)
-                : hovered ? theme.accent()
-                : primary ? blendColor(theme.border(), theme.accent(), 0.55f)
-                : blendColor(theme.background(), theme.border(), 0.55f);
-        int surface = vanilla
-                ? primary ? (hovered ? 0xFF474747 : 0xFF343434)
-                : (hovered ? 0xFF303030 : 0xFF202020)
-                : primary
-                ? blendColor(theme.background(), theme.accent(), hovered ? 0.22f : 0.14f)
-                : blendColor(theme.background(), theme.border(), hovered ? 0.16f : 0.07f);
-        fillSteppedRect(graphics, x, y, width, height, border);
-        if (width > 2 && height > 2) {
-            fillSteppedRect(graphics, x + 1, y + 1, width - 2, height - 2, surface);
-        }
-        if (!vanilla && primary && width > 10 && height > 8) {
-            graphics.fill(x + 2, y + 4, x + 3, y + height - 4,
-                    failed ? 0xFFD69A9A : theme.accent());
+        if (vanilla) {
+            int border = failed ? 0xFFD69A9A
+                    : hovered || primary ? 0xFFC8C8C8 : 0xFF696969;
+            int surface = primary ? (hovered ? 0xFF474747 : 0xFF343434)
+                    : (hovered ? 0xFF303030 : 0xFF202020);
+            fillSteppedRect(graphics, x, y, width, height, border);
+            if (width > 2 && height > 2) {
+                fillSteppedRect(graphics, x + 1, y + 1, width - 2, height - 2, surface);
+            }
+        } else {
+            int error = 0xFFD69A9A;
+            int surface = failed
+                    ? blendColor(theme.background(), error, 0.20f)
+                    : primary
+                    ? blendColor(theme.background(), theme.accent(), hovered ? 0.24f : 0.14f)
+                    : blendColor(theme.background(), theme.border(), hovered ? 0.22f : 0.10f);
+            int underline = failed ? error
+                    : hovered ? theme.accent()
+                    : primary ? blendColor(theme.border(), theme.accent(), 0.68f)
+                    : blendColor(theme.background(), theme.border(), 0.48f);
+            fillSteppedRect(graphics, x, y, width, height, surface);
+            if (width > 8 && height > 4) {
+                graphics.fill(x + 4, y + height - 2, x + width - 4, y + height - 1,
+                        underline);
+            }
         }
         String shown = trimToWidth(font, label, Math.max(1, width - 8));
         int textX = x + Math.max(4, (width - font.width(shown)) / 2);
@@ -751,24 +774,25 @@ public final class CustomReminderToast implements Toast {
             graphics.fill(0, 0, width, height, theme.background());
             return;
         }
-        int cardW = Math.max(1, width - 3);
-        int cardH = Math.max(1, height - 3);
-        // A stepped two-pixel corner reads as rounded in Minecraft's pixel UI and
-        // avoids introducing a blurred texture that would fight resource packs.
-        fillSteppedRect(graphics, 3, 3, cardW, cardH, 0x52000000);
+        int cardW = Math.max(1, width - MODERN_SHADOW_SIZE);
+        int cardH = Math.max(1, height - MODERN_SHADOW_SIZE);
+        fillSteppedRect(graphics, MODERN_SHADOW_SIZE, MODERN_SHADOW_SIZE,
+                cardW, cardH, 0x42000000);
         fillSteppedRect(graphics, 0, 0, cardW, cardH, theme.border());
-        int surface = blendColor(theme.background(), theme.border(), 0.08f);
+        int surface = blendColor(theme.background(), theme.border(), 0.05f);
         fillSteppedRect(graphics, 1, 1, Math.max(1, cardW - 2), Math.max(1, cardH - 2), surface);
 
-        if (cardW > 10 && cardH > 8) {
-            int highlight = blendColor(theme.border(), theme.accent(), 0.24f);
-            graphics.fill(4, 2, cardW - 4, 3, highlight);
-        }
-        if (showProgress && cardW > 8) {
+        if (showProgress && cardW > 10) {
             float remaining = 1.0f - UiAnimation.clamp01(progress);
-            int progressEnd = 4 + Math.round((cardW - 8) * remaining);
-            graphics.fill(4, cardH - 3, Math.max(4, Math.min(cardW - 4, progressEnd)),
-                    cardH - 2, theme.accent());
+            int trackStart = 5;
+            int trackEnd = cardW - 5;
+            int progressEnd = trackStart + Math.round((trackEnd - trackStart) * remaining);
+            graphics.fill(trackStart, cardH - 2, trackEnd, cardH - 1,
+                    blendColor(theme.background(), theme.border(), 0.38f));
+            if (progressEnd > trackStart) {
+                graphics.fill(trackStart, cardH - 2, Math.min(trackEnd, progressEnd),
+                        cardH - 1, theme.accent());
+            }
         }
     }
 
@@ -818,12 +842,8 @@ public final class CustomReminderToast implements Toast {
 
     private static void drawModernIconTile(GuiGraphicsExtractor graphics, int x, int y, int size,
                                             ReminderToastTheme theme) {
-        int surface = blendColor(theme.background(), theme.accent(), 0.14f);
-        fillSteppedRect(graphics, x, y, size, size, theme.border());
-        fillSteppedRect(graphics, x + 1, y + 1, size - 2, size - 2, surface);
-        if (size > 12) {
-            graphics.fill(x + 2, y + 5, x + 4, y + size - 5, theme.accent());
-        }
+        int surface = blendColor(theme.background(), theme.border(), 0.16f);
+        fillSteppedRect(graphics, x, y, size, size, surface);
     }
 
     private static int blendColor(int from, int to, float amount) {
