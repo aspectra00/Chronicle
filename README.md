@@ -27,7 +27,7 @@
 
 ### About Chronicle
 
-**Chronicle 1.2.8 · fixed87** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+**Chronicle 1.2.8 · fixed88** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 <br>
 
 ---
@@ -256,14 +256,15 @@ Chronicle is a **client-side mod**.
 
 ##  Current release
 
-### Chronicle 1.2.8 — fixed87
+### Chronicle 1.2.8 — fixed88
 
-`fixed87` rebuilds the Modern notification around a restrained pixel-native surface and a precise shared layout grid.
+`fixed88` gives the Modern notification a clearer two-level reading rhythm without adding visual weight.
 
 Highlights include:
 
 - Single-outline Modern frame with a contained two-pixel shadow
 - Balanced 9px horizontal insets and centered content rhythm
+- Subtle one-pixel divider between the title and message/action row
 - Lightweight flat icon surface without nested decoration
 - Compact content-sized actions with clear hover and failure states
 - Shared geometry for preview, live notifications and action hit boxes
@@ -290,7 +291,13 @@ For the full verified audit, see [`AUDIT_NOTES.md`](AUDIT_NOTES.md).
 ---
 
 <details>
-<summary><strong> fixed76–fixed87 revision history</strong></summary>
+<summary><strong> fixed76–fixed88 revision history</strong></summary>
+
+### fixed88
+
+Adds a restrained one-pixel divider between the Modern notification title and its message/action row.
+
+The divider begins at the active text column, never crosses the icon, and stops before optional Actions; without Actions it follows the same 9px right inset as the content. It uses a muted theme-derived color so hierarchy improves without returning decorative noise.
 
 ### fixed87
 

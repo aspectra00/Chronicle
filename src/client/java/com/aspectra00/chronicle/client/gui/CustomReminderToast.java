@@ -565,6 +565,13 @@ public final class CustomReminderToast implements Toast {
                 (contentHeight - titlePixelHeight - MODERN_TEXT_GAP - totalBodyHeight) / 2)
                 : modernTitleY(font, cardH, titleScale, messageScale);
         int bodyStartY = titleY + titlePixelHeight + MODERN_TEXT_GAP;
+        int dividerY = bodyStartY - 2;
+        int dividerEnd = actionBounds == null ? contentRight - rightPad
+                : Math.min(contentRight - rightPad, actionBounds.snoozeX() - 7);
+        if (dividerEnd - textX >= 20) {
+            graphics.fill(textX, dividerY, dividerEnd, dividerY + 1,
+                    blendColor(safeTheme.background(), safeTheme.border(), 0.34f));
+        }
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
                 safeTheme.title(), false);
