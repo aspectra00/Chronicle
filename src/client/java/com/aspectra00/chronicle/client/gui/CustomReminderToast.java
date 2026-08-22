@@ -565,13 +565,6 @@ public final class CustomReminderToast implements Toast {
                 (contentHeight - titlePixelHeight - MODERN_TEXT_GAP - totalBodyHeight) / 2)
                 : modernTitleY(font, cardH, titleScale, messageScale);
         int bodyStartY = titleY + titlePixelHeight + MODERN_TEXT_GAP;
-        int dividerY = bodyStartY - 2;
-        int dividerEnd = actionBounds == null ? contentRight - rightPad
-                : Math.min(contentRight - rightPad, actionBounds.snoozeX() - 7);
-        if (dividerEnd - textX >= 20) {
-            graphics.fill(textX, dividerY, dividerEnd, dividerY + 1,
-                    blendColor(safeTheme.background(), safeTheme.border(), 0.34f));
-        }
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
                 safeTheme.title(), false);
@@ -668,6 +661,13 @@ public final class CustomReminderToast implements Toast {
                 : ChronicleI18n.tr("toast.action.snooze",
                 ChronicleClient.formatInterval(normalizeSnoozeMinutes(snoozeMinutes)));
         String dismiss = ChronicleI18n.tr("toast.action.dismiss");
+        if (!vanilla) {
+            int dividerHeight = Math.min(font.lineHeight, Math.max(1, bounds.height() - 4));
+            int dividerX = bounds.snoozeX() - 4;
+            int dividerY = bounds.y() + (bounds.height() - dividerHeight) / 2;
+            graphics.fill(dividerX, dividerY, dividerX + 1, dividerY + dividerHeight,
+                    blendColor(theme.background(), theme.border(), 0.34f));
+        }
         drawActionButton(graphics, font, bounds.snoozeX(), bounds.y(), bounds.snoozeWidth(),
                 bounds.height(), snooze, theme, vanilla, true, snoozeHovered, actionFailed);
         drawActionButton(graphics, font, bounds.dismissX(), bounds.y(), bounds.dismissWidth(),

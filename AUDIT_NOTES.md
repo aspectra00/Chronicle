@@ -1,6 +1,6 @@
 # Chronicle Deep Audit
 
-> **Minecraft 26.2 · Chronicle 1.2.8 · fixed88**
+> **Minecraft 26.2 · Chronicle 1.2.8 · fixed89**
 > Whole-project correctness, UI geometry, scheduler, persistence and audio audit.
 
 Chronicle's Java and resource sources were reviewed against Minecraft 26.2 behavior for GUI lifecycle, font metrics, resize and GUI-scale changes, clipping, input routing, scheduler state, notification delivery, custom audio and configuration persistence.
@@ -30,7 +30,7 @@ A clean Gradle build completed successfully against the declared Minecraft 26.2 
 
 ```text
 Chronicle 1.2.8
-fixed88
+fixed89
 Minecraft 26.2
 Java 25
 clean build: PASS
@@ -76,7 +76,25 @@ Chronicle Modern notifications can render compact **Snooze** and **Dismiss** act
 - Screen input hooks are restored after window and GUI-scale reinitialization.
 - Weak interaction references cannot retain toasts removed by Minecraft's manager.
 
-Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The frame uses one outline, balanced insets, a flat icon surface, a muted title divider and a thin lifetime accent, while Vanilla retains its native text inset and line rhythm. Weekly schedules always repeat; post-trigger behavior is available for Daily and condition-trigger schedules. All five locale files contain the same **194 translation keys**.
+Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The frame uses one outline, balanced insets, a flat icon surface, a short action separator and a thin lifetime accent, while Vanilla retains its native text inset and line rhythm. Weekly schedules always repeat; post-trigger behavior is available for Daily and condition-trigger schedules. All five locale files contain the same **194 translation keys**.
+
+---
+
+# fixed89
+
+## Modern action separator correction
+
+`fixed89` removes the horizontal line that visually underlined the title and crowded the message row.
+
+- The replacement is a one-pixel vertical separator placed 4px before Snooze.
+- Its height matches the current Minecraft font line height and remains centered on the action row.
+- It cannot cross title, message, icon or button geometry.
+- It is rendered only when Modern Actions are present.
+- Its muted color remains derived from the active theme.
+- Preview, test and real notifications share the corrected geometry.
+- Vanilla notifications remain unchanged.
+
+The result was checked against the supplied in-game screenshot, both text scales, every supported action width and the 300px action-layout floor.
 
 ---
 
@@ -1195,7 +1213,7 @@ text baseline
 
 # Final verified state
 
-Chronicle `fixed88` extends the `fixed74 → fixed87` reliability sequence with a synchronized MIT-licensed 1.2.8 release and a refined Modern notification hierarchy.
+Chronicle `fixed89` extends the `fixed74 → fixed88` reliability sequence with a synchronized MIT-licensed 1.2.8 release and a corrected Modern notification hierarchy.
 
 The verified release state includes:
 
@@ -1206,7 +1224,7 @@ The verified release state includes:
 - native-correct Vanilla toast sizing
 - shared preview / real-toast rendering
 - single-surface Modern notification geometry
-- metric-derived Modern content divider
+- metric-derived Modern action separator
 - renderer-derived action hit boxes
 - exact millisecond scheduler deadlines
 - editor / scheduler race protection
@@ -1218,7 +1236,7 @@ The verified release state includes:
 - Java 25 lint-clean release validation
 
 ```text
-Chronicle 1.2.8 / fixed88
+Chronicle 1.2.8 / fixed89
 Minecraft 26.2
 Release audit: COMPLETE
 Clean build: PASS

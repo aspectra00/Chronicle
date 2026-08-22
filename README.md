@@ -27,7 +27,7 @@
 
 ### About Chronicle
 
-**Chronicle 1.2.8 · fixed88** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+**Chronicle 1.2.8 · fixed89** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 <br>
 
 ---
@@ -256,15 +256,15 @@ Chronicle is a **client-side mod**.
 
 ##  Current release
 
-### Chronicle 1.2.8 — fixed88
+### Chronicle 1.2.8 — fixed89
 
-`fixed88` gives the Modern notification a clearer two-level reading rhythm without adding visual weight.
+`fixed89` keeps the Modern notification hierarchy clear without underlining or fragmenting its text.
 
 Highlights include:
 
 - Single-outline Modern frame with a contained two-pixel shadow
 - Balanced 9px horizontal insets and centered content rhythm
-- Subtle one-pixel divider between the title and message/action row
+- Short one-pixel separator between reminder content and optional Actions
 - Lightweight flat icon surface without nested decoration
 - Compact content-sized actions with clear hover and failure states
 - Shared geometry for preview, live notifications and action hit boxes
@@ -291,7 +291,13 @@ For the full verified audit, see [`AUDIT_NOTES.md`](AUDIT_NOTES.md).
 ---
 
 <details>
-<summary><strong> fixed76–fixed88 revision history</strong></summary>
+<summary><strong> fixed76–fixed89 revision history</strong></summary>
+
+### fixed89
+
+Removes the horizontal Modern text divider and replaces it with a short vertical separator immediately before optional Actions.
+
+The separator matches the message line height, stays centered on the action row and disappears with Actions. Title and message hierarchy returns to typography and spacing, while the only divider now marks a real boundary between reminder content and controls.
 
 ### fixed88
 
