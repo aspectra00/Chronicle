@@ -31,6 +31,7 @@ public final class CustomReminderToast implements Toast {
     private static final int MODERN_CONTENT_TOP = 6;
     private static final int MODERN_CONTENT_BOTTOM = 5;
     private static final int MODERN_TEXT_GAP = 4;
+    private static final int MODERN_MESSAGE_OPTICAL_OFFSET = 1;
     private static final int MODERN_ICON_SIZE = 28;
     private static final int MODERN_ICON_GAP = 9;
     private static final int MODERN_ACTION_GAP = 5;
@@ -562,9 +563,11 @@ public final class CustomReminderToast implements Toast {
         int totalBodyHeight = lines.size() * bodyLineHeight;
         int titleY = actionBounds == null
                 ? MODERN_CONTENT_TOP + Math.max(0,
-                (contentHeight - titlePixelHeight - MODERN_TEXT_GAP - totalBodyHeight) / 2)
+                (contentHeight - titlePixelHeight - MODERN_TEXT_GAP
+                        - MODERN_MESSAGE_OPTICAL_OFFSET - totalBodyHeight) / 2)
                 : modernTitleY(font, cardH, titleScale, messageScale);
-        int bodyStartY = titleY + titlePixelHeight + MODERN_TEXT_GAP;
+        int bodyStartY = titleY + titlePixelHeight + MODERN_TEXT_GAP
+                + MODERN_MESSAGE_OPTICAL_OFFSET;
 
         drawScaled(graphics, font, clippedTitle, textX, titleY, titleScale,
                 safeTheme.title(), false);
@@ -617,7 +620,8 @@ public final class CustomReminderToast implements Toast {
                 (int) Math.ceil(font.lineHeight * titleScale));
         int messageHeight = Math.max(font.lineHeight,
                 (int) Math.ceil(font.lineHeight * messageScale));
-        int totalTextHeight = titleHeight + MODERN_TEXT_GAP + messageHeight;
+        int totalTextHeight = titleHeight + MODERN_TEXT_GAP
+                + MODERN_MESSAGE_OPTICAL_OFFSET + messageHeight;
         int preferred = MODERN_CONTENT_TOP + Math.max(0,
                 (contentHeight - totalTextHeight) / 2);
         return clampInt(preferred, MODERN_CONTENT_TOP,

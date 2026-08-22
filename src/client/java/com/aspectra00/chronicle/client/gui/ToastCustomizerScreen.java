@@ -59,8 +59,10 @@ public final class ToastCustomizerScreen extends Screen {
     private boolean draftAnimationsEnabled;
     private boolean draftToastActionsEnabled;
     private int draftToastSnoozeMinutes;
+    private boolean advancedColorsVisible;
     private Button titleMinus, titleSize, titlePlus, messageMinus, messageSize, messagePlus, iconMinus, iconSize, iconPlus;
     private Button frameStyleButton, animationsButton, actionsButton, snoozeDurationButton;
+    private Button advancedColorsButton;
     private Button applyButton, testButton, cancelButton;
     private String paletteTarget = "BACKGROUND";
     private Button paletteTargetButton;
@@ -248,14 +250,24 @@ public final class ToastCustomizerScreen extends Screen {
         actionsButton = styledButton(actionsLabel(), actionsX, actionsY,
                 appearanceColumns == 2 ? controlW : appearanceW,
                 UiMetrics.CONTROL_HEIGHT, b -> toggleToastActions());
+        int finalAppearanceY = actionsY + UiMetrics.CONTROL_HEIGHT + appearanceGap;
+        boolean splitFinalAppearanceRow = controlW >= 220;
+        int finalAppearanceW = splitFinalAppearanceRow
+                ? Math.max(1, (controlW - appearanceGap) / 2) : controlW;
         snoozeDurationButton = styledButton(snoozeDurationLabel(), controlsLeft,
-                actionsY + UiMetrics.CONTROL_HEIGHT + appearanceGap,
-                controlW, UiMetrics.CONTROL_HEIGHT, b -> cycleSnoozeDuration());
+                finalAppearanceY, finalAppearanceW, UiMetrics.CONTROL_HEIGHT,
+                b -> cycleSnoozeDuration());
+        advancedColorsButton = styledButton(advancedColorsLabel(),
+                splitFinalAppearanceRow ? controlsLeft + finalAppearanceW + appearanceGap : controlsLeft,
+                splitFinalAppearanceRow ? finalAppearanceY
+                        : finalAppearanceY + UiMetrics.CONTROL_HEIGHT + appearanceGap,
+                finalAppearanceW, UiMetrics.CONTROL_HEIGHT, b -> toggleAdvancedColors());
         snoozeDurationButton.active = draftToastActionsEnabled;
         addRenderableWidget(frameStyleButton);
         addRenderableWidget(animationsButton);
         addRenderableWidget(actionsButton);
         addRenderableWidget(snoozeDurationButton);
+        addRenderableWidget(advancedColorsButton);
 
         int contentShift = (compactStyles ? styleRowStep + previewFirstShift : 0)
                 + appearanceContentShift(compactStyles, controlW);
@@ -468,21 +480,49 @@ public final class ToastCustomizerScreen extends Screen {
                 ChronicleClient.formatInterval(draftToastSnoozeMinutes));
     }
 
+    private String advancedColorsLabel() {
+        return ChronicleI18n.tr(advancedColorsVisible
+                ? "toast.advanced.hide" : "toast.advanced.show");
+    }
+
+    private void toggleAdvancedColors() {
+        if (advancedColorsVisible && !readColors()) {
+            return;
+        }
+        advancedColorsVisible = !advancedColorsVisible;
+        draggingColorPicker = false;
+        draggingHue = false;
+        if (!advancedColorsVisible && isAdvancedColorWidget(getFocused())) {
+            clearFocus();
+        }
+        scrollOffset = Math.max(0, Math.min(scrollOffset, maxScrollAmount()));
+        init();
+    }
+
     private boolean draftActionsVisible() {
         return draftToastActionsEnabled && !"VANILLA".equals(draftFrameStyle);
     }
 
     private void toggleFrameStyle() {
-        draftFrameStyle = "VANILLA".equals(draftFrameStyle) ? "MODERN" : "VANILLA";
-        if (frameStyleButton != null) {
-            frameStyleButton.setMessage(Component.literal(frameStyleLabel()));
+        boolean switchingToVanilla = !"VANILLA".equals(draftFrameStyle);
+        if (switchingToVanilla && advancedColorsVisible && !readColors()) {
+            return;
         }
-        syncFrameSpecificControls();
+        draftFrameStyle = switchingToVanilla ? "VANILLA" : "MODERN";
+        if (switchingToVanilla) {
+            advancedColorsVisible = false;
+            draggingColorPicker = false;
+            draggingHue = false;
+        }
+        scrollOffset = Math.max(0, Math.min(scrollOffset, maxScrollAmount()));
+        init();
     }
 
     private void syncFrameSpecificControls() {
         boolean modern = !"VANILLA".equals(draftFrameStyle);
+        boolean advanced = modern && advancedColorsVisible;
         if (actionsButton != null) actionsButton.active = modern;
+        if (advancedColorsButton != null) advancedColorsButton.active = modern;
         if (snoozeDurationButton != null) {
             snoozeDurationButton.active = modern && draftToastActionsEnabled;
         }
@@ -494,12 +534,22 @@ public final class ToastCustomizerScreen extends Screen {
             if (button != null) button.active = modern;
         }
         for (Button button : paletteButtonValues.keySet()) {
-            if (button != null) button.active = modern;
+            if (button != null) {
+                button.active = advanced;
+                button.visible = advancedColorsVisible;
+            }
         }
-        if (paletteTargetButton != null) paletteTargetButton.active = modern;
-        for (EditBox box : java.util.List.of(iconBox, backgroundBox, borderBox, accentBox,
+        if (paletteTargetButton != null) {
+            paletteTargetButton.active = advanced;
+            paletteTargetButton.visible = advancedColorsVisible;
+        }
+        if (iconBox != null) iconBox.active = modern;
+        for (EditBox box : java.util.List.of(backgroundBox, borderBox, accentBox,
                 titleColorBox, messageColorBox, iconColorBox)) {
-            if (box != null) box.active = modern;
+            if (box != null) {
+                box.active = advanced;
+                box.visible = advancedColorsVisible;
+            }
         }
         if (!modern) {
             draggingColorPicker = false;
@@ -528,6 +578,16 @@ public final class ToastCustomizerScreen extends Screen {
         if (animationsButton != null) {
             animationsButton.setMessage(Component.literal(animationsLabel()));
         }
+    }
+
+    private boolean isAdvancedColorWidget(Object widget) {
+        if (widget == null) return false;
+        if (widget == backgroundBox || widget == borderBox || widget == accentBox
+                || widget == titleColorBox || widget == messageColorBox || widget == iconColorBox
+                || widget == paletteTargetButton) {
+            return true;
+        }
+        return widget instanceof Button button && paletteButtonValues.containsKey(button);
     }
 
     private void toggleToastActions() {
@@ -946,13 +1006,11 @@ public final class ToastCustomizerScreen extends Screen {
         // The old desktop-only 37px shift placed ICON / TITLE six pixels inside it.
         int shift = 55;
         int rows = appearanceColumnCount(controlWidth) == 3
-                ? 2 : appearanceColumnCount(controlWidth) == 2 ? 3 : 4;
+                ? 2 : appearanceColumnCount(controlWidth) == 2 ? 3 : 5;
         return shift + (rows - 1) * (UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM);
     }
 
     private static int colorFieldsBase(boolean compact, int controlWidth) {
-        // Leave a real caption gutter below the ICON size row. The old values
-        // placed the first color caption inside the 24px size buttons.
         int base = compact ? 296 : 260;
         return usesTwoColumnSizeControls(controlWidth) ? base : base + 24 + UiMetrics.GAP_SM;
     }
@@ -1058,12 +1116,17 @@ public final class ToastCustomizerScreen extends Screen {
         int contentShift = UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM
                 + compactPreviewFirstShift(this.height)
                 + appearanceContentShift(true, controlW);
-        int pickerHeight = 150;
-        int pickerY = compactPickerLogicalY(top, contentShift, controlW);
-        int workspaceHeight = usesSideColorWorkspace(true, controlW)
-                ? sideColorWorkspaceHeight(controlW, pickerHeight)
-                : colorPickerVisualHeight(pickerHeight);
-        int contentBottom = pickerY + workspaceHeight + UiMetrics.GAP_MD;
+        int contentBottom;
+        if (advancedColorsVisible) {
+            int pickerHeight = 150;
+            int pickerY = compactPickerLogicalY(top, contentShift, controlW);
+            int workspaceHeight = usesSideColorWorkspace(true, controlW)
+                    ? sideColorWorkspaceHeight(controlW, pickerHeight)
+                    : colorPickerVisualHeight(pickerHeight);
+            contentBottom = pickerY + workspaceHeight + UiMetrics.GAP_MD;
+        } else {
+            contentBottom = top + colorFieldsBase(true, controlW) + contentShift;
+        }
         boolean tinyCustomizer = panelW < 420 || this.height < 420;
         int footerHeight = panelW < 260 ? 120 : (tinyCustomizer ? 48 : 56);
         int footerTop = this.height - footerHeight - reservedErrorStripHeight();
@@ -1205,16 +1268,6 @@ public final class ToastCustomizerScreen extends Screen {
         int iconTitleLabelY = Math.min(iconBox.getY(), titleBox.getY()) - UiMetrics.LABEL_OFFSET;
         drawContentLabel(graphics, ChronicleI18n.tr("toast.section.icon_title"), controlsLeft, iconTitleLabelY,
                 MUTED, contentClipTop, contentClipBottom);
-        // Keep labels physically attached to their corresponding scrolling fields.
-        // Do not recompute them from the original logical layout: the widget positions
-        // are the single source of truth after resize/scroll, so labels cannot lag behind
-        // or remain behind the fixed controls.
-        drawFieldLabel(graphics, targetName("BACKGROUND"), backgroundBox, controlsLeft, MUTED, contentClipTop, contentClipBottom);
-        drawFieldLabel(graphics, targetName("BORDER"), borderBox, col2, MUTED, contentClipTop, contentClipBottom);
-        drawFieldLabel(graphics, targetName("ACCENT"), accentBox, controlsLeft, MUTED, contentClipTop, contentClipBottom);
-        drawFieldLabel(graphics, targetName("TITLE"), titleColorBox, col2, MUTED, contentClipTop, contentClipBottom);
-        drawFieldLabel(graphics, targetName("MESSAGE"), messageColorBox, controlsLeft, MUTED, contentClipTop, contentClipBottom);
-        drawFieldLabel(graphics, targetName("ICON"), iconColorBox, col2, MUTED, contentClipTop, contentClipBottom);
         int paletteBase = paletteBase(compactStyles, controlW);
         int paletteLogicalY = top + paletteBase + contentShift;
         int paletteAreaX = sideColorWorkspace
@@ -1222,8 +1275,22 @@ public final class ToastCustomizerScreen extends Screen {
                 : controlsLeft;
         int paletteLabelY = paletteLogicalY - UiMetrics.LABEL_OFFSET
                 - (sideColorWorkspace ? 0 : UiMetrics.GAP_XS) - scroll;
-        drawContentLabel(graphics, ChronicleI18n.tr("toast.section.palette"), paletteAreaX, paletteLabelY,
-                MUTED, contentClipTop, contentClipBottom);
+        if (advancedColorsVisible) {
+            drawFieldLabel(graphics, targetName("BACKGROUND"), backgroundBox, controlsLeft,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawFieldLabel(graphics, targetName("BORDER"), borderBox, col2,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawFieldLabel(graphics, targetName("ACCENT"), accentBox, controlsLeft,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawFieldLabel(graphics, targetName("TITLE"), titleColorBox, col2,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawFieldLabel(graphics, targetName("MESSAGE"), messageColorBox, controlsLeft,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawFieldLabel(graphics, targetName("ICON"), iconColorBox, col2,
+                    MUTED, contentClipTop, contentClipBottom);
+            drawContentLabel(graphics, ChronicleI18n.tr("toast.section.palette"), paletteAreaX,
+                    paletteLabelY, MUTED, contentClipTop, contentClipBottom);
+        }
 
         // Everything in the scrolling content is rendered under a real scissor. Footer buttons
         // are kept outside this clip and rendered separately.
@@ -1235,36 +1302,40 @@ public final class ToastCustomizerScreen extends Screen {
         if (testButton != null) testButton.visible = false;
         if (cancelButton != null) cancelButton.visible = false;
 
-        // Interactive HSV picker: large saturation/value field plus a hue strip.
-        int pickerW = compactStyles
-                ? compactPickerWidth(controlW)
-                : Math.max(1, Math.min(350, rightColumnW));
-        int pickerH = compactStyles ? 150 : 165;
-        int pickerX = compactStyles
-                ? controlsLeft
-                : rightColumnX + Math.max(0, (rightColumnW - pickerW) / 2);
-        int pickerLogicalY = compactStyles
-                ? compactPickerLogicalY(top, contentShift, controlW)
-                : desktopPickerLogicalY(top, this.height);
-        int pickerY = pickerLogicalY - scroll;
-        drawColorPicker(graphics, pickerX, pickerY, pickerW, pickerH);
-        if ("VANILLA".equals(draftFrameStyle)) {
-            graphics.fill(pickerX - 1, pickerY - 1, pickerX + pickerW + 1,
-                    pickerY + colorPickerVisualHeight(pickerH), 0xB0090C11);
+        if (advancedColorsVisible) {
+            int pickerW = compactStyles
+                    ? compactPickerWidth(controlW)
+                    : Math.max(1, Math.min(350, rightColumnW));
+            int pickerH = compactStyles ? 150 : 165;
+            int pickerX = compactStyles
+                    ? controlsLeft
+                    : rightColumnX + Math.max(0, (rightColumnW - pickerW) / 2);
+            int pickerLogicalY = compactStyles
+                    ? compactPickerLogicalY(top, contentShift, controlW)
+                    : desktopPickerLogicalY(top, this.height);
+            int pickerY = pickerLogicalY - scroll;
+            drawColorPicker(graphics, pickerX, pickerY, pickerW, pickerH);
+            if ("VANILLA".equals(draftFrameStyle)) {
+                graphics.fill(pickerX - 1, pickerY - 1, pickerX + pickerW + 1,
+                        pickerY + colorPickerVisualHeight(pickerH), 0xB0090C11);
+            }
+            int pickerArgb = (getTargetColor() & 0xFF000000)
+                    | (colorFromHsv(pickerHue, pickerSaturation, pickerValue) & 0x00FFFFFF);
+            String pickerHex = hex(pickerArgb);
+            int pickerHexWidth = this.font.width(pickerHex);
+            int pickerHexX = pickerX + Math.max(0, pickerW - pickerHexWidth);
+            int pickerLabelWidth = Math.max(0, pickerHexX - pickerX - UiMetrics.GAP_SM);
+            if (pickerLabelWidth > 0) {
+                String pickerLabel = trimToWidth(ChronicleI18n.tr("toast.color_picker",
+                        targetName(paletteTarget)), pickerLabelWidth);
+                drawContentLabel(graphics, pickerLabel, pickerX,
+                        pickerY - UiMetrics.LABEL_OFFSET, 0xFF8995A4,
+                        contentClipTop, contentClipBottom);
+            }
+            drawContentLabel(graphics, pickerHex, pickerHexX,
+                    pickerY - UiMetrics.LABEL_OFFSET, 0xFF8FB3E8,
+                    contentClipTop, contentClipBottom);
         }
-        int pickerArgb = (getTargetColor() & 0xFF000000)
-                | (colorFromHsv(pickerHue, pickerSaturation, pickerValue) & 0x00FFFFFF);
-        String pickerHex = hex(pickerArgb);
-        int pickerHexWidth = this.font.width(pickerHex);
-        int pickerHexX = pickerX + Math.max(0, pickerW - pickerHexWidth);
-        int pickerLabelWidth = Math.max(0, pickerHexX - pickerX - UiMetrics.GAP_SM);
-        if (pickerLabelWidth > 0) {
-            String pickerLabel = trimToWidth(ChronicleI18n.tr("toast.color_picker", targetName(paletteTarget)), pickerLabelWidth);
-            drawContentLabel(graphics, pickerLabel, pickerX, pickerY - UiMetrics.LABEL_OFFSET,
-                    0xFF8995A4, contentClipTop, contentClipBottom);
-        }
-        drawContentLabel(graphics, pickerHex, pickerHexX, pickerY - UiMetrics.LABEL_OFFSET,
-                0xFF8FB3E8, contentClipTop, contentClipBottom);
 
         String previewMessage = ChronicleI18n.tr("toast.preview.reminder");
         String previewIcon = sanitizeIcon(iconBox == null ? ChronicleClient.CONFIG.toastIcon : iconBox.getValue());
@@ -1370,7 +1441,8 @@ public final class ToastCustomizerScreen extends Screen {
         String style = styleButtonValues.get(button);
         String paletteName = paletteButtonValues.get(button);
         boolean activeToggle = button == animationsButton && draftAnimationsEnabled
-                || button == actionsButton && draftActionsVisible();
+                || button == actionsButton && draftActionsVisible()
+                || button == advancedColorsButton && advancedColorsVisible;
         int buttonAccent = button == applyButton || button == testButton ? ACCENT
                 : button == cancelButton ? ACCENT_ALT
                 : activeToggle ? ACCENT
@@ -1418,6 +1490,11 @@ public final class ToastCustomizerScreen extends Screen {
     private void updateContentWidgetVisibility(int clipTop, int clipBottom) {
         for (var child : children()) {
             if (!(child instanceof net.minecraft.client.gui.components.AbstractWidget widget)) continue;
+            if (!advancedColorsVisible && isAdvancedColorWidget(widget)) {
+                widget.visible = false;
+                if (getFocused() == widget) clearFocus();
+                continue;
+            }
             if (child instanceof Button button) {
                 if (button == applyButton || button == testButton || button == cancelButton) {
                     widget.visible = true;
@@ -1624,7 +1701,7 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private int pickerHitMode(double mouseX, double mouseY) {
-        if ("VANILLA".equals(draftFrameStyle)) return 0;
+        if (!advancedColorsVisible || "VANILLA".equals(draftFrameStyle)) return 0;
         int panelW = UiMetrics.panelWidth(this.width);
         int left = UiMetrics.panelLeft(this.width, panelW);
         int top = UiMetrics.panelTop(this.height);
@@ -1674,7 +1751,7 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private boolean updatePickerFromMouse(double mouseX, double mouseY, boolean allowOutside) {
-        if ("VANILLA".equals(draftFrameStyle)) return false;
+        if (!advancedColorsVisible || "VANILLA".equals(draftFrameStyle)) return false;
         int panelW = UiMetrics.panelWidth(this.width);
         int left = UiMetrics.panelLeft(this.width, panelW);
         int top = UiMetrics.panelTop(this.height);

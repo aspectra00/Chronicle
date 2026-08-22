@@ -62,11 +62,14 @@ public final class ReminderEditorScreen extends Screen {
     private Button weeklyButton;
     private Button intervalButton;
     private Button triggerButton;
-    private Button triggerTypeButton;
+    private Button triggerPreviousButton;
+    private Button triggerNextButton;
     private Button timeFormatButton;
     private Button periodButton;
     private Button intervalUnitButton;
-    private Button afterTriggerButton;
+    private Button afterKeepButton;
+    private Button afterDisableButton;
+    private Button afterDeleteButton;
     private final List<Button> dayButtons = new ArrayList<>();
     private Button saveButton;
     private Button cancelButton;
@@ -88,6 +91,7 @@ public final class ReminderEditorScreen extends Screen {
     private long pressedAt = -1L;
     private int pressedX, pressedY, pressedW, pressedH;
     private Button pressedButton;
+    private boolean initialFocusApplied;
 
     public ReminderEditorScreen(Screen parent, Reminder reminder, boolean isNew) {
         super(ChronicleI18n.component(isNew ? "editor.title.add" : "editor.title.edit"));
@@ -145,6 +149,11 @@ public final class ReminderEditorScreen extends Screen {
     @Override
     protected void init() {
         rebuildWidgetsInternal();
+        if (!initialFocusApplied && isNew && messageBox != null && isInContentViewport(messageBox)) {
+            setFocused(messageBox);
+            messageBox.setFocused(true);
+            initialFocusApplied = true;
+        }
     }
 
     @Override
@@ -259,9 +268,14 @@ public final class ReminderEditorScreen extends Screen {
         int cursorY = modeBottom + UiMetrics.GAP_MD + UiMetrics.LABEL_OFFSET;
 
         if (scheduleType == Reminder.ScheduleType.TRIGGER) {
-            triggerTypeButton = uiButton(triggerTypeLabel(), innerLeft, cursorY, innerW,
-                    UiMetrics.CONTROL_HEIGHT, this::cycleTriggerType);
-            addRenderableWidget(triggerTypeButton);
+            int selectorGap = UiMetrics.GAP_XS;
+            int arrowW = Math.min(36, Math.max(24, (innerW - selectorGap * 2) / 5));
+            triggerPreviousButton = uiButton("<", innerLeft, cursorY, arrowW,
+                    UiMetrics.CONTROL_HEIGHT, () -> cycleTriggerType(-1));
+            triggerNextButton = uiButton(">", Math.max(innerLeft, innerRight - arrowW), cursorY,
+                    arrowW, UiMetrics.CONTROL_HEIGHT, () -> cycleTriggerType(1));
+            addRenderableWidget(triggerPreviousButton);
+            addRenderableWidget(triggerNextButton);
             cursorY += UiMetrics.CONTROL_HEIGHT;
             cursorY = addTriggerValueWidgets(innerLeft, innerRight, innerW, cursorY);
             hourBox = null;
@@ -295,7 +309,8 @@ public final class ReminderEditorScreen extends Screen {
             minuteBox = null;
             timeFormatButton = null;
             periodButton = null;
-            triggerTypeButton = null;
+            triggerPreviousButton = null;
+            triggerNextButton = null;
             clearTriggerValueWidgets();
         } else {
             int gap = UiMetrics.GAP_SM;
@@ -364,7 +379,8 @@ public final class ReminderEditorScreen extends Screen {
                 }
             }
             cursorY = timeControlsBottom;
-            triggerTypeButton = null;
+            triggerPreviousButton = null;
+            triggerNextButton = null;
             clearTriggerValueWidgets();
         }
 
@@ -404,14 +420,35 @@ public final class ReminderEditorScreen extends Screen {
         messageBox.setHorizontalPadding(UiMetrics.GAP_XS);
         addRenderableWidget(messageBox);
         cursorY = messageY + messageBox.getHeight() + this.font.lineHeight + UiMetrics.GAP_MD;
-        afterTriggerButton = null;
+        afterKeepButton = null;
+        afterDisableButton = null;
+        afterDeleteButton = null;
         if (scheduleType == Reminder.ScheduleType.DAILY
                 || scheduleType == Reminder.ScheduleType.TRIGGER) {
             int afterY = cursorY + UiMetrics.LABEL_OFFSET;
-            afterTriggerButton = uiButton(afterTriggerLabel(), innerLeft, afterY, innerW,
-                    UiMetrics.CONTROL_HEIGHT, this::cycleAfterTrigger);
-            addRenderableWidget(afterTriggerButton);
-            cursorY = afterY + afterTriggerButton.getHeight() + 18;
+            int behaviorColumns = innerW >= 420 ? 3 : 1;
+            int behaviorGap = UiMetrics.GAP_SM;
+            int behaviorW = Math.max(1,
+                    (innerW - behaviorGap * (behaviorColumns - 1)) / behaviorColumns);
+            afterKeepButton = uiButton(ChronicleI18n.tr("editor.after.keep"),
+                    innerLeft, afterY, behaviorW, UiMetrics.CONTROL_HEIGHT,
+                    () -> setAfterTriggerAction(Reminder.AfterTriggerAction.KEEP));
+            afterDisableButton = uiButton(ChronicleI18n.tr("editor.after.disable"),
+                    innerLeft + (1 % behaviorColumns) * (behaviorW + behaviorGap),
+                    afterY + (1 / behaviorColumns) * (UiMetrics.CONTROL_HEIGHT + behaviorGap),
+                    behaviorW, UiMetrics.CONTROL_HEIGHT,
+                    () -> setAfterTriggerAction(Reminder.AfterTriggerAction.DISABLE));
+            afterDeleteButton = uiButton(ChronicleI18n.tr("editor.after.delete"),
+                    innerLeft + (2 % behaviorColumns) * (behaviorW + behaviorGap),
+                    afterY + (2 / behaviorColumns) * (UiMetrics.CONTROL_HEIGHT + behaviorGap),
+                    behaviorW, UiMetrics.CONTROL_HEIGHT,
+                    () -> setAfterTriggerAction(Reminder.AfterTriggerAction.DELETE));
+            addRenderableWidget(afterKeepButton);
+            addRenderableWidget(afterDisableButton);
+            addRenderableWidget(afterDeleteButton);
+            int behaviorRows = (3 + behaviorColumns - 1) / behaviorColumns;
+            cursorY = afterY + (behaviorRows - 1) * (UiMetrics.CONTROL_HEIGHT + behaviorGap)
+                    + UiMetrics.CONTROL_HEIGHT + 18;
         }
 
         int panelBottom = Math.max(panelTop + 1, panelBottomForLayout());
@@ -461,24 +498,9 @@ public final class ReminderEditorScreen extends Screen {
         validationError = null;
     }
 
-    private void cycleAfterTrigger() {
-        afterTriggerAction = switch (afterTriggerAction == null
-                ? Reminder.AfterTriggerAction.KEEP : afterTriggerAction) {
-            case KEEP -> Reminder.AfterTriggerAction.DISABLE;
-            case DISABLE -> Reminder.AfterTriggerAction.DELETE;
-            case DELETE -> Reminder.AfterTriggerAction.KEEP;
-        };
-        if (afterTriggerButton != null) {
-            afterTriggerButton.setMessage(Component.literal(afterTriggerLabel()));
-        }
+    private void setAfterTriggerAction(Reminder.AfterTriggerAction action) {
+        afterTriggerAction = action == null ? Reminder.AfterTriggerAction.KEEP : action;
         validationError = null;
-    }
-
-    private String afterTriggerLabel() {
-        Reminder.AfterTriggerAction safe = afterTriggerAction == null
-                ? Reminder.AfterTriggerAction.KEEP : afterTriggerAction;
-        return ChronicleI18n.tr("editor.after.value",
-                ChronicleI18n.tr("editor.after." + safe.name().toLowerCase(java.util.Locale.ROOT)));
     }
 
     private int addTriggerValueWidgets(int innerLeft, int innerRight, int innerW, int cursorY) {
@@ -532,10 +554,10 @@ public final class ReminderEditorScreen extends Screen {
         triggerRadiusBox = null;
     }
 
-    private void cycleTriggerType() {
+    private void cycleTriggerType(int direction) {
         captureValues();
         ReminderTrigger.Type[] values = ReminderTrigger.Type.values();
-        trigger.type = values[(triggerType().ordinal() + 1) % values.length];
+        trigger.type = values[Math.floorMod(triggerType().ordinal() + direction, values.length)];
         normalizeTriggerForType();
         syncTriggerTexts();
         validationError = null;
@@ -1071,12 +1093,29 @@ public final class ReminderEditorScreen extends Screen {
             graphics.text(this.font, ChronicleI18n.component("editor.section.schedule"), dailyButton.getX(),
                     dailyButton.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
-        if (scheduleType == Reminder.ScheduleType.TRIGGER && triggerTypeButton != null
-                && inVerticalClip(triggerTypeButton.getY() - UiMetrics.LABEL_OFFSET,
+        if (scheduleType == Reminder.ScheduleType.TRIGGER && triggerPreviousButton != null
+                && triggerNextButton != null
+                && inVerticalClip(triggerPreviousButton.getY() - UiMetrics.LABEL_OFFSET,
                 contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.when"),
-                    triggerTypeButton.getX(), triggerTypeButton.getY() - UiMetrics.LABEL_OFFSET,
+                    triggerPreviousButton.getX(),
+                    triggerPreviousButton.getY() - UiMetrics.LABEL_OFFSET,
                     MUTED, false);
+            int selectorX = triggerPreviousButton.getX() + triggerPreviousButton.getWidth()
+                    + UiMetrics.GAP_XS;
+            int selectorRight = triggerNextButton.getX() - UiMetrics.GAP_XS;
+            int selectorW = Math.max(0, selectorRight - selectorX);
+            if (selectorW >= 12) {
+                UiFrame.drawControlBorder(graphics, selectorX, triggerPreviousButton.getY(),
+                        selectorW, UiMetrics.CONTROL_HEIGHT);
+                String selectedTrigger = trimToWidth(triggerTypeLabel(), Math.max(1, selectorW - 8));
+                int selectedX = selectorX + Math.max(4,
+                        (selectorW - this.font.width(selectedTrigger)) / 2);
+                graphics.text(this.font, Component.literal(selectedTrigger), selectedX,
+                        UiMetrics.centeredTextY(triggerPreviousButton.getY(),
+                                UiMetrics.CONTROL_HEIGHT, this.font.lineHeight),
+                        TEXT, false);
+            }
         } else if (scheduleType == Reminder.ScheduleType.INTERVAL && intervalBox != null
                 && inVerticalClip(intervalBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.interval"), intervalBox.getX(),
@@ -1084,6 +1123,15 @@ public final class ReminderEditorScreen extends Screen {
         } else if (hourBox != null && inVerticalClip(hourBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.time"), hourBox.getX(),
                     hourBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
+            if (minuteBox != null && minuteBox.getY() == hourBox.getY()) {
+                int gapLeft = hourBox.getX() + hourBox.getWidth();
+                int gapRight = minuteBox.getX();
+                int colonX = gapLeft + Math.max(0,
+                        (gapRight - gapLeft - this.font.width(":")) / 2);
+                graphics.text(this.font, Component.literal(":"), colonX,
+                        UiMetrics.centeredTextY(hourBox.getY(), hourBox.getHeight(),
+                                this.font.lineHeight), MUTED, false);
+            }
         }
         drawTriggerValueLabels(graphics, contentClipTop, contentClipBottom);
         if (scheduleType == Reminder.ScheduleType.WEEKLY && !dayButtons.isEmpty()
@@ -1113,11 +1161,11 @@ public final class ReminderEditorScreen extends Screen {
                         UiFrame.SUBTLE, false);
             }
         }
-        if (afterTriggerButton != null
-                && inVerticalClip(afterTriggerButton.getY() - UiMetrics.LABEL_OFFSET,
+        if (afterKeepButton != null
+                && inVerticalClip(afterKeepButton.getY() - UiMetrics.LABEL_OFFSET,
                 contentClipTop, contentClipBottom)) {
             graphics.text(this.font, ChronicleI18n.component("editor.section.after_trigger"),
-                    afterTriggerButton.getX(), afterTriggerButton.getY() - UiMetrics.LABEL_OFFSET,
+                    afterKeepButton.getX(), afterKeepButton.getY() - UiMetrics.LABEL_OFFSET,
                     MUTED, false);
         }
 
@@ -1215,8 +1263,14 @@ public final class ReminderEditorScreen extends Screen {
         } else if (button == dailyButton || button == weeklyButton || button == intervalButton
                 || button == triggerButton) {
             emphasized = true;
-        } else if (button == afterTriggerButton) {
-            emphasized = afterTriggerAction != Reminder.AfterTriggerAction.KEEP;
+        } else if (button == afterKeepButton || button == afterDisableButton
+                || button == afterDeleteButton) {
+            Reminder.AfterTriggerAction safeAction = afterTriggerAction == null
+                    ? Reminder.AfterTriggerAction.KEEP : afterTriggerAction;
+            emphasized = (button == afterKeepButton && safeAction == Reminder.AfterTriggerAction.KEEP)
+                    || (button == afterDisableButton && safeAction == Reminder.AfterTriggerAction.DISABLE)
+                    || (button == afterDeleteButton && safeAction == Reminder.AfterTriggerAction.DELETE);
+            accent = emphasized ? ACCENT : BORDER;
         }
         UiFrame.drawButton(graphics, this.font, button, accent, emphasized, mouseX, mouseY);
     }

@@ -1,6 +1,6 @@
 # Chronicle Deep Audit
 
-> **Minecraft 26.2 · Chronicle 1.2.8 · fixed89**
+> **Minecraft 26.2 · Chronicle 1.2.8 · fixed90**
 > Whole-project correctness, UI geometry, scheduler, persistence and audio audit.
 
 Chronicle's Java and resource sources were reviewed against Minecraft 26.2 behavior for GUI lifecycle, font metrics, resize and GUI-scale changes, clipping, input routing, scheduler state, notification delivery, custom audio and configuration persistence.
@@ -30,7 +30,7 @@ A clean Gradle build completed successfully against the declared Minecraft 26.2 
 
 ```text
 Chronicle 1.2.8
-fixed89
+fixed90
 Minecraft 26.2
 Java 25
 clean build: PASS
@@ -54,7 +54,7 @@ Verified trigger conditions:
 
 Runtime evaluation uses transition state instead of repeated level polling notifications. A rule initializes silently, fires only on `false → true`, stays quiet while the condition remains true, and re-arms after a false observation. Disabling, deleting, editing or changing a trigger definition resets its runtime state safely.
 
-Configuration validation bounds percentages, hunger, coordinates and radius; canonicalizes dimension identifiers; and preserves compatibility with every pre-trigger `chronicle.json` file. All five locale files contain the same **189 translation keys**.
+Configuration validation bounds percentages, hunger, coordinates and radius; canonicalizes dimension identifiers; and preserves compatibility with every pre-trigger `chronicle.json` file. All five locale files contain the same **196 translation keys**.
 
 The editor retains trigger input and focus through scrolling, resizing and GUI-scale rebuilds. The four schedule modes use a readable responsive grid at the `320×240` logical floor, while long trigger forms remain inside the existing clipped scroll viewport.
 
@@ -76,7 +76,28 @@ Chronicle Modern notifications can render compact **Snooze** and **Dismiss** act
 - Screen input hooks are restored after window and GUI-scale reinitialization.
 - Weak interaction references cannot retain toasts removed by Minecraft's manager.
 
-Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The frame uses one outline, balanced insets, a flat icon surface, a short action separator and a thin lifetime accent, while Vanilla retains its native text inset and line rhythm. Weekly schedules always repeat; post-trigger behavior is available for Daily and condition-trigger schedules. All five locale files contain the same **194 translation keys**.
+Modern action layouts place content-sized controls beside the message without overlapping title, text, icon or progress geometry. The frame uses one outline, balanced insets, a flat icon surface, a short action separator and a thin lifetime accent, while Vanilla retains its native text inset and line rhythm. Weekly schedules always repeat; post-trigger behavior is available for Daily and condition-trigger schedules. All five locale files contain the same **196 translation keys**.
+
+---
+
+# fixed90
+
+## Interface clarity and interaction audit
+
+`fixed90` reduces interaction cost across every Chronicle configuration screen without replacing the established visual language.
+
+- Modern message text receives a one-pixel optical adjustment so its visible baseline matches Snooze and Dismiss text.
+- Reminder cards are complete pointer targets; their explicit controls still take priority and remain available to keyboard users.
+- Trigger conditions use previous and next controls around a stable selected-value field instead of an opaque one-way cycle.
+- Daily and condition-trigger behavior exposes Keep, Disable and Delete as three direct choices.
+- Sound mode exposes Vanilla, Custom File and Off simultaneously, while the volume value is a true readout rather than a hidden increment action.
+- New reminders focus the message field when it is visible, and time fields use an explicit visual separator.
+- The notification customizer keeps presets, frame, motion, actions, Snooze, icon, title and scale controls in the primary flow.
+- The full color workspace opens only through Custom Colors and is removed from focus, pointer and scroll calculations while closed.
+- Modern and Vanilla controls preserve their existing feature boundary; Vanilla notifications remain action-free.
+- All controls retain clipping, focus and footer priority at the `320×240` logical GUI floor.
+
+The audit caught and corrected an advanced-color workspace offset that could approach the fixed footer, a nullable sound-mode state, stale hidden-widget focus and click order, and a clickable readout that implied the wrong action. Java compilation, localization parity and a clean release build form the final gate.
 
 ---
 
@@ -1213,7 +1234,7 @@ text baseline
 
 # Final verified state
 
-Chronicle `fixed89` extends the `fixed74 → fixed88` reliability sequence with a synchronized MIT-licensed 1.2.8 release and a corrected Modern notification hierarchy.
+Chronicle `fixed90` extends the `fixed74 → fixed89` reliability sequence with a synchronized MIT-licensed 1.2.8 release and a complete interface-clarity pass.
 
 The verified release state includes:
 
@@ -1225,7 +1246,10 @@ The verified release state includes:
 - shared preview / real-toast rendering
 - single-surface Modern notification geometry
 - metric-derived Modern action separator
+- optically aligned message and action text
 - renderer-derived action hit boxes
+- direct reminder, behavior and sound interactions
+- progressive disclosure for advanced color controls
 - exact millisecond scheduler deadlines
 - editor / scheduler race protection
 - safe persistence retries
@@ -1236,7 +1260,7 @@ The verified release state includes:
 - Java 25 lint-clean release validation
 
 ```text
-Chronicle 1.2.8 / fixed89
+Chronicle 1.2.8 / fixed90
 Minecraft 26.2
 Release audit: COMPLETE
 Clean build: PASS

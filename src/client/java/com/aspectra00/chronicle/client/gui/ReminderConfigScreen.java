@@ -6,6 +6,7 @@ import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderConfig;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
@@ -20,7 +21,9 @@ import java.util.Objects;
 public class ReminderConfigScreen extends Screen {
     private static final int PANEL_INNER = 0xFF0C1118;
     private static final int ROW = 0xFF141A22;
+    private static final int ROW_HOVER = 0xFF19212B;
     private static final int ROW_DISABLED = 0xFF11161D;
+    private static final int ROW_DISABLED_HOVER = 0xFF161C24;
     private static final int BORDER = 0xFF252E3A;
     private static final int TEXT = 0xFFE7ECF2;
     private static final int MUTED = 0xFF8995A4;
@@ -303,6 +306,42 @@ public class ReminderConfigScreen extends Screen {
     }
 
     @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (super.mouseClicked(event, doubleClick)) {
+            return true;
+        }
+        if (event.button() != 0 || transition.isClosing()) {
+            return false;
+        }
+        int panelW = UiMetrics.panelWidth(this.width);
+        int left = UiMetrics.panelLeft(this.width, panelW);
+        int panelTop = UiMetrics.panelTop(this.height);
+        int contentInset = UiMetrics.contentInset(panelW);
+        boolean tiny = this.width < 380 || this.height < 260;
+        boolean compact = panelW < 660 || tiny;
+        int footerTop = Math.max(0, this.height - (compact ? 82 : 70));
+        int headerHeight = tiny ? 50 : UiMetrics.HEADER_HEIGHT;
+        int listTop = Math.min(panelTop + headerHeight + (tiny ? UiMetrics.GAP_MD : 16), footerTop);
+        int listBottom = Math.max(listTop, footerTop - 12);
+        int rowH = compact ? 76 : 60;
+        int rowHeight = compact ? 68 : 50;
+        if (event.x() < left + contentInset || event.x() >= left + panelW - contentInset
+                || event.y() < listTop || event.y() >= listBottom) {
+            return false;
+        }
+        int relativeY = (int) event.y() - listTop;
+        if (relativeY % rowH >= rowHeight) {
+            return false;
+        }
+        int index = scrollOffset + relativeY / rowH;
+        if (index < 0 || index >= ChronicleClient.CONFIG.reminders.size()) {
+            return false;
+        }
+        openEditor(ChronicleClient.CONFIG.reminders.get(index), false);
+        return true;
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         int panelW = UiMetrics.panelWidth(this.width);
         boolean tiny = this.width < 380 || this.height < 260;
@@ -393,8 +432,12 @@ public class ReminderConfigScreen extends Screen {
 
             int rowLeft = left + contentInset;
             int rowRight = left + panelW - contentInset;
+            boolean rowHovered = mouseX >= rowLeft && mouseX < rowRight
+                    && mouseY >= y && mouseY < y + rowHeight;
             graphics.fill(rowLeft, y, rowRight, y + rowHeight,
-                    reminder.enabled ? ROW : ROW_DISABLED);
+                    reminder.enabled
+                            ? rowHovered ? ROW_HOVER : ROW
+                            : rowHovered ? ROW_DISABLED_HOVER : ROW_DISABLED);
             graphics.fill(rowLeft, y, rowLeft + 2, y + rowHeight,
                     reminder.enabled ? ACCENT : BORDER);
 

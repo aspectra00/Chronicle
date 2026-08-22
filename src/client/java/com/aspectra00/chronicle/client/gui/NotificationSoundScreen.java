@@ -13,7 +13,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.nio.file.Path;
-import java.util.Locale;
 
 public final class NotificationSoundScreen extends Screen {
     private static final int TEXT = UiFrame.TEXT;
@@ -28,7 +27,9 @@ public final class NotificationSoundScreen extends Screen {
     private String saveError;
 
     private VerticallyCenteredEditBox pathBox;
-    private Button modeButton;
+    private Button vanillaModeButton;
+    private Button customModeButton;
+    private Button offModeButton;
     private Button volumeValueButton;
     private Button testSoundButton;
     private Button applyButton;
@@ -56,7 +57,12 @@ public final class NotificationSoundScreen extends Screen {
     public NotificationSoundScreen(Screen parent) {
         super(ChronicleI18n.component("sound.title"));
         this.parent = parent;
-        this.mode = ChronicleClient.CONFIG.notificationSoundMode;
+        this.mode = switch (ChronicleClient.CONFIG.notificationSoundMode == null
+                ? "VANILLA" : ChronicleClient.CONFIG.notificationSoundMode) {
+            case "CUSTOM" -> "CUSTOM";
+            case "OFF" -> "OFF";
+            default -> "VANILLA";
+        };
         this.soundPath = ChronicleClient.CONFIG.customSoundPath;
         this.volumePercent = Math.round(ChronicleClient.CONFIG.notificationSoundVolume * 100.0f);
         CustomSoundPlayer.clearLastError();
@@ -83,9 +89,21 @@ public final class NotificationSoundScreen extends Screen {
         clearWidgets();
         SoundLayout layout = soundLayout();
 
-        modeButton = button(modeLabel(), layout.x(), layout.modeY(), layout.contentW(),
-                layout.controlH(), b -> cycleMode());
-        addRenderableWidget(modeButton);
+        int modeGap = Math.min(UiMetrics.GAP_XS, Math.max(0, (layout.contentW() - 3) / 2));
+        int modeW = Math.max(1, (layout.contentW() - modeGap * 2) / 3);
+        vanillaModeButton = button(ChronicleI18n.tr("sound.mode.vanilla"),
+                layout.x(), layout.modeY(), modeW, layout.controlH(),
+                b -> selectMode("VANILLA"));
+        customModeButton = button(ChronicleI18n.tr("sound.mode.custom"),
+                layout.x() + modeW + modeGap, layout.modeY(), modeW, layout.controlH(),
+                b -> selectMode("CUSTOM"));
+        offModeButton = button(ChronicleI18n.tr("sound.mode.off"),
+                layout.x() + (modeW + modeGap) * 2, layout.modeY(),
+                Math.max(1, layout.contentW() - (modeW + modeGap) * 2),
+                layout.controlH(), b -> selectMode("OFF"));
+        addRenderableWidget(vanillaModeButton);
+        addRenderableWidget(customModeButton);
+        addRenderableWidget(offModeButton);
 
         int fileGap = layout.contentW() >= 96
                 ? UiMetrics.GAP_SM
@@ -123,7 +141,8 @@ public final class NotificationSoundScreen extends Screen {
         addRenderableWidget(button("−", layout.x(), layout.volumeY(), smallW,
                 layout.controlH(), b -> adjustVolume(-10)));
         volumeValueButton = button(volumeLabel(), layout.x() + smallW + volumeGap,
-                layout.volumeY(), valueW, layout.controlH(), b -> adjustVolume(10));
+                layout.volumeY(), valueW, layout.controlH(), b -> {});
+        volumeValueButton.active = false;
         addRenderableWidget(volumeValueButton);
         addRenderableWidget(button("+", layout.x() + smallW + volumeGap
                         + valueW + volumeGap,
@@ -178,21 +197,15 @@ public final class NotificationSoundScreen extends Screen {
         }).bounds(x, y, width, height).build();
     }
 
-    private void cycleMode() {
-        mode = switch (mode == null ? "VANILLA" : mode) {
-            case "VANILLA" -> "CUSTOM";
-            case "CUSTOM" -> "OFF";
+    private void selectMode(String selectedMode) {
+        mode = switch (selectedMode) {
+            case "CUSTOM" -> "CUSTOM";
+            case "OFF" -> "OFF";
             default -> "VANILLA";
         };
-        modeButton.setMessage(Component.literal(modeLabel()));
         updateModeState();
         CustomSoundPlayer.clearLastError();
         saveError = null;
-    }
-
-    private String modeLabel() {
-        String safe = mode == null ? "VANILLA" : mode.toLowerCase(Locale.ROOT);
-        return ChronicleI18n.tr("sound.mode.label", ChronicleI18n.tr("sound.mode." + safe));
     }
 
     private String volumeLabel() {
@@ -339,7 +352,6 @@ public final class NotificationSoundScreen extends Screen {
             mode = "CUSTOM";
             soundPath = Path.of(selected).toAbsolutePath().normalize().toString();
             pathBox.setValue(soundPath);
-            modeButton.setMessage(Component.literal(modeLabel()));
             updateModeState();
             CustomSoundPlayer.clearLastError();
             saveError = null;
@@ -450,7 +462,10 @@ public final class NotificationSoundScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         for (var child : this.children()) {
             if (child instanceof Button button) {
-                boolean emphasized = button == applyButton || button == modeButton;
+                boolean selectedMode = (button == vanillaModeButton && "VANILLA".equals(mode))
+                        || (button == customModeButton && "CUSTOM".equals(mode))
+                        || (button == offModeButton && "OFF".equals(mode));
+                boolean emphasized = button == applyButton || selectedMode;
                 UiFrame.drawButton(graphics, this.font, button, UiFrame.ACCENT, emphasized, mouseX, mouseY);
             }
         }

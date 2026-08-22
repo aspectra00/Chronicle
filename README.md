@@ -27,7 +27,7 @@
 
 ### About Chronicle
 
-**Chronicle 1.2.8 · fixed89** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
+**Chronicle 1.2.8 · fixed90** is a client-side Fabric mod for Minecraft 26.2 that adds flexible scheduled reminders, customizable notifications, repeat rules, placeholders, custom sounds, localization, and responsive in-game configuration screens.
 <br>
 
 ---
@@ -256,12 +256,17 @@ Chronicle is a **client-side mod**.
 
 ##  Current release
 
-### Chronicle 1.2.8 — fixed89
+### Chronicle 1.2.8 — fixed90
 
-`fixed89` keeps the Modern notification hierarchy clear without underlining or fragmenting its text.
+`fixed90` makes Chronicle faster to understand and operate while preserving its restrained in-game identity.
 
 Highlights include:
 
+- Optically aligned Modern message and action text
+- Clickable reminder cards with explicit keyboard-accessible actions
+- Direct schedule, trigger-behavior and sound-mode choices
+- Focus-first reminder creation with clearer time and trigger controls
+- Progressive disclosure for optional custom-color tools
 - Single-outline Modern frame with a contained two-pixel shadow
 - Balanced 9px horizontal insets and centered content rhythm
 - Short one-pixel separator between reminder content and optional Actions
@@ -291,7 +296,13 @@ For the full verified audit, see [`AUDIT_NOTES.md`](AUDIT_NOTES.md).
 ---
 
 <details>
-<summary><strong> fixed76–fixed89 revision history</strong></summary>
+<summary><strong> fixed76–fixed90 revision history</strong></summary>
+
+### fixed90
+
+Completes a focused usability pass across Chronicle's notification, reminder list, editor, sound settings and visual customizer.
+
+Modern notification message text now shares the action-row baseline. Reminder cards open directly while retaining explicit controls, trigger types can be explored in both directions, Daily and condition-trigger behavior uses three visible choices, and sound mode no longer hides options behind a cycle. The customizer keeps its everyday controls concise and reveals the full color workspace only on request. Hidden advanced controls leave the focus and hit-test order completely.
 
 ### fixed89
 
