@@ -359,7 +359,7 @@ public final class CustomReminderToast implements Toast {
         lastRenderedAt = Util.getMillis();
         double localMouseX = Double.NaN;
         double localMouseY = Double.NaN;
-        if (minecraft.gui.screen() != null && !minecraft.mouseHandler.isMouseGrabbed()) {
+        if (minecraft.screen != null && !minecraft.mouseHandler.isMouseGrabbed()) {
             localMouseX = minecraft.mouseHandler.getScaledXPos(minecraft.getWindow()) - renderedX;
             localMouseY = minecraft.mouseHandler.getScaledYPos(minecraft.getWindow()) - renderedY;
         }
@@ -786,7 +786,7 @@ public final class CustomReminderToast implements Toast {
         return minecraft != null && showsActions() && !dismissed
                 && visibility == Visibility.SHOW
                 && Float.isFinite(renderedX) && Float.isFinite(renderedY)
-                && !minecraft.gui.hud.isHidden()
+                && !minecraft.options.hideGui
                 && renderedGuiWidth == minecraft.getWindow().getGuiScaledWidth()
                 && renderedGuiHeight == minecraft.getWindow().getGuiScaledHeight()
                 && Util.getMillis() - lastRenderedAt <= 1_000L;

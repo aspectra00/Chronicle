@@ -135,7 +135,7 @@ public class ChronicleClient implements ClientModInitializer {
 
     private void onClientTick(Minecraft client) {
         while (OPEN_MENU_KEY != null && OPEN_MENU_KEY.consumeClick()) {
-            var currentScreen = client.gui.screen();
+            var currentScreen = client.screen;
             boolean chronicleOpen = currentScreen instanceof ReminderConfigScreen
                     || currentScreen instanceof ReminderEditorScreen
                     || currentScreen instanceof ReminderHistoryScreen
@@ -145,12 +145,12 @@ public class ChronicleClient implements ClientModInitializer {
                     || currentScreen instanceof SupportersScreen
                     || currentScreen instanceof WatchListScreen;
             if (!chronicleOpen) {
-                client.gui.setScreen(new ReminderConfigScreen(currentScreen));
+                client.setScreen(new ReminderConfigScreen(currentScreen));
             }
         }
         if (CONFIG == null) return;
         while (WATCH_TARGET_KEY != null && WATCH_TARGET_KEY.consumeClick()) {
-            if (client.gui.screen() == null) WatchManager.toggleHovered(client);
+            if (client.screen == null) WatchManager.toggleHovered(client);
         }
         while (INTERACT_TOAST_KEY != null && INTERACT_TOAST_KEY.consumeClick()) {
             ToastInteractionManager.open(client);
@@ -508,7 +508,7 @@ public class ChronicleClient implements ClientModInitializer {
                 && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(sourceMessage, snoozeMinutes)
                 : null;
-        client.gui.toastManager().addToast(new CustomReminderToast(
+        client.getToastManager().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action,
                 (status, minutes) -> recordReminderOutcome(
                         resolvedMessage, status, minutes)));
@@ -610,7 +610,7 @@ public class ChronicleClient implements ClientModInitializer {
                 && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(previewMessage, snoozeMinutes)
                 : null;
-        client.gui.toastManager().addToast(new CustomReminderToast(
+        client.getToastManager().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action));
         CustomSoundPlayer.playConfigured(client, CONFIG);
     }

@@ -14,7 +14,7 @@ public final class ToastInteractionScreen extends Screen {
     public void tick() {
         super.tick();
         if (!ToastInteractionManager.hasVisibleActions(this.minecraft)) {
-            this.minecraft.gui.setScreen(null);
+            this.minecraft.setScreen(null);
         }
     }
 

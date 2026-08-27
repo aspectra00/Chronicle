@@ -27,7 +27,7 @@ final class ChronicleScreenTransition {
     void start(Minecraft minecraft, Screen next) {
         if (isClosing()) return;
         if (!animationsEnabled()) {
-            minecraft.gui.setScreen(next);
+            minecraft.setScreen(next);
             return;
         }
         target = next;
@@ -40,7 +40,7 @@ final class ChronicleScreenTransition {
             Screen next = target;
             closingAt = -1L;
             target = null;
-            minecraft.gui.setScreen(next);
+            minecraft.setScreen(next);
             return true;
         }
         return false;

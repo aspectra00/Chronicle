@@ -42,8 +42,8 @@ public final class ToastInteractionManager {
     }
 
     public static void open(Minecraft client) {
-        if (client == null || client.gui.screen() != null || !hasVisibleActions(client)) return;
-        client.gui.setScreen(new ToastInteractionScreen());
+        if (client == null || client.screen != null || !hasVisibleActions(client)) return;
+        client.setScreen(new ToastInteractionScreen());
     }
 
     public static boolean hasVisibleActions(Minecraft client) {

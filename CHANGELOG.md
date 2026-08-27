@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0+26.1.2
+
+### Changed
+
+- Ported Chronicle 1.3.0 to Minecraft 26.1.2
+- Updated Fabric API, Text Placeholder API, and Mod Menu compatibility for the 26.1.2 release line
+
 ## 1.3.0
 
 ### Added
