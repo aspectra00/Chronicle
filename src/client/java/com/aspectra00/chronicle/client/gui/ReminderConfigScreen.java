@@ -11,10 +11,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class ReminderConfigScreen extends Screen {
+    private static final URI SUPPORT_URI = URI.create("https://ko-fi.com/aspectra");
     private static final int PANEL_INNER = 0xFF0C1118;
     private static final int ROW = 0xFF141A22;
     private static final int ROW_HOVER = 0xFF19212B;
@@ -25,6 +27,7 @@ public class ReminderConfigScreen extends Screen {
     private static final int MUTED = 0xFF8995A4;
     private static final int SUBTLE = 0xFF5F6B79;
     private static final int ACCENT = 0xFF8FB3E8;
+    private static final int SUPPORT = 0xFFD4B165;
     private static final int POSITIVE = 0xFF8FC7AA;
     private static final int NEGATIVE = 0xFFB88189;
 
@@ -41,6 +44,8 @@ public class ReminderConfigScreen extends Screen {
     private long pendingRemovalUntil;
     private long configRevision;
     private Button testButton;
+    private Button supportButton;
+    private Button supportDismissButton;
     private String lastConfigError;
 
     public ReminderConfigScreen(Screen parent) {
@@ -122,14 +127,44 @@ public class ReminderConfigScreen extends Screen {
         int end = Math.min(count, start + visibleRows);
 
         testButton = null;
+        supportButton = null;
+        supportDismissButton = null;
         if (panelW >= 220) {
-            int testW = Math.min(64, Math.max(48, panelW / 5));
-            int testH = 24;
-            testButton = button(ChronicleI18n.tr("action.show_toast"),
-                    left + panelW - contentInset - testW,
-                    panelTop + (tiny ? 9 : 13), testW, testH,
-                    b -> ChronicleClient.showTestReminder(this.minecraft));
-            addRenderableWidget(testButton);
+            int buttonY = panelTop + (tiny ? 9 : 13);
+            int buttonH = 24;
+            int right = left + panelW - contentInset;
+            int nextX = right;
+            if (ChronicleClient.CONFIG.showSupportButton
+                    && ChronicleClient.CONFIG.supportPromptReady) {
+                int dismissW = 14;
+                String supportLabel = ChronicleI18n.tr(tiny
+                        ? "action.support.short" : "action.support");
+                String supportHint = ChronicleI18n.tr(compact
+                        ? "action.support_hint.short" : "action.support_hint");
+                int supportW = compact ? (tiny ? 72 : 118)
+                        : Math.min(180, Math.max(this.font.width(supportLabel) + 16,
+                        this.font.width(supportHint) + 8));
+                int dismissX = right - dismissW;
+                int supportX = dismissX - 4 - supportW;
+                supportButton = button(supportLabel,
+                        supportX, buttonY, supportW, buttonH, b -> openSupportPage());
+                addRenderableWidget(supportButton);
+                supportDismissButton = button(ChronicleI18n.tr("action.hide_support"),
+                        dismissX, buttonY + 5, dismissW, 14,
+                        b -> dismissSupportButton());
+                addRenderableWidget(supportDismissButton);
+                nextX = supportX - UiMetrics.GAP_SM;
+            }
+
+            int testW = tiny ? 48 : 56;
+            int testX = nextX - testW;
+            int headerTextSpace = testX - UiMetrics.GAP_SM - (left + contentInset);
+            if (headerTextSpace >= 64) {
+                testButton = button(ChronicleI18n.tr("action.show_toast"),
+                        testX, buttonY, testW, buttonH,
+                        b -> ChronicleClient.showTestReminder(this.minecraft));
+                addRenderableWidget(testButton);
+            }
         }
 
         for (int index = start; index < end; index++) {
@@ -214,24 +249,23 @@ public class ReminderConfigScreen extends Screen {
         if (!compact) {
             int gap = 10;
             int available = Math.max(1, panelW - contentInset * 2);
-            int buttonW = Math.max(1, (available - gap * 5) / 6);
+            int primaryW = Math.min(230, Math.max(170, available * 26 / 100));
+            int doneW = Math.min(132, Math.max(96, available * 14 / 100));
+            int secondaryW = Math.max(1, (available - primaryW - doneW - gap * 4) / 3);
             int x = left + contentInset;
             int footerY = footerTop + UiMetrics.GAP_MD;
-            addRenderableWidget(button("+  " + ChronicleI18n.tr("action.add_reminder"), x, footerY, buttonW, 30,
+            addRenderableWidget(button("+  " + ChronicleI18n.tr("action.add_reminder"), x, footerY, primaryW, 30,
                     b -> openNewReminder()));
-            x += buttonW + gap;
-            addRenderableWidget(button(ChronicleI18n.tr("action.watches"), x, footerY, buttonW, 30,
+            x += primaryW + gap;
+            addRenderableWidget(button(ChronicleI18n.tr("action.watches"), x, footerY, secondaryW, 30,
                     b -> openWatches()));
-            x += buttonW + gap;
-            addRenderableWidget(button(ChronicleI18n.tr("action.history"), x, footerY, buttonW, 30,
+            x += secondaryW + gap;
+            addRenderableWidget(button(ChronicleI18n.tr("action.history"), x, footerY, secondaryW, 30,
                     b -> openHistory()));
-            x += buttonW + gap;
-            addRenderableWidget(button(ChronicleI18n.tr("action.sound"), x, footerY, buttonW, 30,
-                    b -> openSoundSettings()));
-            x += buttonW + gap;
-            addRenderableWidget(button(ChronicleI18n.tr("action.toast_style"), x, footerY, buttonW, 30,
-                    b -> openToastCustomizer()));
-            x += buttonW + gap;
+            x += secondaryW + gap;
+            addRenderableWidget(button(ChronicleI18n.tr("action.customize"), x, footerY,
+                    secondaryW, 30, b -> openCustomization()));
+            x += secondaryW + gap;
             addRenderableWidget(button(ChronicleI18n.tr("action.done"), x, footerY,
                     Math.max(1, left + panelW - contentInset - x), 30, b -> onClose()));
         } else {
@@ -239,7 +273,7 @@ public class ReminderConfigScreen extends Screen {
             int footerRowH = UiMetrics.COMPACT_CONTROL_HEIGHT;
             int contentW = Math.max(1, panelW - contentInset * 2);
             int topButtonW = Math.max(1, (contentW - gap * 2) / 3);
-            int bottomButtonW = Math.max(1, (contentW - gap * 2) / 3);
+            int bottomButtonW = Math.max(1, (contentW - gap) / 2);
             int x1 = left + contentInset;
             int x2 = x1 + topButtonW + gap;
             int x3 = x2 + topButtonW + gap;
@@ -252,16 +286,12 @@ public class ReminderConfigScreen extends Screen {
             addRenderableWidget(button(ChronicleI18n.tr("action.history"), x3, row1,
                     Math.max(1, left + panelW - contentInset - x3), footerRowH,
                     b -> openHistory()));
-            addRenderableWidget(button(ChronicleI18n.tr("action.sound"), x1, row2,
+            addRenderableWidget(button(ChronicleI18n.tr("action.customize"), x1, row2,
                     bottomButtonW, footerRowH,
-                    b -> openSoundSettings()));
-            addRenderableWidget(button(ChronicleI18n.tr("action.toast_style"),
-                    x1 + bottomButtonW + gap, row2,
-                    bottomButtonW, footerRowH,
-                    b -> openToastCustomizer()));
+                    b -> openCustomization()));
             addRenderableWidget(button(ChronicleI18n.tr("action.done"),
-                    x1 + (bottomButtonW + gap) * 2, row2,
-                    Math.max(1, contentW - bottomButtonW * 2 - gap * 2),
+                    x1 + bottomButtonW + gap, row2,
+                    Math.max(1, contentW - bottomButtonW - gap),
                     footerRowH, b -> onClose()));
         }
 
@@ -297,10 +327,6 @@ public class ReminderConfigScreen extends Screen {
                 ChronicleI18n.tr("default.new_reminder"), true), true);
     }
 
-    private void openToastCustomizer() {
-        transition.start(this.minecraft, new ToastCustomizerScreen(this));
-    }
-
     private void openHistory() {
         transition.start(this.minecraft, new ReminderHistoryScreen(this));
     }
@@ -309,8 +335,24 @@ public class ReminderConfigScreen extends Screen {
         transition.start(this.minecraft, new WatchListScreen(this));
     }
 
-    private void openSoundSettings() {
-        transition.start(this.minecraft, new NotificationSoundScreen(this));
+    private void openCustomization() {
+        transition.start(this.minecraft, new CustomizationScreen(this));
+    }
+
+    private void openSupportPage() {
+        Util.getPlatform().openUri(SUPPORT_URI);
+    }
+
+    private void dismissSupportButton() {
+        ChronicleClient.CONFIG.showSupportButton = false;
+        if (!ChronicleClient.CONFIG.save()) {
+            ChronicleClient.CONFIG.showSupportButton = true;
+            saveError = ChronicleClient.CONFIG.getLastSaveError();
+            return;
+        }
+        saveError = null;
+        ChronicleClient.CONFIG_REVISION++;
+        init(this.width, this.height);
     }
 
     @Override
@@ -405,9 +447,10 @@ public class ReminderConfigScreen extends Screen {
         UiFrame.drawInsetDivider(graphics, left, panelW, contentInset, footerTop);
 
         int headerTextX = left + contentInset;
-        int headerTextRight = testButton == null
+        Button firstHeaderButton = testButton == null ? supportButton : testButton;
+        int headerTextRight = firstHeaderButton == null
                 ? left + panelW - contentInset
-                : testButton.getX() - UiMetrics.GAP_SM;
+                : firstHeaderButton.getX() - UiMetrics.GAP_SM;
         int headerTextWidth = Math.max(1, headerTextRight - headerTextX);
         String headerTitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("main.title"), headerTextWidth);
@@ -423,9 +466,22 @@ public class ReminderConfigScreen extends Screen {
         graphics.text(this.font, Component.literal(subtitle),
                 headerTextX, UiMetrics.headerSubtitleY(panelTop, tiny), MUTED, false);
 
-        int listSurfaceInset = Math.max(2, contentInset - 6);
-        graphics.fill(left + listSurfaceInset, listTop - 10,
-                left + panelW - listSurfaceInset, listBottom, PANEL_INNER);
+        if (supportButton != null) {
+            int hintWidth = Math.max(1, supportButton.getWidth());
+            String hint = UiFrame.trimToWidth(this.font,
+                    ChronicleI18n.tr(compact
+                            ? "action.support_hint.short" : "action.support_hint"), hintWidth);
+            int hintX = supportButton.getX()
+                    + Math.max(0, (supportButton.getWidth() - this.font.width(hint)) / 2);
+            int hintY = Math.min(UiMetrics.headerDividerY(panelTop, headerHeight)
+                            - this.font.lineHeight - 2,
+                    supportButton.getY() + supportButton.getHeight() + 3);
+            graphics.text(this.font, Component.literal(hint), hintX, hintY,
+                    MUTED, false);
+        }
+
+        graphics.fill(left + contentInset, listTop - 10,
+                left + panelW - contentInset, listBottom, PANEL_INNER);
 
         int start = Math.min(scrollOffset, ChronicleClient.CONFIG.reminders.size());
         int visibleRows = Math.max(0, (listBottom - listTop) / rowH);
@@ -509,7 +565,8 @@ public class ReminderConfigScreen extends Screen {
         if (maxScroll > 0) {
             float progress = scrollOffset / (float) maxScroll;
             float visibleFraction = visibleRows / (float) Math.max(1, ChronicleClient.CONFIG.reminders.size());
-            UiFrame.drawScrollBar(graphics, left + panelW - Math.max(4, contentInset - 4),
+            UiFrame.drawScrollBar(graphics,
+                    Math.max(left, left + panelW - contentInset - 3),
                     listTop + 4, listBottom - 4,
                     progress, visibleFraction);
         }
@@ -526,11 +583,19 @@ public class ReminderConfigScreen extends Screen {
                     || label.equals(ChronicleI18n.tr("action.delete.short"))
                     || label.equals(ChronicleI18n.tr("action.confirm"))
                     || label.equals(ChronicleI18n.tr("action.sure"));
-            int accent = isOn ? POSITIVE : (destructive ? NEGATIVE : ACCENT);
-            boolean emphasized = isOn || label.equals(ChronicleI18n.tr("action.confirm"))
+            boolean support = button == supportButton;
+            boolean supportDismiss = button == supportDismissButton;
+            int accent = support ? SUPPORT : isOn ? POSITIVE : (destructive ? NEGATIVE : ACCENT);
+            boolean emphasized = support || isOn || label.equals(ChronicleI18n.tr("action.confirm"))
                     || label.equals(ChronicleI18n.tr("action.sure"))
                     || label.startsWith("+") || label.equals(ChronicleI18n.tr("action.done"));
-            UiFrame.drawButton(graphics, this.font, button, accent, emphasized, mouseX, mouseY);
+            if (support) {
+                drawSupportButton(graphics, button, mouseX, mouseY);
+            } else if (supportDismiss) {
+                drawSupportDismissButton(graphics, button, mouseX, mouseY);
+            } else {
+                UiFrame.drawButton(graphics, this.font, button, accent, emphasized, mouseX, mouseY);
+            }
         }
 
         if (lastPressedAt >= 0) {
@@ -568,6 +633,56 @@ public class ReminderConfigScreen extends Screen {
             end = text.offsetByCodePoints(end, -1);
         }
         return text.substring(0, end) + ellipsis;
+    }
+
+    private void drawSupportButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
+        int x = button.getX();
+        int y = button.getY();
+        int width = button.getWidth();
+        int height = button.getHeight();
+        boolean hovered = button.active
+                && mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+        boolean focused = button.active && button.isFocused()
+                && this.minecraft.getLastInputType().isKeyboard();
+        int border = hovered || focused ? SUPPORT : BORDER;
+        int surface = hovered ? ROW_HOVER : ROW;
+        int labelColor = hovered || focused ? TEXT : MUTED;
+
+        graphics.fill(x, y, x + width, y + height, border);
+        if (width > 2 && height > 2) {
+            graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, surface);
+        }
+        if (width > 4 && height > 3) {
+            graphics.fill(x + 2, y + 2, x + width - 2, y + 3, border);
+        }
+        if (focused && width > 6 && height > 6) {
+            graphics.fill(x + 2, y + height - 3, x + width - 2, y + height - 2, border);
+            graphics.fill(x + 2, y + 3, x + 3, y + height - 3, border);
+            graphics.fill(x + width - 3, y + 3, x + width - 2, y + height - 3, border);
+        }
+
+        String text = UiFrame.trimToWidth(this.font, button.getMessage().getString(), width - 8);
+        int textX = x + Math.max(4, (width - this.font.width(text)) / 2);
+        int textY = UiMetrics.centeredTextY(y, height, this.font.lineHeight);
+        graphics.text(this.font, Component.literal(text), textX, textY, labelColor, false);
+    }
+
+    private void drawSupportDismissButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
+        int x = button.getX();
+        int y = button.getY();
+        int width = button.getWidth();
+        int height = button.getHeight();
+        boolean hovered = button.active
+                && mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+        boolean focused = button.active && button.isFocused()
+                && this.minecraft.getLastInputType().isKeyboard();
+
+        graphics.fill(x, y, x + width, y + height,
+                hovered || focused ? 0xFF252E3A : UiFrame.PANEL);
+        int color = hovered || focused ? TEXT : SUBTLE;
+        int textX = x + Math.max(0, (width - this.font.width("×")) / 2);
+        int textY = UiMetrics.centeredTextY(y, height, this.font.lineHeight);
+        graphics.text(this.font, Component.literal("×"), textX, textY, color, false);
     }
 
     @Override

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0
+
+### Added
+
+- Keyboard-accessible Snooze and Dismiss controls for active Modern notifications
+- Configurable notification interaction key, bound to U by default
+- About Chronicle screen with a supporter guide and optional public supporter credits
+- Discreet Ko-fi support link that appears after Chronicle has delivered a real reminder and can be hidden permanently
+
+### Changed
+
+- Consolidated notification design, sound, and project information into a single Customize screen
+- Simplified the main navigation to keep everyday reminder controls easy to reach
+- Aligned list surfaces and scrollbars across reminders, history, and watches
+- Refined support controls to remain secondary to Chronicle's reminder workflow
+
 ## 1.2.9
 
 ### Added

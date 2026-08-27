@@ -13,7 +13,7 @@
   <img src="badges-for-readme/minecraft.svg" alt="Minecraft 26.2" height="38">
   <img src="badges-for-readme/fabric.svg" alt="Fabric Loader 0.19.3" height="38">
   <img src="badges-for-readme/java.svg" alt="Java 25" height="38">
-  <img src="badges-for-readme/chronicle.svg" alt="Chronicle 1.2.9" height="38">
+  <img src="badges-for-readme/chronicle.svg" alt="Chronicle 1.3.0" height="38">
 </p>
 
 Chronicle is a client-side reminder mod for Minecraft. It works in singleplayer and on multiplayer servers without a server-side install.

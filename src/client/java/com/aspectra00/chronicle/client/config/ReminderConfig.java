@@ -83,6 +83,8 @@ public final class ReminderConfig {
     public List<ReminderHistoryEntry> history = new ArrayList<>();
     public List<WatchTarget> watches = new ArrayList<>();
     public boolean use24HourFormat = true;
+    public boolean showSupportButton = true;
+    public boolean supportPromptReady;
 
     public String toastStyle = "MINIMAL";
     public int toastBackgroundColor = 0xFF10151C;
@@ -192,6 +194,12 @@ public final class ReminderConfig {
         if (root.has("watches") && loaded.watches != null) watches = loaded.watches;
         if (root.has("use24HourFormat") && !root.get("use24HourFormat").isJsonNull()) {
             use24HourFormat = loaded.use24HourFormat;
+        }
+        if (root.has("showSupportButton") && !root.get("showSupportButton").isJsonNull()) {
+            showSupportButton = loaded.showSupportButton;
+        }
+        if (root.has("supportPromptReady") && !root.get("supportPromptReady").isJsonNull()) {
+            supportPromptReady = loaded.supportPromptReady;
         }
         if (root.has("toastStyle") && loaded.toastStyle != null) toastStyle = loaded.toastStyle;
         if (root.has("toastBackgroundColor")) toastBackgroundColor = loaded.toastBackgroundColor;

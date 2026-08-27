@@ -41,6 +41,24 @@ public final class ToastInteractionManager {
         });
     }
 
+    public static void open(Minecraft client) {
+        if (client == null || client.gui.screen() != null || !hasVisibleActions(client)) return;
+        client.gui.setScreen(new ToastInteractionScreen());
+    }
+
+    public static boolean hasVisibleActions(Minecraft client) {
+        if (client == null) return false;
+        for (int i = TOASTS.size() - 1; i >= 0; i--) {
+            CustomReminderToast toast = TOASTS.get(i).get();
+            if (toast == null) {
+                TOASTS.remove(i);
+            } else if (toast.hasVisibleActions(client)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static boolean handleMouseClick(Minecraft client, MouseButtonEvent event) {
         if (client == null || event == null || event.button() != 0) return false;
         for (int i = TOASTS.size() - 1; i >= 0; i--) {

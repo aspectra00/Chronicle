@@ -496,7 +496,7 @@ public final class CustomReminderToast implements Toast {
                 crispScale(iconScale, 2.00f),
                 frameStyle,
                 !vanilla, 0L, DISPLAY_TIME_MS,
-                showActions, Double.NaN, Double.NaN, false,
+                showActions, -1.0, -1.0, false,
                 normalizeSnoozeMinutes(snoozeMinutes), backgroundImagePath
         );
         if (vanilla) {
@@ -706,6 +706,14 @@ public final class CustomReminderToast implements Toast {
         ActionBounds bounds = actionBounds(font, width, height, showActions, vanilla,
                 titleScale, messageScale, snoozeMinutes);
         if (bounds == null) return;
+        if (!Double.isFinite(mouseX) || !Double.isFinite(mouseY)) {
+            int promptWidth = bounds.dismissX() + bounds.dismissWidth() - bounds.snoozeX();
+            String prompt = ChronicleI18n.tr("toast.action.interact",
+                    ChronicleClient.toastInteractionKeyLabel());
+            drawActionButton(graphics, font, bounds.snoozeX(), bounds.y(), promptWidth,
+                    bounds.height(), prompt, theme, vanilla, true, false, false);
+            return;
+        }
         boolean snoozeHovered = inside(bounds.snoozeX(), bounds.y(), bounds.snoozeWidth(),
                 bounds.height(), mouseX, mouseY);
         boolean dismissHovered = inside(bounds.dismissX(), bounds.y(), bounds.dismissWidth(),
@@ -774,16 +782,18 @@ public final class CustomReminderToast implements Toast {
                 && mouseY >= y && mouseY < y + height;
     }
 
+    boolean hasVisibleActions(Minecraft minecraft) {
+        return minecraft != null && showsActions() && !dismissed
+                && visibility == Visibility.SHOW
+                && Float.isFinite(renderedX) && Float.isFinite(renderedY)
+                && !minecraft.gui.hud.isHidden()
+                && renderedGuiWidth == minecraft.getWindow().getGuiScaledWidth()
+                && renderedGuiHeight == minecraft.getWindow().getGuiScaledHeight()
+                && Util.getMillis() - lastRenderedAt <= 1_000L;
+    }
+
     boolean handleMouseClick(Minecraft minecraft, double mouseX, double mouseY) {
-        if (minecraft == null || !showsActions() || dismissed
-                || visibility != Visibility.SHOW
-                || !Float.isFinite(renderedX) || !Float.isFinite(renderedY)
-                || minecraft.gui.hud.isHidden()
-                || renderedGuiWidth != minecraft.getWindow().getGuiScaledWidth()
-                || renderedGuiHeight != minecraft.getWindow().getGuiScaledHeight()
-                || Util.getMillis() - lastRenderedAt > 1_000L) {
-            return false;
-        }
+        if (!hasVisibleActions(minecraft)) return false;
         ActionBounds bounds = actionBounds(minecraft.font, renderedWidth, renderedHeight,
                 true, "VANILLA".equals(frameStyle), titleScale, messageScale, snoozeMinutes);
         if (bounds == null) return false;

@@ -307,9 +307,8 @@ public final class ReminderHistoryScreen extends Screen {
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
                 layout.footerTop());
 
-        int surfaceInset = Math.max(2, layout.inset() - 6);
-        graphics.fill(layout.left() + surfaceInset, layout.listTop() - UiMetrics.GAP_SM,
-                layout.left() + layout.panelW() - surfaceInset,
+        graphics.fill(layout.left() + layout.inset(), layout.listTop() - UiMetrics.GAP_SM,
+                layout.left() + layout.panelW() - layout.inset(),
                 layout.listBottom(), PANEL_INNER);
         int start = Math.min(scrollOffset, entries.size());
         int end = Math.min(entries.size(), start + visibleRows);
@@ -336,7 +335,8 @@ public final class ReminderHistoryScreen extends Screen {
 
         if (maxScroll > 0) {
             UiFrame.drawScrollBar(graphics,
-                    layout.left() + layout.panelW() - Math.max(4, layout.inset() - 4),
+                    Math.max(layout.left(),
+                            layout.left() + layout.panelW() - layout.inset() - 3),
                     layout.listTop() + 4, layout.listBottom() - 4,
                     scrollOffset / (float) maxScroll,
                     visibleRows / (float) Math.max(1, entries.size()));

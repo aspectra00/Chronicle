@@ -5,10 +5,12 @@ import com.aspectra00.chronicle.client.config.ReminderConfig;
 import com.aspectra00.chronicle.client.config.ReminderHistoryEntry;
 import com.aspectra00.chronicle.client.config.ReminderTrigger;
 import com.aspectra00.chronicle.client.gui.CustomReminderToast;
+import com.aspectra00.chronicle.client.gui.CustomizationScreen;
 import com.aspectra00.chronicle.client.gui.NotificationSoundScreen;
 import com.aspectra00.chronicle.client.gui.ReminderConfigScreen;
 import com.aspectra00.chronicle.client.gui.ReminderEditorScreen;
 import com.aspectra00.chronicle.client.gui.ReminderHistoryScreen;
+import com.aspectra00.chronicle.client.gui.SupportersScreen;
 import com.aspectra00.chronicle.client.gui.ToastCustomizerScreen;
 import com.aspectra00.chronicle.client.gui.ToastInteractionManager;
 import com.aspectra00.chronicle.client.gui.WatchListScreen;
@@ -50,6 +52,7 @@ public class ChronicleClient implements ClientModInitializer {
     public static ReminderConfig CONFIG;
     public static KeyMapping OPEN_MENU_KEY;
     public static KeyMapping WATCH_TARGET_KEY;
+    public static KeyMapping INTERACT_TOAST_KEY;
     public static long CONFIG_REVISION;
     public static long HISTORY_REVISION;
     public static long WATCH_REVISION;
@@ -119,6 +122,12 @@ public class ChronicleClient implements ClientModInitializer {
                 InputConstants.KEY_R,
                 KEY_CATEGORY
         ));
+        INTERACT_TOAST_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.chronicle.interact_toast",
+                InputConstants.Type.KEYSYM,
+                InputConstants.KEY_U,
+                KEY_CATEGORY
+        ));
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         ClientLifecycleEvents.CLIENT_STOPPING.register(this::onClientStopping);
         ToastInteractionManager.initialize();
@@ -132,6 +141,8 @@ public class ChronicleClient implements ClientModInitializer {
                     || currentScreen instanceof ReminderHistoryScreen
                     || currentScreen instanceof ToastCustomizerScreen
                     || currentScreen instanceof NotificationSoundScreen
+                    || currentScreen instanceof CustomizationScreen
+                    || currentScreen instanceof SupportersScreen
                     || currentScreen instanceof WatchListScreen;
             if (!chronicleOpen) {
                 client.gui.setScreen(new ReminderConfigScreen(currentScreen));
@@ -140,6 +151,9 @@ public class ChronicleClient implements ClientModInitializer {
         if (CONFIG == null) return;
         while (WATCH_TARGET_KEY != null && WATCH_TARGET_KEY.consumeClick()) {
             if (client.gui.screen() == null) WatchManager.toggleHovered(client);
+        }
+        while (INTERACT_TOAST_KEY != null && INTERACT_TOAST_KEY.consumeClick()) {
+            ToastInteractionManager.open(client);
         }
 
         if (!Objects.equals(backgroundPath, CONFIG.toastBackgroundImagePath)) {
@@ -296,6 +310,11 @@ public class ChronicleClient implements ClientModInitializer {
         }
         PendingNotification pending = PENDING_NOTIFICATIONS.removeFirst();
         if (pending.source != null) PENDING_BY_REMINDER.remove(pending.source);
+        if (pending.source != null && !CONFIG.supportPromptReady) {
+            CONFIG.supportPromptReady = true;
+            CONFIG_REVISION++;
+            queueSave(monotonicNow);
+        }
         String message = pending.occurrences <= 1 ? pending.message
                 : pending.message + " ×" + pending.occurrences;
         displayReminder(client, message);
@@ -519,6 +538,11 @@ public class ChronicleClient implements ClientModInitializer {
                 activeClient.queueSave(Util.getMillis());
             }
         }
+    }
+
+    public static String toastInteractionKeyLabel() {
+        return INTERACT_TOAST_KEY == null
+                ? "U" : INTERACT_TOAST_KEY.getTranslatedKeyMessage().getString();
     }
 
     public static boolean clearReminderHistory() {
