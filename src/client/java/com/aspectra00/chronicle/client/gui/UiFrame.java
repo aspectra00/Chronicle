@@ -3,7 +3,7 @@ package com.aspectra00.chronicle.client.gui;
 import com.aspectra00.chronicle.client.ChronicleClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
@@ -29,7 +29,7 @@ public final class UiFrame {
 
     private UiFrame() {}
 
-    public static void drawWindow(GuiGraphicsExtractor g, int left, int top, int width, int bottom) {
+    public static void drawWindow(GuiGraphics g, int left, int top, int width, int bottom) {
         int right = left + Math.max(1, width);
         int frameBottom = Math.max(top + FRAME_SIZE + ACCENT_SIZE + 1, bottom);
         g.fill(left, top, right, frameBottom, FRAME);
@@ -44,7 +44,7 @@ public final class UiFrame {
         }
     }
 
-    public static void drawControlBorder(GuiGraphicsExtractor g, int x, int y, int width, int height) {
+    public static void drawControlBorder(GuiGraphics g, int x, int y, int width, int height) {
         int w = Math.max(1, width);
         int h = Math.max(1, height);
         g.fill(x, y, x + w, y + h, INNER_LINE);
@@ -56,7 +56,7 @@ public final class UiFrame {
         }
     }
 
-    public static void drawInsetDivider(GuiGraphicsExtractor g, int left, int width,
+    public static void drawInsetDivider(GuiGraphics g, int left, int width,
                                         int inset, int y) {
         int start = left + Math.max(0, inset);
         int end = left + Math.max(1, width) - Math.max(0, inset);
@@ -65,7 +65,7 @@ public final class UiFrame {
         }
     }
 
-    public static void drawButton(GuiGraphicsExtractor g, Font font, Button button,
+    public static void drawButton(GuiGraphics g, Font font, Button button,
                                   int accent, boolean emphasized, int mouseX, int mouseY) {
         if (button == null || !button.visible) return;
         int x = button.getX();
@@ -106,10 +106,10 @@ public final class UiFrame {
         Component label = Component.literal(trimToWidth(font, button.getMessage().getString(), w - 8));
         int textX = x + Math.max(4, (w - font.width(label)) / 2);
         int textY = UiMetrics.centeredTextY(y, h, font.lineHeight);
-        g.text(font, label, textX, textY, textColor, false);
+        g.drawString(font, label, textX, textY, textColor, false);
     }
 
-    public static void drawScrollBar(GuiGraphicsExtractor g, int x, int top, int bottom,
+    public static void drawScrollBar(GuiGraphics g, int x, int top, int bottom,
                                      float progress, float visibleFraction) {
         int trackBottom = Math.max(top + 1, bottom);
         int trackHeight = trackBottom - top;

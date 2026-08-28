@@ -398,7 +398,7 @@ public final class WatchManager {
 
     private static void feedback(Minecraft client, String key, Object... args) {
         if (client != null && client.player != null) {
-            client.player.sendOverlayMessage(ChronicleI18n.component(key, args));
+            client.player.displayClientMessage(ChronicleI18n.component(key, args), true);
         }
     }
 

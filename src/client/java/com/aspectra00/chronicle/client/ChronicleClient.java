@@ -18,7 +18,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -110,19 +110,19 @@ public class ChronicleClient implements ClientModInitializer {
             runtimeConfigError = CONFIG.getLastSaveError();
         }
 
-        OPEN_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        OPEN_MENU_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.chronicle.open_menu",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_J,
                 KEY_CATEGORY
         ));
-        WATCH_TARGET_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        WATCH_TARGET_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.chronicle.watch_target",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_R,
                 KEY_CATEGORY
         ));
-        INTERACT_TOAST_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        INTERACT_TOAST_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.chronicle.interact_toast",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_U,

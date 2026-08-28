@@ -5,7 +5,7 @@ import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.ChroniclePlaceholders;
 import com.aspectra00.chronicle.client.CustomSoundPlayer;
 import com.aspectra00.chronicle.client.CustomToastBackground;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -1293,7 +1293,7 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
         int panelW = UiMetrics.panelWidth(this.width);
@@ -1311,11 +1311,11 @@ public final class ToastCustomizerScreen extends Screen {
         int headerTextWidth = Math.max(1, left + panelW - sideInset - headerTextX);
         String headerTitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("toast.header"), headerTextWidth);
-        graphics.text(this.font, Component.literal(headerTitle), headerTextX,
+        graphics.drawString(this.font, Component.literal(headerTitle), headerTextX,
                 UiMetrics.headerTitleY(top, false), 0xFFE7ECF2, true);
         String subtitle = trimToWidth(ChronicleI18n.tr("toast.subtitle"),
                 headerTextWidth);
-        graphics.text(this.font, Component.literal(subtitle),
+        graphics.drawString(this.font, Component.literal(subtitle),
                 headerTextX, UiMetrics.headerSubtitleY(top, false), MUTED, false);
         UiFrame.drawInsetDivider(graphics, left, panelW, sideInset,
                 UiMetrics.headerDividerY(top, UiMetrics.HEADER_HEIGHT));
@@ -1485,7 +1485,7 @@ public final class ToastCustomizerScreen extends Screen {
             }
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         for (var widget : this.children()) {
             if (widget instanceof Button button && button.visible) {
                 drawCustomizedButton(graphics, button, mouseX, mouseY);
@@ -1519,7 +1519,7 @@ public final class ToastCustomizerScreen extends Screen {
                             contentClipBottom + UiMetrics.GAP_XS))
                     : baseContentClipBottom + 2;
             String shownError = trimToWidth(validationError, Math.max(1, panelW - sideInset * 2));
-            graphics.text(this.font, Component.literal(shownError), controlsLeft, errorY, 0xFFD69A9A, false);
+            graphics.drawString(this.font, Component.literal(shownError), controlsLeft, errorY, 0xFFD69A9A, false);
         }
 
         for (var widget : this.children()) {
@@ -1540,7 +1540,7 @@ public final class ToastCustomizerScreen extends Screen {
         return button != null && (button == applyButton || button == testButton || button == cancelButton);
     }
 
-    private void drawCustomizedButton(GuiGraphicsExtractor graphics, Button button,
+    private void drawCustomizedButton(GuiGraphics graphics, Button button,
                                       int mouseX, int mouseY) {
         String style = styleButtonValues.get(button);
         String paletteName = paletteButtonValues.get(button);
@@ -1563,7 +1563,7 @@ public final class ToastCustomizerScreen extends Screen {
         }
     }
 
-    private void drawPressPulse(GuiGraphicsExtractor graphics, long now) {
+    private void drawPressPulse(GuiGraphics graphics, long now) {
         if (lastPressedAt < 0L) return;
         float pulse = UiAnimation.pressProgress(lastPressedAt, now, 190L);
         if (pulse <= 0.0f) return;
@@ -1574,16 +1574,16 @@ public final class ToastCustomizerScreen extends Screen {
                 (alpha << 24) | 0x009DB7D4);
     }
 
-    private void drawContentLabel(GuiGraphicsExtractor graphics, String text, int x, int y, int color,
+    private void drawContentLabel(GuiGraphics graphics, String text, int x, int y, int color,
                                   int clipTop, int clipBottom) {
         if (y + this.font.lineHeight < clipTop || y > clipBottom) return;
         int panelW = UiMetrics.panelWidth(this.width);
         int panelRight = UiMetrics.panelLeft(this.width, panelW) + panelW - UiMetrics.contentInset(panelW);
         String shown = trimToWidth(text, Math.max(1, panelRight - x));
-        graphics.text(this.font, Component.literal(shown), x, y, color, false);
+        graphics.drawString(this.font, Component.literal(shown), x, y, color, false);
     }
 
-    private void drawFieldLabel(GuiGraphicsExtractor graphics, String text, EditBox box, int x, int color,
+    private void drawFieldLabel(GuiGraphics graphics, String text, EditBox box, int x, int color,
                                 int clipTop, int clipBottom) {
         if (box == null || !box.visible) return;
         int y = box.getY() - UiMetrics.LABEL_OFFSET;
@@ -1614,7 +1614,7 @@ public final class ToastCustomizerScreen extends Screen {
         }
     }
 
-    private void renderPreviewAt(GuiGraphicsExtractor graphics, int x, int y, int width, int height,
+    private void renderPreviewAt(GuiGraphics graphics, int x, int y, int width, int height,
                                  String message, String title, String icon, ReminderToastTheme theme,
                                  float titleScale, float messageScale, float iconScale) {
         graphics.pose().pushMatrix();
@@ -1628,7 +1628,7 @@ public final class ToastCustomizerScreen extends Screen {
         graphics.pose().popMatrix();
     }
 
-    private void drawField(GuiGraphicsExtractor graphics, EditBox box, int mouseX, int mouseY) {
+    private void drawField(GuiGraphics graphics, EditBox box, int mouseX, int mouseY) {
         boolean hovered = box.active && mouseX >= box.getX() && mouseX < box.getX() + box.getWidth()
                 && mouseY >= box.getY() && mouseY < box.getY() + box.getHeight();
         int border = hovered || (box.active && box.isFocused()) ? 0xFF3A4655 : 0xFF252E3A;
@@ -1722,7 +1722,7 @@ public final class ToastCustomizerScreen extends Screen {
         return new float[]{h, saturation, max};
     }
 
-    private void drawColorPicker(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+    private void drawColorPicker(GuiGraphics graphics, int x, int y, int width, int height) {
         int squareSize = Math.max(80, height - 28);
         int squareW = Math.min(width, squareSize + 18);
         int hueY = y + squareSize + 10;
@@ -1776,7 +1776,7 @@ public final class ToastCustomizerScreen extends Screen {
         }
     }
 
-    private void drawCrossHandle(GuiGraphicsExtractor graphics, int cx, int cy, int originX, int originY, int width, int height) {
+    private void drawCrossHandle(GuiGraphics graphics, int cx, int cy, int originX, int originY, int width, int height) {
         int maxArm = Math.max(0, (Math.min(width, height) - 1) / 2);
         if (maxArm < 2) {
             int x = Math.max(originX, Math.min(originX + Math.max(0, width - 1), cx));
@@ -1793,7 +1793,7 @@ public final class ToastCustomizerScreen extends Screen {
         graphics.fill(x, y - arm + 1, x + 1, y + arm, 0xFFFFFFFF);
     }
 
-    private void drawHueHandle(GuiGraphicsExtractor graphics, int cx, int cy) {
+    private void drawHueHandle(GuiGraphics graphics, int cx, int cy) {
         graphics.fill(cx - 2, cy - 7, cx + 3, cy + 8, 0xCC000000);
         graphics.fill(cx - 1, cy - 6, cx + 2, cy + 7, 0xFFFFFFFF);
     }
@@ -2022,7 +2022,7 @@ public final class ToastCustomizerScreen extends Screen {
         return text.substring(0, end) + ellipsis;
     }
 
-    private void drawPaletteCardButton(GuiGraphicsExtractor graphics, Button button, String label, String paletteName,
+    private void drawPaletteCardButton(GuiGraphics graphics, Button button, String label, String paletteName,
                                        int mouseX, int mouseY) {
         int x = button.getX();
         int y = button.getY();
@@ -2061,7 +2061,7 @@ public final class ToastCustomizerScreen extends Screen {
         graphics.fill(x + 7, y + 6, swatchRight, y + h - 6, color);
         int labelX = Math.min(x + 36, x + w - 2);
         String shownLabel = trimToWidth(label, Math.max(1, x + w - labelX - 6));
-        graphics.text(this.font, Component.literal(shownLabel), labelX,
+        graphics.drawString(this.font, Component.literal(shownLabel), labelX,
                 UiMetrics.centeredTextY(y, h, this.font.lineHeight),
                 hovered || selected ? 0xFFE7ECF2 : 0xFF8995A4, false);
     }

@@ -2,7 +2,7 @@ package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -166,7 +166,7 @@ public final class SupportersScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY,
                                    float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
@@ -180,11 +180,11 @@ public final class SupportersScreen extends Screen {
         int contentW = Math.max(1, layout.panelW() - layout.inset() * 2);
         boolean compact = layout.panelW() < 520 || this.height < 360;
         String title = UiFrame.trimToWidth(this.font, ChronicleI18n.tr("about.title"), contentW);
-        graphics.text(this.font, Component.literal(title), contentX,
+        graphics.drawString(this.font, Component.literal(title), contentX,
                 UiMetrics.headerTitleY(layout.top(), compact), TEXT, true);
         String subtitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("about.subtitle", version()), contentW);
-        graphics.text(this.font, Component.literal(subtitle), contentX,
+        graphics.drawString(this.font, Component.literal(subtitle), contentX,
                 UiMetrics.headerSubtitleY(layout.top(), compact), MUTED, false);
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
                 UiMetrics.headerDividerY(layout.top(), layout.headerH()));
@@ -195,7 +195,7 @@ public final class SupportersScreen extends Screen {
 
         String guideTitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("about.guide.title"), contentW);
-        graphics.text(this.font, Component.literal(guideTitle), contentX,
+        graphics.drawString(this.font, Component.literal(guideTitle), contentX,
                 layout.guideTop(), SUPPORT, false);
         int guideY = layout.guideTop() + this.font.lineHeight + 5;
         String stepOne = UiFrame.trimToWidth(this.font,
@@ -204,18 +204,18 @@ public final class SupportersScreen extends Screen {
                 ChronicleI18n.tr("about.guide.step2"), contentW);
         String stepThree = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("about.guide.step3"), contentW);
-        graphics.text(this.font, Component.literal(stepOne), contentX, guideY, TEXT, false);
-        graphics.text(this.font, Component.literal(stepTwo), contentX,
+        graphics.drawString(this.font, Component.literal(stepOne), contentX, guideY, TEXT, false);
+        graphics.drawString(this.font, Component.literal(stepTwo), contentX,
                 guideY + this.font.lineHeight + 2, TEXT, false);
-        graphics.text(this.font, Component.literal(stepThree), contentX,
+        graphics.drawString(this.font, Component.literal(stepThree), contentX,
                 guideY + (this.font.lineHeight + 2) * 2, TEXT, false);
         String note = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("about.guide.note"), contentW);
-        graphics.text(this.font, Component.literal(note), contentX,
+        graphics.drawString(this.font, Component.literal(note), contentX,
                 guideY + (this.font.lineHeight + 2) * 3, MUTED, false);
 
         String section = ChronicleI18n.tr("about.supporters");
-        graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+        graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                         section, contentW)), contentX, layout.sectionY(), ACCENT, false);
         graphics.fill(layout.left() + layout.inset(), layout.listTop() - UiMetrics.GAP_XS,
                 layout.left() + layout.panelW() - layout.inset(),
@@ -241,7 +241,7 @@ public final class SupportersScreen extends Screen {
                     Math.max(1, right - x - 16));
             int textX = x + Math.max(8, (right - x - this.font.width(name)) / 2);
             int textY = UiMetrics.centeredTextY(y, layout.rowH(), this.font.lineHeight);
-            graphics.text(this.font, Component.literal(name), textX, textY, TEXT, false);
+            graphics.drawString(this.font, Component.literal(name), textX, textY, TEXT, false);
         }
 
         if (supporters.isEmpty()) {
@@ -251,9 +251,9 @@ public final class SupportersScreen extends Screen {
                     ChronicleI18n.tr("about.empty"), Math.max(1, contentW - 16));
             String emptyHint = UiFrame.trimToWidth(this.font,
                     ChronicleI18n.tr("about.empty_hint"), Math.max(1, contentW - 16));
-            graphics.text(this.font, Component.literal(emptyTitle), contentX + 8,
+            graphics.drawString(this.font, Component.literal(emptyTitle), contentX + 8,
                     emptyY, TEXT, false);
-            graphics.text(this.font, Component.literal(emptyHint), contentX + 8,
+            graphics.drawString(this.font, Component.literal(emptyHint), contentX + 8,
                     emptyY + 18, MUTED, false);
         }
 
@@ -266,7 +266,7 @@ public final class SupportersScreen extends Screen {
                     visibleRows / (float) Math.max(1, totalRows(layout)));
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         for (var child : children()) {
             if (child instanceof Button button) {
                 int accent = button == supportButton ? SUPPORT : ACCENT;

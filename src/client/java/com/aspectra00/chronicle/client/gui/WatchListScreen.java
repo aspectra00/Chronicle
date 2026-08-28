@@ -4,7 +4,7 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.WatchManager;
 import com.aspectra00.chronicle.client.config.WatchTarget;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -224,7 +224,7 @@ public final class WatchListScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY,
                                    float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
@@ -238,12 +238,12 @@ public final class WatchListScreen extends Screen {
         UiFrame.drawWindow(graphics, layout.left(), layout.top(), layout.panelW(), layout.bottom());
         int headerX = layout.left() + layout.inset();
         int headerW = Math.max(1, layout.panelW() - layout.inset() * 2);
-        graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+        graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                         ChronicleI18n.tr("watch.title"), headerW)), headerX,
                 UiMetrics.headerTitleY(layout.top(), layout.compact()), TEXT, true);
         String subtitle = ChronicleI18n.tr(watches.size() == 1
                 ? "watch.subtitle.one" : "watch.subtitle.many", watches.size());
-        graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+        graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                         subtitle, headerW)), headerX,
                 UiMetrics.headerSubtitleY(layout.top(), layout.compact()), MUTED, false);
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
@@ -265,10 +265,10 @@ public final class WatchListScreen extends Screen {
         if (watches.isEmpty()) {
             int emptyY = layout.listTop() + Math.max(6,
                     (Math.max(1, layout.listBottom() - layout.listTop()) - 30) / 2);
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             ChronicleI18n.tr("watch.empty"), headerW - 16)),
                     headerX + 8, emptyY, TEXT, false);
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             ChronicleI18n.tr("watch.empty_hint"), headerW - 16)),
                     headerX + 8, emptyY + 18, MUTED, false);
         }
@@ -282,12 +282,12 @@ public final class WatchListScreen extends Screen {
                     visibleRows / (float) Math.max(1, watches.size()));
         }
         if (saveError != null) {
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             saveError, headerW)), headerX,
                     layout.listBottom() + 3, NEGATIVE, false);
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         for (var child : children()) {
             if (child instanceof Button button) {
                 boolean remove = removeButtons.containsKey(button) || button == clearButton;
@@ -311,7 +311,7 @@ public final class WatchListScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
-    private void drawWatch(GuiGraphicsExtractor graphics, WatchTarget watch,
+    private void drawWatch(GuiGraphics graphics, WatchTarget watch,
                            Layout layout, int y, int mouseX, int mouseY) {
         int x = layout.left() + layout.inset();
         int width = layout.panelW() - layout.inset() * 2;
@@ -322,13 +322,13 @@ public final class WatchListScreen extends Screen {
         int textX = x + 10;
         int removeW = layout.compact() ? 78 : 94;
         int textW = Math.max(1, width - 20 - removeW);
-        graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+        graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                         watch.label, textW)), textX, y + 7, TEXT, true);
-        graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+        graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                         WatchManager.condition(watch), textW)),
                 textX, y + 24, POSITIVE, false);
         if (!layout.compact()) {
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             WatchManager.detail(watch), textW)),
                     textX, y + 38, MUTED, false);
         }

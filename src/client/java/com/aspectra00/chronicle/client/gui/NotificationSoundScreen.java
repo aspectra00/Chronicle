@@ -3,7 +3,7 @@ package com.aspectra00.chronicle.client.gui;
 import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.CustomSoundPlayer;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -380,7 +380,7 @@ public final class NotificationSoundScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         transition.begin(graphics, this.width, this.height);
         SoundLayout layout = soundLayout();
         boolean hasError = saveError != null && !saveError.isBlank();
@@ -396,11 +396,11 @@ public final class NotificationSoundScreen extends Screen {
         String headerTitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("sound.title"), headerTextWidth);
         if (!errorReplacesTitle) {
-            graphics.text(this.font, Component.literal(headerTitle), headerTextX,
+            graphics.drawString(this.font, Component.literal(headerTitle), headerTextX,
                     layout.titleY(), TEXT, true);
         }
         if (layout.showSubtitle()) {
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             ChronicleI18n.tr("sound.subtitle"), headerTextWidth)),
                     headerTextX, UiMetrics.headerSubtitleY(layout.top(), false), MUTED, false);
         }
@@ -414,23 +414,23 @@ public final class NotificationSoundScreen extends Screen {
         }
 
         if (layout.modeLabelY() >= 0) {
-            graphics.text(this.font, ChronicleI18n.component("sound.mode"), layout.x(),
+            graphics.drawString(this.font, ChronicleI18n.component("sound.mode"), layout.x(),
                     layout.modeLabelY(), MUTED, false);
         }
         if (layout.fileLabelY() >= 0 && !errorReplacesFileLabel) {
             String fileLabel = ChronicleI18n.tr("sound.file");
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font, fileLabel,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font, fileLabel,
                             layout.contentW())), layout.x(), layout.fileLabelY(), MUTED, false);
         }
         if (layout.formatsY() >= 0 && !hasError) {
             String formats = UiFrame.trimToWidth(this.font,
                     ChronicleI18n.tr("sound.formats", CustomSoundPlayer.supportedFormats()),
                     layout.contentW());
-            graphics.text(this.font, Component.literal(formats), layout.x(),
+            graphics.drawString(this.font, Component.literal(formats), layout.x(),
                     layout.formatsY(), MUTED, false);
         }
         if (layout.volumeLabelY() >= 0) {
-            graphics.text(this.font, ChronicleI18n.component("sound.volume"), layout.x(),
+            graphics.drawString(this.font, ChronicleI18n.component("sound.volume"), layout.x(),
                     layout.volumeLabelY(), MUTED, false);
         }
 
@@ -449,7 +449,7 @@ public final class NotificationSoundScreen extends Screen {
             }
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         for (var child : this.children()) {
             if (child instanceof Button button) {
                 boolean selectedMode = (button == vanillaModeButton && "VANILLA".equals(mode))
@@ -473,7 +473,7 @@ public final class NotificationSoundScreen extends Screen {
 
         if (hasError) {
             String shown = UiFrame.trimToWidth(this.font, saveError, layout.contentW());
-            graphics.text(this.font, Component.literal(shown), layout.x(), currentErrorY, ERROR, false);
+            graphics.drawString(this.font, Component.literal(shown), layout.x(), currentErrorY, ERROR, false);
         }
         transition.end(graphics, this.width, this.height);
     }

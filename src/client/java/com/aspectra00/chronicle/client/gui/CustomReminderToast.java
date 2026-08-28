@@ -7,7 +7,7 @@ import com.aspectra00.chronicle.client.config.ReminderConfig;
 import com.aspectra00.chronicle.client.config.ReminderHistoryEntry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -348,7 +348,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, Font font, long fullyVisibleForMs) {
+    public void render(GuiGraphics graphics, Font font, long fullyVisibleForMs) {
         int currentWidth = width();
         int currentHeight = height();
         renderedWidth = currentWidth;
@@ -385,7 +385,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static void renderPreview(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -402,7 +402,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static void renderPreview(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -420,7 +420,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static void renderPreview(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -440,7 +440,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static void renderPreview(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -461,7 +461,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     public static void renderPreview(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -505,7 +505,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     private static void renderCard(
-            GuiGraphicsExtractor graphics,
+            GuiGraphics graphics,
             Font font,
             int width,
             int height,
@@ -556,7 +556,7 @@ public final class CustomReminderToast implements Toast {
 
         if (w < 120 || h < 40) {
             String compactMessage = trimToWidth(font, toastMessage, Math.max(1, w - 12));
-            graphics.text(font, Component.literal(compactMessage), 6,
+            graphics.drawString(font, Component.literal(compactMessage), 6,
                     Math.max(2, (h - font.lineHeight) / 2), toastTheme.message(), false);
             return;
         }
@@ -697,7 +697,7 @@ public final class CustomReminderToast implements Toast {
         return clampInt(preferred, top, Math.max(top, bottom - ACTION_BUTTON_HEIGHT));
     }
 
-    private static void renderActionButtons(GuiGraphicsExtractor graphics, Font font,
+    private static void renderActionButtons(GuiGraphics graphics, Font font,
                                             int width, int height, ReminderToastTheme theme,
                                             boolean vanilla, boolean showActions,
                                             float titleScale, float messageScale,
@@ -736,7 +736,7 @@ public final class CustomReminderToast implements Toast {
                 bounds.height(), dismiss, theme, vanilla, false, dismissHovered, false);
     }
 
-    private static void drawActionButton(GuiGraphicsExtractor graphics, Font font,
+    private static void drawActionButton(GuiGraphics graphics, Font font,
                                          int x, int y, int width, int height, String label,
                                          ReminderToastTheme theme, boolean vanilla,
                                          boolean primary, boolean hovered, boolean failed) {
@@ -769,7 +769,7 @@ public final class CustomReminderToast implements Toast {
         String shown = trimToWidth(font, label, Math.max(1, width - 8));
         int textX = x + Math.max(4, (width - font.width(shown)) / 2);
         int textY = y + Math.max(1, (height - font.lineHeight) / 2);
-        graphics.text(font, Component.literal(shown), textX, textY,
+        graphics.drawString(font, Component.literal(shown), textX, textY,
                 failed ? 0xFFFFC2C2
                         : vanilla || hovered ? 0xFFFFFFFF
                         : primary ? theme.title() : theme.message(), false);
@@ -851,7 +851,7 @@ public final class CustomReminderToast implements Toast {
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
     }
 
-    private static void renderModernFrame(GuiGraphicsExtractor graphics, int width, int height,
+    private static void renderModernFrame(GuiGraphics graphics, int width, int height,
                                            ReminderToastTheme theme, boolean showProgress, float progress,
                                            String backgroundImagePath) {
         if (width < 6 || height < 6) {
@@ -886,7 +886,7 @@ public final class CustomReminderToast implements Toast {
         }
     }
 
-    private static void fillSteppedRect(GuiGraphicsExtractor graphics, int x, int y,
+    private static void fillSteppedRect(GuiGraphics graphics, int x, int y,
                                         int width, int height, int color) {
         int w = Math.max(1, width);
         int h = Math.max(1, height);
@@ -899,7 +899,7 @@ public final class CustomReminderToast implements Toast {
         graphics.fill(x, y + 2, x + w, y + h - 2, color);
     }
 
-    private static void renderVanillaCard(GuiGraphicsExtractor graphics, Font font, int width, int height,
+    private static void renderVanillaCard(GuiGraphics graphics, Font font, int width, int height,
                                           String message, String title, boolean showActions,
                                           int snoozeMinutes) {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
@@ -921,15 +921,15 @@ public final class CustomReminderToast implements Toast {
         int maxMessageLines = Math.max(1, (textBottom - 20) / VANILLA_LINE_SPACING);
         List<String> lines = wrapText(font, toastMessage, messageAvailable, maxMessageLines);
 
-        graphics.text(font, Component.literal(clippedTitle), VANILLA_TEXT_X, 7, 0xFFFFFF00, false);
+        graphics.drawString(font, Component.literal(clippedTitle), VANILLA_TEXT_X, 7, 0xFFFFFF00, false);
         for (int i = 0; i < lines.size(); i++) {
             int y = 7 + VANILLA_LINE_SPACING * (i + 1);
             if (y + font.lineHeight > textBottom - 3) break;
-            graphics.text(font, Component.literal(lines.get(i)), VANILLA_TEXT_X, y, 0xFFFFFFFF, false);
+            graphics.drawString(font, Component.literal(lines.get(i)), VANILLA_TEXT_X, y, 0xFFFFFFFF, false);
         }
     }
 
-    private static void drawModernIconTile(GuiGraphicsExtractor graphics, int x, int y, int size,
+    private static void drawModernIconTile(GuiGraphics graphics, int x, int y, int size,
                                             ReminderToastTheme theme) {
         int surface = blendColor(theme.background(), theme.border(), 0.16f);
         fillSteppedRect(graphics, x, y, size, size, surface);
@@ -1032,12 +1032,12 @@ public final class CustomReminderToast implements Toast {
         return text.substring(0, end) + ellipsis;
     }
 
-    private static void drawScaled(GuiGraphicsExtractor graphics, Font font, String text,
+    private static void drawScaled(GuiGraphics graphics, Font font, String text,
                                    int x, int y, float scale, int color, boolean shadow) {
         graphics.pose().pushMatrix();
         graphics.pose().translate(Math.round(x), Math.round(y));
         graphics.pose().scale(scale, scale);
-        graphics.text(font, Component.literal(text), 0, 0, color, shadow);
+        graphics.drawString(font, Component.literal(text), 0, 0, color, shadow);
         graphics.pose().popMatrix();
     }
 }

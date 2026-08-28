@@ -1,7 +1,7 @@
 package com.aspectra00.chronicle.client.gui;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
@@ -43,20 +43,20 @@ final class VerticallyCenteredEditBox extends EditBox {
     }
 
     @Override
-    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         int logicalY = getY();
         int logicalX = getX();
         int inset = effectivePadding();
         int textOffset = Math.max(0, (getHeight() - font.lineHeight + 1) / 2);
         if (textOffset == 0 && inset == 0) {
-            super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
+            super.renderWidget(graphics, mouseX, mouseY, delta);
             return;
         }
 
         setX(logicalX + inset);
         setY(logicalY + textOffset);
         try {
-            super.extractWidgetRenderState(graphics, mouseX, mouseY, delta);
+            super.renderWidget(graphics, mouseX, mouseY, delta);
         } finally {
             setX(logicalX);
             setY(logicalY);

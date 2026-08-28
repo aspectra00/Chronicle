@@ -4,7 +4,7 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderConfig;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
@@ -421,7 +421,7 @@ public class ReminderConfigScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
 
@@ -454,7 +454,7 @@ public class ReminderConfigScreen extends Screen {
         int headerTextWidth = Math.max(1, headerTextRight - headerTextX);
         String headerTitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("main.title"), headerTextWidth);
-        graphics.text(this.font, Component.literal(headerTitle),
+        graphics.drawString(this.font, Component.literal(headerTitle),
                 headerTextX, UiMetrics.headerTitleY(panelTop, tiny), TEXT, true);
         String timeMode = ChronicleI18n.tr(ChronicleClient.CONFIG.use24HourFormat
                 ? "time.mode.24" : "time.mode.12");
@@ -463,7 +463,7 @@ public class ReminderConfigScreen extends Screen {
                 ? "main.reminder_count.one" : "main.reminder_count.many", reminderCount);
         String subtitle = trimToWidth(ChronicleI18n.tr("main.subtitle", timeMode, countLabel),
                 headerTextWidth);
-        graphics.text(this.font, Component.literal(subtitle),
+        graphics.drawString(this.font, Component.literal(subtitle),
                 headerTextX, UiMetrics.headerSubtitleY(panelTop, tiny), MUTED, false);
 
         if (supportButton != null) {
@@ -476,7 +476,7 @@ public class ReminderConfigScreen extends Screen {
             int hintY = Math.min(UiMetrics.headerDividerY(panelTop, headerHeight)
                             - this.font.lineHeight - 2,
                     supportButton.getY() + supportButton.getHeight() + 3);
-            graphics.text(this.font, Component.literal(hint), hintX, hintY,
+            graphics.drawString(this.font, Component.literal(hint), hintX, hintY,
                     MUTED, false);
         }
 
@@ -512,7 +512,7 @@ public class ReminderConfigScreen extends Screen {
             };
             boolean stackedText = rowRight - rowLeft < 150;
             int timeY = y + (stackedText ? 3 : 8);
-            graphics.text(this.font, Component.literal(time), rowLeft + 10, timeY,
+            graphics.drawString(this.font, Component.literal(time), rowLeft + 10, timeY,
                     reminder.enabled ? TEXT : MUTED, true);
 
             int messageX = stackedText ? rowLeft + 10 : rowLeft + 80;
@@ -521,14 +521,14 @@ public class ReminderConfigScreen extends Screen {
                     : compact ? rowRight - UiMetrics.GAP_SM : left + panelW - 314;
             int messageWidth = Math.max(1, messageRight - messageX);
             String message = trimToWidth(reminder.message, messageWidth);
-            graphics.text(this.font, Component.literal(message),
+            graphics.drawString(this.font, Component.literal(message),
                     messageX, y + (stackedText ? 16 : 8), TEXT, true);
 
             String summary = trimToWidth(
                     ChronicleClient.scheduleSummary(reminder, ChronicleClient.CONFIG.use24HourFormat),
                     messageWidth
             );
-            graphics.text(this.font, Component.literal(summary),
+            graphics.drawString(this.font, Component.literal(summary),
                     messageX, y + (stackedText ? 29 : 26), reminder.enabled ? POSITIVE : SUBTLE, false);
         }
 
@@ -536,11 +536,11 @@ public class ReminderConfigScreen extends Screen {
             int emptyY = listTop + Math.max(12, (Math.max(1, listBottom - listTop) - 30) / 2);
             int emptyWidth = Math.max(1, panelW - contentInset * 2 - 20);
             String emptyTitle = trimToWidth(ChronicleI18n.tr("main.empty"), emptyWidth);
-            graphics.text(this.font, Component.literal(emptyTitle),
+            graphics.drawString(this.font, Component.literal(emptyTitle),
                     left + contentInset + 10, emptyY, TEXT, false);
             String emptyHint = trimToWidth(ChronicleI18n.tr("main.empty_hint"),
                     emptyWidth);
-            graphics.text(this.font, Component.literal(emptyHint),
+            graphics.drawString(this.font, Component.literal(emptyHint),
                     left + contentInset + 10, emptyY + 18, MUTED, false);
         }
 
@@ -558,7 +558,7 @@ public class ReminderConfigScreen extends Screen {
             int errorX = left + contentInset;
             graphics.fill(errorX, errorY - 4, errorX + errorW,
                     errorY + this.font.lineHeight + 4, 0xFF2A1C20);
-            graphics.text(this.font, Component.literal(shownError), errorX + 8, errorY, NEGATIVE, false);
+            graphics.drawString(this.font, Component.literal(shownError), errorX + 8, errorY, NEGATIVE, false);
         }
 
         int maxScroll = Math.max(0, ChronicleClient.CONFIG.reminders.size() - visibleRows);
@@ -571,7 +571,7 @@ public class ReminderConfigScreen extends Screen {
                     progress, visibleFraction);
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
 
         for (var child : this.children()) {
             if (!(child instanceof Button button)) {
@@ -635,7 +635,7 @@ public class ReminderConfigScreen extends Screen {
         return text.substring(0, end) + ellipsis;
     }
 
-    private void drawSupportButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
+    private void drawSupportButton(GuiGraphics graphics, Button button, int mouseX, int mouseY) {
         int x = button.getX();
         int y = button.getY();
         int width = button.getWidth();
@@ -664,10 +664,10 @@ public class ReminderConfigScreen extends Screen {
         String text = UiFrame.trimToWidth(this.font, button.getMessage().getString(), width - 8);
         int textX = x + Math.max(4, (width - this.font.width(text)) / 2);
         int textY = UiMetrics.centeredTextY(y, height, this.font.lineHeight);
-        graphics.text(this.font, Component.literal(text), textX, textY, labelColor, false);
+        graphics.drawString(this.font, Component.literal(text), textX, textY, labelColor, false);
     }
 
-    private void drawSupportDismissButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
+    private void drawSupportDismissButton(GuiGraphics graphics, Button button, int mouseX, int mouseY) {
         int x = button.getX();
         int y = button.getY();
         int width = button.getWidth();
@@ -682,7 +682,7 @@ public class ReminderConfigScreen extends Screen {
         int color = hovered || focused ? TEXT : SUBTLE;
         int textX = x + Math.max(0, (width - this.font.width("×")) / 2);
         int textY = UiMetrics.centeredTextY(y, height, this.font.lineHeight);
-        graphics.text(this.font, Component.literal("×"), textX, textY, color, false);
+        graphics.drawString(this.font, Component.literal("×"), textX, textY, color, false);
     }
 
     @Override

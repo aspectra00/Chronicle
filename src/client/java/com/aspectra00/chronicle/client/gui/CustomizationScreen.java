@@ -1,7 +1,7 @@
 package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -138,7 +138,7 @@ public final class CustomizationScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY,
                                    float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
@@ -152,16 +152,16 @@ public final class CustomizationScreen extends Screen {
                 ChronicleI18n.tr("customize.title"), contentW);
         String subtitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("customize.subtitle"), contentW);
-        graphics.text(this.font, Component.literal(title), contentX,
+        graphics.drawString(this.font, Component.literal(title), contentX,
                 UiMetrics.headerTitleY(layout.top(), compact), UiFrame.TEXT, true);
-        graphics.text(this.font, Component.literal(subtitle), contentX,
+        graphics.drawString(this.font, Component.literal(subtitle), contentX,
                 UiMetrics.headerSubtitleY(layout.top(), compact), UiFrame.MUTED, false);
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
                 UiMetrics.headerDividerY(layout.top(), layout.headerH()));
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
                 layout.footerTop());
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         drawChoice(graphics, notificationButton, ChronicleI18n.tr("customize.notification.description"),
                 mouseX, mouseY);
         drawChoice(graphics, soundButton, ChronicleI18n.tr("customize.sound.description"),
@@ -185,7 +185,7 @@ public final class CustomizationScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
-    private void drawChoice(GuiGraphicsExtractor graphics, Button button, String description,
+    private void drawChoice(GuiGraphics graphics, Button button, String description,
                             int mouseX, int mouseY) {
         int x = button.getX();
         int y = button.getY();
@@ -210,12 +210,12 @@ public final class CustomizationScreen extends Screen {
         String detail = UiFrame.trimToWidth(this.font, description, textW);
         if (height >= this.font.lineHeight * 2 + 12) {
             int titleY = y + Math.max(6, (height - this.font.lineHeight * 2 - 5) / 2);
-            graphics.text(this.font, Component.literal(title), textX, titleY,
+            graphics.drawString(this.font, Component.literal(title), textX, titleY,
                     UiFrame.TEXT, true);
-            graphics.text(this.font, Component.literal(detail), textX,
+            graphics.drawString(this.font, Component.literal(detail), textX,
                     titleY + this.font.lineHeight + 5, UiFrame.MUTED, false);
         } else {
-            graphics.text(this.font, Component.literal(title), textX,
+            graphics.drawString(this.font, Component.literal(title), textX,
                     UiMetrics.centeredTextY(y, height, this.font.lineHeight),
                     hovered || focused ? UiFrame.TEXT : UiFrame.MUTED, false);
         }

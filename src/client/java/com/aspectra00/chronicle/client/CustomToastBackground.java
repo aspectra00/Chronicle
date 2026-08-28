@@ -2,7 +2,7 @@ package com.aspectra00.chronicle.client;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
@@ -110,7 +110,7 @@ public final class CustomToastBackground {
         }
     }
 
-    public static boolean draw(GuiGraphicsExtractor graphics, String rawPath,
+    public static boolean draw(GuiGraphics graphics, String rawPath,
                                int x, int y, int width, int height) {
         if (graphics == null || rawPath == null || rawPath.isBlank()
                 || width <= 0 || height <= 0) {

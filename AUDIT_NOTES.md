@@ -4,11 +4,11 @@
 
 | Component | Version |
 |---|---:|
-| Minecraft | 26.1 |
-| Fabric Loader | 0.18.6 minimum; 0.19.3 recommended |
-| Fabric API | 0.145.1+26.1 |
+| Minecraft | 1.21.11 |
+| Fabric Loader | 0.17.3 minimum; 0.19.3 recommended |
+| Fabric API | 0.141.6+1.21.11 |
 | Fabric Loom | 1.17.19 |
-| Java | 25 |
+| Java | 21 |
 
 Chronicle is client-side only. The main source set contains mod metadata and the common initializer; client behavior lives under `src/client`.
 
@@ -42,7 +42,7 @@ Limits:
 
 ## Release checks
 
-Run from the repository root with Java 25:
+Run from the repository root with Java 21:
 
 ```powershell
 .\gradlew.bat clean build

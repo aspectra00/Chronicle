@@ -24,13 +24,13 @@
     ]
   },
   "depends": {
-    "fabricloader": ">=0.18.6",
-    "minecraft": "~26.1",
-    "java": ">=25",
+    "fabricloader": ">=0.17.3",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
     "fabric-api": "*",
-    "placeholder-api": ">=3.0.0"
+    "placeholder-api": ">=2.8.2"
   },
   "suggests": {
-    "modmenu": ">=18.0.0"
+    "modmenu": ">=17.0.0"
   }
 }

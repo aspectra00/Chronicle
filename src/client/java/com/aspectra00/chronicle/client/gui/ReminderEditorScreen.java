@@ -4,7 +4,7 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderTrigger;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -1012,7 +1012,7 @@ public final class ReminderEditorScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
 
@@ -1032,10 +1032,10 @@ public final class ReminderEditorScreen extends Screen {
         int titleMaxWidth = Math.max(1, left + panelW - headerInset - headerTextX
                 - (showModeBadge ? modeWidth + UiMetrics.GAP_LG : 0));
         String shownTitle = trimToWidth(this.title.getString(), titleMaxWidth);
-        graphics.text(this.font, Component.literal(shownTitle), headerTextX,
+        graphics.drawString(this.font, Component.literal(shownTitle), headerTextX,
                 UiMetrics.headerTitleY(panelTop, false), TEXT, false);
         if (showModeBadge) {
-            graphics.text(this.font, Component.literal(modeLabel),
+            graphics.drawString(this.font, Component.literal(modeLabel),
                     left + panelW - headerInset - modeWidth,
                     UiMetrics.headerTitleY(panelTop, false), ACCENT, false);
         }
@@ -1045,7 +1045,7 @@ public final class ReminderEditorScreen extends Screen {
             case TRIGGER -> ChronicleI18n.tr("editor.help.trigger");
             default -> ChronicleI18n.tr("editor.help.daily");
         };
-        graphics.text(this.font, Component.literal(trimToWidth(helpText,
+        graphics.drawString(this.font, Component.literal(trimToWidth(helpText,
                         Math.max(1, left + panelW - headerInset - headerTextX))),
                 headerTextX, UiMetrics.headerSubtitleY(panelTop, false), MUTED, false);
         UiFrame.drawInsetDivider(graphics, left, panelW, headerInset,
@@ -1061,14 +1061,14 @@ public final class ReminderEditorScreen extends Screen {
         graphics.enableScissor(left, contentClipTop, left + panelW, contentClipBottom);
 
         if (dailyButton != null && inVerticalClip(dailyButton.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.schedule"), dailyButton.getX(),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.schedule"), dailyButton.getX(),
                     dailyButton.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
         if (scheduleType == Reminder.ScheduleType.TRIGGER && triggerPreviousButton != null
                 && triggerNextButton != null
                 && inVerticalClip(triggerPreviousButton.getY() - UiMetrics.LABEL_OFFSET,
                 contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.when"),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.when"),
                     triggerPreviousButton.getX(),
                     triggerPreviousButton.getY() - UiMetrics.LABEL_OFFSET,
                     MUTED, false);
@@ -1082,24 +1082,24 @@ public final class ReminderEditorScreen extends Screen {
                 String selectedTrigger = trimToWidth(triggerTypeLabel(), Math.max(1, selectorW - 8));
                 int selectedX = selectorX + Math.max(4,
                         (selectorW - this.font.width(selectedTrigger)) / 2);
-                graphics.text(this.font, Component.literal(selectedTrigger), selectedX,
+                graphics.drawString(this.font, Component.literal(selectedTrigger), selectedX,
                         UiMetrics.centeredTextY(triggerPreviousButton.getY(),
                                 UiMetrics.CONTROL_HEIGHT, this.font.lineHeight),
                         TEXT, false);
             }
         } else if (scheduleType == Reminder.ScheduleType.INTERVAL && intervalBox != null
                 && inVerticalClip(intervalBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.interval"), intervalBox.getX(),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.interval"), intervalBox.getX(),
                     intervalBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         } else if (hourBox != null && inVerticalClip(hourBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.time"), hourBox.getX(),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.time"), hourBox.getX(),
                     hourBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
             if (minuteBox != null && minuteBox.getY() == hourBox.getY()) {
                 int gapLeft = hourBox.getX() + hourBox.getWidth();
                 int gapRight = minuteBox.getX();
                 int colonX = gapLeft + Math.max(0,
                         (gapRight - gapLeft - this.font.width(":")) / 2);
-                graphics.text(this.font, Component.literal(":"), colonX,
+                graphics.drawString(this.font, Component.literal(":"), colonX,
                         UiMetrics.centeredTextY(hourBox.getY(), hourBox.getHeight(),
                                 this.font.lineHeight), MUTED, false);
             }
@@ -1107,33 +1107,33 @@ public final class ReminderEditorScreen extends Screen {
         drawTriggerValueLabels(graphics, contentClipTop, contentClipBottom);
         if (scheduleType == Reminder.ScheduleType.WEEKLY && !dayButtons.isEmpty()
                 && inVerticalClip(dayButtons.get(0).getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.days"), dayButtons.get(0).getX(),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.days"), dayButtons.get(0).getX(),
                     dayButtons.get(0).getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
         if (messageBox != null && inVerticalClip(messageBox.getY() - UiMetrics.LABEL_OFFSET, contentClipTop, contentClipBottom)) {
             int labelY = messageBox.getY() - UiMetrics.LABEL_OFFSET;
             String messageLabel = ChronicleI18n.tr(scheduleType == Reminder.ScheduleType.TRIGGER
                     ? "editor.section.then" : "editor.section.message");
-            graphics.text(this.font, Component.literal(messageLabel), messageBox.getX(), labelY, MUTED, false);
+            graphics.drawString(this.font, Component.literal(messageLabel), messageBox.getX(), labelY, MUTED, false);
             String value = messageBox.getValue() == null ? "" : messageBox.getValue();
             int length = value.length();
             String counter = length + "/80";
             if (messageBox.getWidth() >= this.font.width(messageLabel) + UiMetrics.GAP_SM + this.font.width(counter)) {
-                graphics.text(this.font, Component.literal(counter),
+                graphics.drawString(this.font, Component.literal(counter),
                         messageBox.getX() + messageBox.getWidth() - this.font.width(counter),
                         labelY, UiFrame.SUBTLE, false);
             }
             int hintY = messageBox.getY() + messageBox.getHeight() + 4;
             if (inVerticalClip(hintY, contentClipTop, contentClipBottom)) {
                 String hint = trimToWidth(ChronicleI18n.tr("editor.placeholders_hint"), messageBox.getWidth());
-                graphics.text(this.font, Component.literal(hint), messageBox.getX(), hintY,
+                graphics.drawString(this.font, Component.literal(hint), messageBox.getX(), hintY,
                         UiFrame.SUBTLE, false);
             }
         }
         if (afterKeepButton != null
                 && inVerticalClip(afterKeepButton.getY() - UiMetrics.LABEL_OFFSET,
                 contentClipTop, contentClipBottom)) {
-            graphics.text(this.font, ChronicleI18n.component("editor.section.after_trigger"),
+            graphics.drawString(this.font, ChronicleI18n.component("editor.section.after_trigger"),
                     afterKeepButton.getX(), afterKeepButton.getY() - UiMetrics.LABEL_OFFSET,
                     MUTED, false);
         }
@@ -1143,7 +1143,7 @@ public final class ReminderEditorScreen extends Screen {
                 drawField(graphics, box, mouseX, mouseY);
             }
         }
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
 
         for (var child : children()) {
             if (child instanceof Button button && button.visible) {
@@ -1178,7 +1178,7 @@ public final class ReminderEditorScreen extends Screen {
             graphics.fill(errorX, y, errorX + boxW, y + 26, 0xFF2A1C20);
             int maxTextWidth = Math.max(8, boxW - 16);
             String shownError = trimToWidth(validationError, maxTextWidth);
-            graphics.text(this.font, Component.literal(shownError), errorX + 8, y + 8, ERROR, false);
+            graphics.drawString(this.font, Component.literal(shownError), errorX + 8, y + 8, ERROR, false);
         }
 
         if (pressedButton == saveButton || pressedButton == cancelButton) {
@@ -1187,7 +1187,7 @@ public final class ReminderEditorScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
-    private void drawTriggerValueLabels(GuiGraphicsExtractor graphics, int clipTop, int clipBottom) {
+    private void drawTriggerValueLabels(GuiGraphics graphics, int clipTop, int clipBottom) {
         if (scheduleType != Reminder.ScheduleType.TRIGGER) return;
         if (triggerValueBox != null
                 && inVerticalClip(triggerValueBox.getY() - UiMetrics.LABEL_OFFSET, clipTop, clipBottom)) {
@@ -1197,7 +1197,7 @@ public final class ReminderEditorScreen extends Screen {
                 case ENTER_DIMENSION -> "editor.trigger.value.dimension";
                 default -> "editor.trigger.value";
             };
-            graphics.text(this.font, ChronicleI18n.component(key), triggerValueBox.getX(),
+            graphics.drawString(this.font, ChronicleI18n.component(key), triggerValueBox.getX(),
                     triggerValueBox.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
         }
         drawTriggerFieldLabel(graphics, triggerXBox, "editor.trigger.value.x", clipTop, clipBottom);
@@ -1205,14 +1205,14 @@ public final class ReminderEditorScreen extends Screen {
         drawTriggerFieldLabel(graphics, triggerRadiusBox, "editor.trigger.value.radius", clipTop, clipBottom);
     }
 
-    private void drawTriggerFieldLabel(GuiGraphicsExtractor graphics, EditBox box, String key,
+    private void drawTriggerFieldLabel(GuiGraphics graphics, EditBox box, String key,
                                        int clipTop, int clipBottom) {
         if (box == null || !inVerticalClip(box.getY() - UiMetrics.LABEL_OFFSET, clipTop, clipBottom)) return;
-        graphics.text(this.font, ChronicleI18n.component(key), box.getX(),
+        graphics.drawString(this.font, ChronicleI18n.component(key), box.getX(),
                 box.getY() - UiMetrics.LABEL_OFFSET, MUTED, false);
     }
 
-    private void drawEditorButton(GuiGraphicsExtractor graphics, Button button, int mouseX, int mouseY) {
+    private void drawEditorButton(GuiGraphics graphics, Button button, int mouseX, int mouseY) {
         if (button == null || !button.visible) return;
         int accent = button == cancelButton ? MUTED : ACCENT;
         boolean emphasized = button == saveButton;
@@ -1243,7 +1243,7 @@ public final class ReminderEditorScreen extends Screen {
         UiFrame.drawButton(graphics, this.font, button, accent, emphasized, mouseX, mouseY);
     }
 
-    private void drawPressOverlay(GuiGraphicsExtractor graphics, long now) {
+    private void drawPressOverlay(GuiGraphics graphics, long now) {
         if (pressedAt < 0) return;
         float press = UiAnimation.pressProgress(pressedAt, now, 160L);
         if (press <= 0f) return;
@@ -1272,7 +1272,7 @@ public final class ReminderEditorScreen extends Screen {
         }
     }
 
-    private void drawField(GuiGraphicsExtractor graphics, EditBox box, int mouseX, int mouseY) {
+    private void drawField(GuiGraphics graphics, EditBox box, int mouseX, int mouseY) {
         boolean hovered = mouseX >= box.getX() && mouseX < box.getX() + box.getWidth()
                 && mouseY >= box.getY() && mouseY < box.getY() + box.getHeight();
         int border = (hovered || box.isFocused()) ? HOVER : BORDER;

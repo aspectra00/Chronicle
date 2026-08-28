@@ -3,7 +3,7 @@ package com.aspectra00.chronicle.client.gui;
 import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.ReminderHistoryEntry;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -276,7 +276,7 @@ public final class ReminderHistoryScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY,
                                    float delta) {
         long now = Util.getMillis();
         transition.begin(graphics, this.width, this.height);
@@ -292,7 +292,7 @@ public final class ReminderHistoryScreen extends Screen {
         int headerX = layout.left() + layout.inset();
         int headerW = Math.max(1, layout.panelW() - layout.inset() * 2);
         String title = UiFrame.trimToWidth(this.font, ChronicleI18n.tr("history.title"), headerW);
-        graphics.text(this.font, Component.literal(title), headerX,
+        graphics.drawString(this.font, Component.literal(title), headerX,
                 UiMetrics.headerTitleY(layout.top(), compact), TEXT, true);
         int total = ChronicleClient.CONFIG == null || ChronicleClient.CONFIG.history == null
                 ? 0 : ChronicleClient.CONFIG.history.size();
@@ -300,7 +300,7 @@ public final class ReminderHistoryScreen extends Screen {
                 ? "history.count.one" : "history.count.many", total);
         String subtitle = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("history.subtitle", count), headerW);
-        graphics.text(this.font, Component.literal(subtitle), headerX,
+        graphics.drawString(this.font, Component.literal(subtitle), headerX,
                 UiMetrics.headerSubtitleY(layout.top(), compact), MUTED, false);
         UiFrame.drawInsetDivider(graphics, layout.left(), layout.panelW(), layout.inset(),
                 UiMetrics.headerDividerY(layout.top(), UiMetrics.headerHeight(compact)));
@@ -326,9 +326,9 @@ public final class ReminderHistoryScreen extends Screen {
                     ? "history.empty" : "history.empty.filtered");
             String emptyHint = ChronicleI18n.tr(filter == Filter.ALL
                     ? "history.empty_hint" : "history.empty.filtered_hint");
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             emptyTitle, headerW - 16)), headerX + 8, emptyY, TEXT, false);
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             emptyHint, headerW - 16)), headerX + 8,
                     emptyY + 18, MUTED, false);
         }
@@ -345,10 +345,10 @@ public final class ReminderHistoryScreen extends Screen {
         if (saveError != null) {
             int errorY = layout.listBottom() + 3;
             String error = UiFrame.trimToWidth(this.font, saveError, headerW);
-            graphics.text(this.font, Component.literal(error), headerX, errorY, NEGATIVE, false);
+            graphics.drawString(this.font, Component.literal(error), headerX, errorY, NEGATIVE, false);
         }
 
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        super.render(graphics, mouseX, mouseY, delta);
         for (var child : children()) {
             if (child instanceof Button button) {
                 Filter buttonFilter = filterButtons.get(button);
@@ -375,7 +375,7 @@ public final class ReminderHistoryScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
-    private void drawEntry(GuiGraphicsExtractor graphics, ReminderHistoryEntry entry,
+    private void drawEntry(GuiGraphics graphics, ReminderHistoryEntry entry,
                            int x, int y, int width, int height) {
         ReminderHistoryEntry.Status status = entry.status == null
                 ? ReminderHistoryEntry.Status.MISSED : entry.status;
@@ -391,7 +391,7 @@ public final class ReminderHistoryScreen extends Screen {
                 : right - this.font.width(statusLabel) - UiMetrics.GAP_MD;
         String message = UiFrame.trimToWidth(this.font, entry.message,
                 Math.max(1, messageRight - textX));
-        graphics.text(this.font, Component.literal(message), textX, y + 8, TEXT, true);
+        graphics.drawString(this.font, Component.literal(message), textX, y + 8, TEXT, true);
         String timestamp = formatTimestamp(entry.occurredAtEpochMillis);
         String detail = status == ReminderHistoryEntry.Status.SNOOZED
                 ? ChronicleI18n.tr("history.snoozed_for",
@@ -399,13 +399,13 @@ public final class ReminderHistoryScreen extends Screen {
                 : timestamp;
         if (narrow) {
             String combined = statusLabel + " • " + detail;
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             combined, Math.max(1, right - textX))),
                     textX, y + 29, statusColor, false);
         } else {
-            graphics.text(this.font, Component.literal(statusLabel),
+            graphics.drawString(this.font, Component.literal(statusLabel),
                     right - this.font.width(statusLabel), y + 8, statusColor, false);
-            graphics.text(this.font, Component.literal(UiFrame.trimToWidth(this.font,
+            graphics.drawString(this.font, Component.literal(UiFrame.trimToWidth(this.font,
                             detail, Math.max(1, right - textX))),
                     textX, y + 29, MUTED, false);
         }

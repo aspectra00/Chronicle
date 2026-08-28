@@ -2,7 +2,7 @@ package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleClient;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Util;
 
@@ -46,11 +46,11 @@ final class ChronicleScreenTransition {
         return false;
     }
 
-    void begin(GuiGraphicsExtractor graphics, int width, int height) {
+    void begin(GuiGraphics graphics, int width, int height) {
         graphics.fill(0, 0, width, height, UiFrame.BACKDROP);
     }
 
-    void end(GuiGraphicsExtractor graphics, int width, int height) {
+    void end(GuiGraphics graphics, int width, int height) {
         float progress = progress();
         if (progress < 1.0f) {
             int alpha = Math.max(0, Math.min(105, Math.round((1.0f - progress) * 105.0f)));

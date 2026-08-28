@@ -1,7 +1,7 @@
 package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
@@ -19,7 +19,7 @@ public final class ToastInteractionScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY,
+    public void render(GuiGraphics graphics, int mouseX, int mouseY,
                                    float delta) {
         String hint = UiFrame.trimToWidth(this.font,
                 ChronicleI18n.tr("toast.interaction.hint"), Math.max(1, this.width - 24));
@@ -28,7 +28,7 @@ public final class ToastInteractionScreen extends Screen {
         int y = Math.max(6, this.height - this.font.lineHeight - 9);
         graphics.fill(x - 6, y - 4, Math.min(this.width - 2, x + textWidth + 6),
                 y + this.font.lineHeight + 4, 0xB010151C);
-        graphics.text(this.font, Component.literal(hint), x, y, UiFrame.MUTED, false);
+        graphics.drawString(this.font, Component.literal(hint), x, y, UiFrame.MUTED, false);
     }
 
     @Override
