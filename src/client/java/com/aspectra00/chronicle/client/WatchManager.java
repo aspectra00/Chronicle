@@ -339,7 +339,13 @@ public final class WatchManager {
     private static Evaluation evaluateEntity(Minecraft client, WatchTarget watch) {
         UUID uuid = watch.parsedEntityUuid();
         if (uuid == null) return Evaluation.INVALID;
-        Entity entity = client.level.getEntityInAnyDimension(uuid);
+        Entity entity = null;
+        for (Entity candidate : client.level.entitiesForRendering()) {
+            if (uuid.equals(candidate.getUUID())) {
+                entity = candidate;
+                break;
+            }
+        }
         if (entity == null) return Evaluation.UNAVAILABLE;
         if (entity.isRemoved() || !entity.isAlive()
                 || !EntityType.getKey(entity.getType()).toString().equals(watch.entityType)) {

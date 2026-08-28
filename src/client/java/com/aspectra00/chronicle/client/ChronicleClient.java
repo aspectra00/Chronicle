@@ -22,7 +22,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.Util;
 
 import java.nio.file.Path;
@@ -36,8 +35,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class ChronicleClient implements ClientModInitializer {
-    private static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category.register(
-            ResourceLocation.fromNamespaceAndPath("chronicle", "main"));
+    private static final String KEY_CATEGORY = "key.category.chronicle.main";
     private static final long TEST_TOAST_DEBOUNCE_MS = 500L;
     private static final long INTERVAL_SCAN_PERIOD_MS = 250L;
     private static final long NOTIFICATION_DRAIN_GAP_MS = 750L;

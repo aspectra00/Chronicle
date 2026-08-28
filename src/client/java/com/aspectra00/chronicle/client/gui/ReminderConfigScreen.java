@@ -7,7 +7,6 @@ import com.aspectra00.chronicle.client.config.ReminderConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.Util;
@@ -357,11 +356,11 @@ public class ReminderConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (super.mouseClicked(event, doubleClick)) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
-        if (event.button() != 0 || transition.isClosing()) {
+        if (button != 0 || transition.isClosing()) {
             return false;
         }
         int panelW = UiMetrics.panelWidth(this.width);
@@ -377,11 +376,11 @@ public class ReminderConfigScreen extends Screen {
         int listBottom = Math.max(listTop, footerTop - 12);
         int rowH = compact ? 76 : 60;
         int rowHeight = compact ? 68 : 50;
-        if (event.x() < left + contentInset || event.x() >= left + panelW - contentInset
-                || event.y() < listTop || event.y() >= listBottom) {
+        if (mouseX < left + contentInset || mouseX >= left + panelW - contentInset
+                || mouseY < listTop || mouseY >= listBottom) {
             return false;
         }
-        int relativeY = (int) event.y() - listTop;
+        int relativeY = (int) mouseY - listTop;
         if (relativeY % rowH >= rowHeight) {
             return false;
         }

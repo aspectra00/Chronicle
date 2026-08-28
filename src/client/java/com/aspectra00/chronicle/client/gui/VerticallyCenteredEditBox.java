@@ -3,7 +3,6 @@ package com.aspectra00.chronicle.client.gui;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
 final class VerticallyCenteredEditBox extends EditBox {
@@ -28,13 +27,13 @@ final class VerticallyCenteredEditBox extends EditBox {
     }
 
     @Override
-    public void onClick(MouseButtonEvent event, boolean doubleClick) {
-        super.onClick(contentEvent(event), doubleClick);
+    public void onClick(double mouseX, double mouseY) {
+        super.onClick(contentX(mouseX), mouseY);
     }
 
     @Override
-    protected void onDrag(MouseButtonEvent event, double dragX, double dragY) {
-        super.onDrag(contentEvent(event), dragX, dragY);
+    protected void onDrag(double mouseX, double mouseY, double dragX, double dragY) {
+        super.onDrag(contentX(mouseX), mouseY, dragX, dragY);
     }
 
     @Override
@@ -67,12 +66,11 @@ final class VerticallyCenteredEditBox extends EditBox {
         return Math.min(horizontalPadding, Math.max(0, (getWidth() - 1) / 2));
     }
 
-    private MouseButtonEvent contentEvent(MouseButtonEvent event) {
+    private double contentX(double mouseX) {
         int inset = effectivePadding();
-        if (inset == 0) return event;
+        if (inset == 0) return mouseX;
 
-        double adjustedX = event.x() - inset;
-        adjustedX = Math.max(getX(), Math.min(getX() + getInnerWidth(), adjustedX));
-        return new MouseButtonEvent(adjustedX, event.y(), event.buttonInfo());
+        double adjustedX = mouseX - inset;
+        return Math.max(getX(), Math.min(getX() + getInnerWidth(), adjustedX));
     }
 }

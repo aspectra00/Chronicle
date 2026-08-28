@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.Util;
@@ -1922,36 +1921,36 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() != 0) {
-            return super.mouseClicked(event, doubleClick);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) {
+            return super.mouseClicked(mouseX, mouseY, button);
         }
 
-        if (clickButton(applyButton, event, doubleClick)
-                || clickButton(testButton, event, doubleClick)
-                || clickButton(cancelButton, event, doubleClick)) {
+        if (clickButton(applyButton, mouseX, mouseY, button)
+                || clickButton(testButton, mouseX, mouseY, button)
+                || clickButton(cancelButton, mouseX, mouseY, button)) {
             return true;
         }
-        int mode = pickerHitMode(event.x(), event.y());
+        int mode = pickerHitMode(mouseX, mouseY);
         if (mode == 1) {
             clearFocus();
             draggingColorPicker = true;
             draggingHue = false;
-            updatePickerFromMouse(event.x(), event.y(), true);
+            updatePickerFromMouse(mouseX, mouseY, true);
             return true;
         }
         if (mode == 2) {
             clearFocus();
             draggingColorPicker = false;
             draggingHue = true;
-            updatePickerFromMouse(event.x(), event.y(), true);
+            updatePickerFromMouse(mouseX, mouseY, true);
             return true;
         }
-        if (!isInsideContentViewport(event.x(), event.y())) {
+        if (!isInsideContentViewport(mouseX, mouseY)) {
             return false;
         }
-        selectPaletteTargetFromFieldClick(event.x(), event.y());
-        return super.mouseClicked(event, doubleClick);
+        selectPaletteTargetFromFieldClick(mouseX, mouseY);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     private boolean isInsideContentViewport(double mouseX, double mouseY) {
@@ -1967,20 +1966,20 @@ public final class ToastCustomizerScreen extends Screen {
                 && mouseY >= clipTop && mouseY < clipBottom;
     }
 
-    private static boolean clickButton(Button button, MouseButtonEvent event, boolean doubleClick) {
+    private static boolean clickButton(Button button, double mouseX, double mouseY, int mouseButton) {
         return button != null && button.visible
-                && event.x() >= button.getX() && event.x() < button.getX() + button.getWidth()
-                && event.y() >= button.getY() && event.y() < button.getY() + button.getHeight()
-                && button.mouseClicked(event, doubleClick);
+                && mouseX >= button.getX() && mouseX < button.getX() + button.getWidth()
+                && mouseY >= button.getY() && mouseY < button.getY() + button.getHeight()
+                && button.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        if (event.button() == 0 && (draggingColorPicker || draggingHue)) {
-            updatePickerFromMouse(event.x(), event.y(), true);
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (button == 0 && (draggingColorPicker || draggingHue)) {
+            updatePickerFromMouse(mouseX, mouseY, true);
             return true;
         }
-        return super.mouseDragged(event, dragX, dragY);
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
 
@@ -1993,13 +1992,13 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0 && (draggingColorPicker || draggingHue)) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && (draggingColorPicker || draggingHue)) {
             draggingColorPicker = false;
             draggingHue = false;
             return true;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     private String trimToWidth(String text, int maxWidth) {

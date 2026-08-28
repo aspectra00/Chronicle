@@ -9,7 +9,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -944,15 +943,16 @@ public final class ReminderEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() != 0) {
-            return super.mouseClicked(event, doubleClick);
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button != 0) {
+            return super.mouseClicked(mouseX, mouseY, button);
         }
-        if (clickButton(saveButton, event, doubleClick) || clickButton(cancelButton, event, doubleClick)) {
+        if (clickButton(saveButton, mouseX, mouseY, button)
+                || clickButton(cancelButton, mouseX, mouseY, button)) {
             return true;
         }
         if (periodButton != null && periodButton.visible && isInContentViewport(periodButton)
-                && clickButton(periodButton, event, doubleClick)) {
+                && clickButton(periodButton, mouseX, mouseY, button)) {
             return true;
         }
 
@@ -962,16 +962,16 @@ public final class ReminderEditorScreen extends Screen {
         int clipTop = panelTop + UiMetrics.HEADER_HEIGHT;
         int clipBottom = saveButton == null ? this.height - 64 : saveButton.getY() - footerContentGap();
         clipBottom = Math.max(clipTop + 20, clipBottom);
-        if (event.x() < left || event.x() >= left + panelW
-                || event.y() < clipTop || event.y() >= clipBottom) {
+        if (mouseX < left || mouseX >= left + panelW
+                || mouseY < clipTop || mouseY >= clipBottom) {
             return false;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    private static boolean clickButton(Button button, MouseButtonEvent event, boolean doubleClick) {
-        return button != null && button.visible && isInside(button, event.x(), event.y())
-                && button.mouseClicked(event, doubleClick);
+    private static boolean clickButton(Button button, double mouseX, double mouseY, int mouseButton) {
+        return button != null && button.visible && isInside(button, mouseX, mouseY)
+                && button.mouseClicked(mouseX, mouseY, mouseButton);
     }
 
     private static boolean isInside(Button button, double mouseX, double mouseY) {

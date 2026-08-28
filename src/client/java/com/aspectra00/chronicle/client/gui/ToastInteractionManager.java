@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -24,8 +23,8 @@ public final class ToastInteractionManager {
 
     private static void registerScreen(Screen screen) {
         if (screen == null) return;
-        ScreenMouseEvents.allowMouseClick(screen).register((currentScreen, event) ->
-                !handleMouseClick(Minecraft.getInstance(), event));
+        ScreenMouseEvents.allowMouseClick(screen).register((currentScreen, mouseX, mouseY, button) ->
+                !handleMouseClick(Minecraft.getInstance(), mouseX, mouseY, button));
     }
 
     static void register(CustomReminderToast toast) {
@@ -59,13 +58,13 @@ public final class ToastInteractionManager {
         return false;
     }
 
-    private static boolean handleMouseClick(Minecraft client, MouseButtonEvent event) {
-        if (client == null || event == null || event.button() != 0) return false;
+    private static boolean handleMouseClick(Minecraft client, double mouseX, double mouseY, int button) {
+        if (client == null || button != 0) return false;
         for (int i = TOASTS.size() - 1; i >= 0; i--) {
             CustomReminderToast toast = TOASTS.get(i).get();
             if (toast == null) {
                 TOASTS.remove(i);
-            } else if (toast.handleMouseClick(client, event.x(), event.y())) {
+            } else if (toast.handleMouseClick(client, mouseX, mouseY)) {
                 return true;
             }
         }
