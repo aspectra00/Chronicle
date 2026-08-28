@@ -41,9 +41,9 @@ public final class ChroniclePlaceholders {
             y = Integer.toString(client.player.getBlockY());
             z = Integer.toString(client.player.getBlockZ());
             coords = x + " " + y + " " + z;
-            dimension = client.level.dimension().identifier().toString();
+            dimension = client.level.dimension().location().toString();
             biome = client.level.getBiome(client.player.blockPosition()).unwrapKey()
-                    .map(key -> key.identifier().toString())
+                    .map(key -> key.location().toString())
                     .orElse("");
         }
         return input

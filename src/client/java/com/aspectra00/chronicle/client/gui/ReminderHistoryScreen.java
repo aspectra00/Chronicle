@@ -3,11 +3,12 @@ package com.aspectra00.chronicle.client.gui;
 import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.ReminderHistoryEntry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -80,11 +81,11 @@ public final class ReminderHistoryScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     @Override
@@ -100,9 +101,9 @@ public final class ReminderHistoryScreen extends Screen {
         }
         if (clearConfirmationUntil > 0L && Util.getMillis() >= clearConfirmationUntil) {
             clearConfirmationUntil = 0L;
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         } else if (historyRevision != ChronicleClient.HISTORY_REVISION) {
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         }
     }
 
@@ -224,7 +225,7 @@ public final class ReminderHistoryScreen extends Screen {
         filter = value == null ? Filter.ALL : value;
         scrollOffset = 0;
         clearConfirmationUntil = 0L;
-        init(this.width, this.height);
+        init(this.minecraft, this.width, this.height);
     }
 
     private void clearHistory() {
@@ -243,7 +244,7 @@ public final class ReminderHistoryScreen extends Screen {
             saveError = null;
             scrollOffset = 0;
         }
-        init(this.width, this.height);
+        init(this.minecraft, this.width, this.height);
     }
 
     private Button button(String label, int x, int y, int width, int height, Button.OnPress action) {

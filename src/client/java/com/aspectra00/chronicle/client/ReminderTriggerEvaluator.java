@@ -30,7 +30,7 @@ public final class ReminderTriggerEvaluator {
             case INVENTORY_FULL -> inventoryHasNoEmptySlot(client.player.getInventory());
             case DURABILITY_BELOW -> durabilityAtOrBelow(
                     client.player.getMainHandItem(), trigger.threshold);
-            case ENTER_DIMENSION -> client.level.dimension().identifier().toString()
+            case ENTER_DIMENSION -> client.level.dimension().location().toString()
                     .equals(trigger.normalizedTarget());
             case ENTER_AREA -> insideArea(client.player.getX(), client.player.getZ(), trigger);
         };

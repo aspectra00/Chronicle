@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -236,7 +236,7 @@ public final class WatchManager {
     private static WatchTarget createBlockWatch(String scope, String dimension,
                                                 BlockPos pos, BlockState state) {
         Block block = state.getBlock();
-        Identifier blockId = BuiltInRegistries.BLOCK.getKey(block);
+        ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
         String path = blockId.getPath();
         WatchTarget watch = baseBlockWatch(scope, dimension, pos, state);
         if (block instanceof AbstractFurnaceBlock) {
@@ -384,11 +384,11 @@ public final class WatchManager {
 
     private static String currentDimension(Minecraft client) {
         return client != null && client.level != null
-                ? client.level.dimension().identifier().toString() : "";
+                ? client.level.dimension().location().toString() : "";
     }
 
     private static String shortDimension(String value) {
-        Identifier id = Identifier.tryParse(value == null ? "" : value);
+        ResourceLocation id = ResourceLocation.tryParse(value == null ? "" : value);
         return id == null ? value : id.getPath().replace('_', ' ');
     }
 

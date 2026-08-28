@@ -4,7 +4,7 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 final class ChronicleScreenTransition {
     private static final long OPEN_DURATION_MS = 220L;

@@ -13,9 +13,9 @@ import net.minecraft.client.gui.components.toasts.ToastManager;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,8 @@ public final class CustomReminderToast implements Toast {
     private static final int MODERN_ICON_SIZE = 28;
     private static final int MODERN_ICON_GAP = 9;
     private static final int MODERN_ACTION_GAP = 5;
-    private static final Identifier VANILLA_TOAST_BACKGROUND =
-            Identifier.withDefaultNamespace("toast/system");
+    private static final ResourceLocation VANILLA_TOAST_BACKGROUND =
+            ResourceLocation.withDefaultNamespace("toast/system");
     private static final int VANILLA_MIN_WIDTH = 160;
     private static final int VANILLA_MAX_LINE_WIDTH = 200;
     private static final int VANILLA_TEXT_X = 18;

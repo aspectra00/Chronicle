@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -87,7 +87,7 @@ public final class CustomToastBackground {
             }
             texture = new DynamicTexture(() -> "Chronicle notification background", image);
             image = null;
-            Identifier nextId = Identifier.fromNamespaceAndPath("chronicle",
+            ResourceLocation nextId = ResourceLocation.fromNamespaceAndPath("chronicle",
                     "custom_toast_background/" + Integer.toUnsignedString(path.hashCode(), 16)
                             + "_" + Integer.toUnsignedString(textureGeneration++, 16));
             minecraft.getTextureManager().register(nextId, texture);
@@ -258,7 +258,7 @@ public final class CustomToastBackground {
     private record ImageData(byte[] bytes, int width, int height) {
     }
 
-    private record LoadedTexture(Identifier id, int width, int height) {
+    private record LoadedTexture(ResourceLocation id, int width, int height) {
     }
 
     private static final class ImageFailure extends Exception {

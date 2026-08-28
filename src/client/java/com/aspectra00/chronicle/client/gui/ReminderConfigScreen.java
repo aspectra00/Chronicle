@@ -4,12 +4,13 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderConfig;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -69,11 +70,11 @@ public class ReminderConfigScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     @Override
@@ -91,9 +92,9 @@ public class ReminderConfigScreen extends Screen {
         }
         if (pendingRemoval != null && Util.getMillis() >= pendingRemovalUntil) {
             pendingRemoval = null;
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         } else if (configRevision != ChronicleClient.CONFIG_REVISION) {
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         }
     }
 
@@ -240,7 +241,7 @@ public class ReminderConfigScreen extends Screen {
                                 saveError = null;
                                 ChronicleClient.resetTriggerState(removed);
                             }
-                            init(this.width, this.height);
+                            init(this.minecraft, this.width, this.height);
                         }
                     });
             addRenderableWidget(remove);
@@ -352,7 +353,7 @@ public class ReminderConfigScreen extends Screen {
         }
         saveError = null;
         ChronicleClient.CONFIG_REVISION++;
-        init(this.width, this.height);
+        init(this.minecraft, this.width, this.height);
     }
 
     @Override
@@ -414,7 +415,7 @@ public class ReminderConfigScreen extends Screen {
             scrollOffset = verticalAmount < 0
                     ? Math.min(maxScroll, scrollOffset + 1)
                     : Math.max(0, scrollOffset - 1);
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);

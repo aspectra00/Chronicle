@@ -5,13 +5,14 @@ import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.ChroniclePlaceholders;
 import com.aspectra00.chronicle.client.CustomSoundPlayer;
 import com.aspectra00.chronicle.client.CustomToastBackground;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import org.lwjgl.PointerBuffer;
@@ -134,12 +135,12 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         setDragging(false);
         draggingColorPicker = false;
         draggingHue = false;
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     private String focusedFieldKey(GuiEventListener focused) {

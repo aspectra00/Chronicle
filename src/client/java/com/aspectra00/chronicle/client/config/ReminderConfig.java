@@ -7,7 +7,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -362,8 +362,8 @@ public final class ReminderConfig {
                 case HUNGER_BELOW -> Math.max(0, Math.min(20, r.trigger.threshold));
                 default -> r.trigger.threshold;
             };
-            Identifier triggerTarget = r.trigger.target == null
-                    ? null : Identifier.tryParse(r.trigger.normalizedTarget());
+            ResourceLocation triggerTarget = r.trigger.target == null
+                    ? null : ResourceLocation.tryParse(r.trigger.normalizedTarget());
             if (triggerTarget == null || triggerTarget.toString().length() > 128) {
                 r.trigger.target = "minecraft:overworld";
             } else {
@@ -468,11 +468,11 @@ public final class ReminderConfig {
     private static boolean validWatch(WatchTarget watch, long nowMillis) {
         if (watch == null || watch.kind == null || watch.scope == null || watch.scope.isBlank()
                 || watch.scope.length() > 128 || watch.dimension == null
-                || Identifier.tryParse(watch.dimension) == null) {
+                || ResourceLocation.tryParse(watch.dimension) == null) {
             return false;
         }
         watch.scope = truncateUtf16(watch.scope.trim(), 128);
-        watch.dimension = Identifier.tryParse(watch.dimension).toString();
+        watch.dimension = ResourceLocation.tryParse(watch.dimension).toString();
         watch.x = Math.max(-30_000_000, Math.min(30_000_000, watch.x));
         watch.y = Math.max(-2_048, Math.min(4_096, watch.y));
         watch.z = Math.max(-30_000_000, Math.min(30_000_000, watch.z));
@@ -487,18 +487,18 @@ public final class ReminderConfig {
         }
         if (watch.isEntity()) {
             if (watch.parsedEntityUuid() == null || watch.entityType == null
-                    || Identifier.tryParse(watch.entityType) == null) {
+                    || ResourceLocation.tryParse(watch.entityType) == null) {
                 return false;
             }
             watch.entityUuid = watch.parsedEntityUuid().toString();
-            watch.entityType = Identifier.tryParse(watch.entityType).toString();
+            watch.entityType = ResourceLocation.tryParse(watch.entityType).toString();
             watch.blockId = "minecraft:air";
             return true;
         }
-        if (watch.blockId == null || Identifier.tryParse(watch.blockId) == null) {
+        if (watch.blockId == null || ResourceLocation.tryParse(watch.blockId) == null) {
             return false;
         }
-        watch.blockId = Identifier.tryParse(watch.blockId).toString();
+        watch.blockId = ResourceLocation.tryParse(watch.blockId).toString();
         watch.entityUuid = "";
         watch.entityType = "";
         if (watch.property.isBlank() || watch.targetValue.isBlank()) return false;
@@ -509,7 +509,7 @@ public final class ReminderConfig {
             case BERRIES -> watch.property.equals("berries") && watch.targetValue.equals("true");
             case FURNACE -> watch.property.equals("lit") && watch.targetValue.equals("false");
             case COPPER -> watch.property.equals("block")
-                    && Identifier.tryParse(watch.targetValue) != null;
+                    && ResourceLocation.tryParse(watch.targetValue) != null;
             case ENTITY_GROWTH -> false;
         };
     }

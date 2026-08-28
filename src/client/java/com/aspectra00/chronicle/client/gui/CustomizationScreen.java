@@ -1,11 +1,12 @@
 package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 public final class CustomizationScreen extends Screen {
     private static final int CARD = 0xFF141A22;
@@ -48,11 +49,11 @@ public final class CustomizationScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     @Override

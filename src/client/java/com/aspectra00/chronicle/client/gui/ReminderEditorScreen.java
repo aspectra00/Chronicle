@@ -4,6 +4,7 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.config.Reminder;
 import com.aspectra00.chronicle.client.config.ReminderTrigger;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -11,8 +12,8 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.Util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -163,12 +164,12 @@ public final class ReminderEditorScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         captureValues();
         pressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     private String focusedFieldKey() {
@@ -609,7 +610,7 @@ public final class ReminderEditorScreen extends Screen {
                 trigger.threshold = value;
             }
             case ENTER_DIMENSION -> {
-                Identifier identifier = Identifier.tryParse(triggerValueText.trim());
+                ResourceLocation identifier = ResourceLocation.tryParse(triggerValueText.trim());
                 if (identifier == null) {
                     validationError = ChronicleI18n.tr("error.trigger_dimension");
                     return false;

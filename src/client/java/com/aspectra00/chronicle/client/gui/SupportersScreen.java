@@ -2,11 +2,12 @@ package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.net.URI;
 import java.util.List;
@@ -59,11 +60,11 @@ public final class SupportersScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     @Override

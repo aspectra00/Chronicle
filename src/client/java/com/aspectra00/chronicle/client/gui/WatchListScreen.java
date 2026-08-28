@@ -4,11 +4,12 @@ import com.aspectra00.chronicle.client.ChronicleClient;
 import com.aspectra00.chronicle.client.ChronicleI18n;
 import com.aspectra00.chronicle.client.WatchManager;
 import com.aspectra00.chronicle.client.config.WatchTarget;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
 
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -68,11 +69,11 @@ public final class WatchListScreen extends Screen {
     }
 
     @Override
-    public void resize(int width, int height) {
+    public void resize(Minecraft minecraft, int width, int height) {
         lastPressedAt = -1L;
         clearFocus();
         setDragging(false);
-        super.resize(width, height);
+        super.resize(minecraft, width, height);
     }
 
     @Override
@@ -88,9 +89,9 @@ public final class WatchListScreen extends Screen {
         }
         if (clearConfirmationUntil > 0L && Util.getMillis() >= clearConfirmationUntil) {
             clearConfirmationUntil = 0L;
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         } else if (watchRevision != ChronicleClient.WATCH_REVISION) {
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
         }
     }
 
@@ -172,7 +173,7 @@ public final class WatchListScreen extends Screen {
         } else {
             saveError = null;
         }
-        init(this.width, this.height);
+        init(this.minecraft, this.width, this.height);
     }
 
     private void clearWatches() {
@@ -189,7 +190,7 @@ public final class WatchListScreen extends Screen {
             saveError = null;
             scrollOffset = 0;
         }
-        init(this.width, this.height);
+        init(this.minecraft, this.width, this.height);
     }
 
     private Button button(String label, int x, int y, int width, int height,
@@ -217,7 +218,7 @@ public final class WatchListScreen extends Screen {
             scrollOffset = verticalAmount < 0
                     ? Math.min(maxScroll, scrollOffset + 1)
                     : Math.max(0, scrollOffset - 1);
-            init(this.width, this.height);
+            init(this.minecraft, this.width, this.height);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
