@@ -21,6 +21,7 @@ import net.minecraft.world.phys.EntityHitResult;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -372,7 +373,7 @@ public final class WatchManager {
     }
 
     private static <T extends Comparable<T>> String maximumTyped(Property<T> property) {
-        List<T> values = property.getPossibleValues();
+        Collection<T> values = property.getPossibleValues();
         T maximum = values.stream().max(Comparator.naturalOrder()).orElse(null);
         return maximum == null ? "" : property.getName(maximum);
     }

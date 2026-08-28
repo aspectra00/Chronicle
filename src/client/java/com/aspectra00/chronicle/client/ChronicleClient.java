@@ -506,7 +506,7 @@ public class ChronicleClient implements ClientModInitializer {
                 && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(sourceMessage, snoozeMinutes)
                 : null;
-        client.getToastManager().addToast(new CustomReminderToast(
+        client.getToasts().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action,
                 (status, minutes) -> recordReminderOutcome(
                         resolvedMessage, status, minutes)));
@@ -608,7 +608,7 @@ public class ChronicleClient implements ClientModInitializer {
                 && !"VANILLA".equalsIgnoreCase(CONFIG.toastFrameStyle)
                 ? () -> snoozeReminder(previewMessage, snoozeMinutes)
                 : null;
-        client.getToastManager().addToast(new CustomReminderToast(
+        client.getToasts().addToast(new CustomReminderToast(
                 CONFIG, resolvedMessage, resolvedTitle, action));
         CustomSoundPlayer.playConfigured(client, CONFIG);
     }

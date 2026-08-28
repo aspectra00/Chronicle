@@ -9,8 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
-import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -270,7 +269,7 @@ public final class CustomReminderToast implements Toast {
     }
 
     @Override
-    public int occcupiedSlotCount() {
+    public int slotCount() {
         return 3;
     }
 
@@ -306,13 +305,7 @@ public final class CustomReminderToast implements Toast {
         return token;
     }
 
-    @Override
-    public Visibility getWantedVisibility() {
-        return visibility;
-    }
-
-    @Override
-    public void update(ToastManager toastManager, long time) {
+    private void updateState(ToastComponent toastComponent, long time) {
         long previousUpdateTime = lastUpdateTime;
         lastUpdateTime = time;
         if (dismissed) {
@@ -325,7 +318,7 @@ public final class CustomReminderToast implements Toast {
         if (pointerOverToast && previousUpdateTime > 0L && time > previousUpdateTime) {
             shownAt += time - previousUpdateTime;
         }
-        double multiplier = Math.max(0.1D, toastManager.getNotificationDisplayTimeMultiplier());
+        double multiplier = Math.max(0.1D, toastComponent.getNotificationDisplayTimeMultiplier());
         long duration = Math.max(500L, (long) (DISPLAY_TIME_MS * multiplier));
         displayDurationMs = duration;
         elapsedDisplayMs = Math.max(0L, time - shownAt);
@@ -337,12 +330,14 @@ public final class CustomReminderToast implements Toast {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, long fullyVisibleForMs) {
+    public Visibility render(GuiGraphics graphics, ToastComponent toastComponent, long fullyVisibleForMs) {
+        updateState(toastComponent, fullyVisibleForMs);
+        Font font = toastComponent.getMinecraft().font;
         int currentWidth = width();
         int currentHeight = height();
         renderedWidth = currentWidth;
         renderedHeight = currentHeight;
-        Minecraft minecraft = Minecraft.getInstance();
+        Minecraft minecraft = toastComponent.getMinecraft();
         renderedGuiWidth = minecraft.getWindow().getGuiScaledWidth();
         renderedGuiHeight = minecraft.getWindow().getGuiScaledHeight();
         renderedX = graphics.pose().last().pose().m30();
@@ -369,6 +364,7 @@ public final class CustomReminderToast implements Toast {
                 Util.getMillis() < actionFailedUntil,
                 snoozeMinutes, backgroundImagePath
         );
+        return visibility;
     }
 
     public static void renderPreview(
@@ -889,7 +885,7 @@ public final class CustomReminderToast implements Toast {
     private static void renderVanillaCard(GuiGraphics graphics, Font font, int width, int height,
                                           String message, String title, boolean showActions,
                                           int snoozeMinutes) {
-        graphics.blitSprite(RenderType::guiTextured, VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
+        graphics.blitSprite(VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
         if (width < VANILLA_TEXT_X + 8 || height < font.lineHeight + 4) {
             return;
         }
