@@ -351,8 +351,10 @@ public final class CustomReminderToast implements Toast {
         double localMouseX = Double.NaN;
         double localMouseY = Double.NaN;
         if (minecraft.screen != null && !minecraft.mouseHandler.isMouseGrabbed()) {
-            localMouseX = minecraft.mouseHandler.getScaledXPos(minecraft.getWindow()) - renderedX;
-            localMouseY = minecraft.mouseHandler.getScaledYPos(minecraft.getWindow()) - renderedY;
+            localMouseX = minecraft.mouseHandler.xpos() * renderedGuiWidth
+                    / minecraft.getWindow().getScreenWidth() - renderedX;
+            localMouseY = minecraft.mouseHandler.ypos() * renderedGuiHeight
+                    / minecraft.getWindow().getScreenHeight() - renderedY;
         }
         boolean showActions = showsActions();
         pointerOverToast = showActions && localMouseX >= 0.0 && localMouseX < currentWidth

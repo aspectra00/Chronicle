@@ -85,7 +85,7 @@ public final class CustomToastBackground {
             if (image.getWidth() != data.width() || image.getHeight() != data.height()) {
                 throw new ImageFailure(ChronicleI18n.tr("error.image_unsupported"));
             }
-            texture = new DynamicTexture(() -> "Chronicle notification background", image);
+            texture = new DynamicTexture(image);
             image = null;
             ResourceLocation nextId = ResourceLocation.fromNamespaceAndPath("chronicle",
                     "custom_toast_background/" + Integer.toUnsignedString(path.hashCode(), 16)
