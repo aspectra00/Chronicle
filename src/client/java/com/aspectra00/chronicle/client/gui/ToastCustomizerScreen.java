@@ -445,13 +445,12 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     private EditBox box(int x, int y, int width, int height, String value, int max) {
-        EditBox b = new VerticallyCenteredEditBox(this.font, x, y, width, height, Component.literal(""));
+        VerticallyCenteredEditBox b = new VerticallyCenteredEditBox(this.font, x, y, width, height, Component.literal(""));
         b.setMaxLength(max);
         b.setValue(value);
         b.setBordered(false);
         b.setCentered(true);
         b.setTextColor(0xFFE7ECF2);
-        b.setTextShadow(false);
         return b;
     }
 
@@ -1617,15 +1616,15 @@ public final class ToastCustomizerScreen extends Screen {
     private void renderPreviewAt(GuiGraphics graphics, int x, int y, int width, int height,
                                  String message, String title, String icon, ReminderToastTheme theme,
                                  float titleScale, float messageScale, float iconScale) {
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(x, y);
+        graphics.pose().pushPose();
+        graphics.pose().translate(x, y, 0);
         CustomReminderToast.renderPreview(
                 graphics, this.font, width, height, message, title, icon, theme,
                 titleScale, messageScale, iconScale, draftFrameStyle,
                 draftActionsVisible(), draftToastSnoozeMinutes,
                 draftBackgroundImagePath
         );
-        graphics.pose().popMatrix();
+        graphics.pose().popPose();
     }
 
     private void drawField(GuiGraphics graphics, EditBox box, int mouseX, int mouseY) {

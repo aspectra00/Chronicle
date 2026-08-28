@@ -117,7 +117,6 @@ public final class NotificationSoundScreen extends Screen {
         pathBox.setValue(soundPath == null ? "" : soundPath);
         pathBox.setResponder(value -> soundPath = value);
         pathBox.setBordered(false);
-        pathBox.setTextShadow(false);
         pathBox.setTextColorUneditable(MUTED);
         pathBox.setHorizontalPadding(4);
         pathBox.setHint(ChronicleI18n.component("sound.file.hint"));

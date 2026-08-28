@@ -10,7 +10,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraft.client.gui.components.toasts.ToastManager;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -274,21 +274,6 @@ public final class CustomReminderToast implements Toast {
         return 3;
     }
 
-    @Override
-    public float yPos(int firstSlotIndex) {
-        renderedY = firstSlotIndex * (float) Toast.SLOT_HEIGHT;
-        return renderedY;
-    }
-
-    @Override
-    public float xPos(int guiWidth, float visiblePortion) {
-        int currentWidth = width();
-        renderedX = dismissed ? guiWidth : animationsEnabled
-                ? guiWidth - currentWidth * visiblePortion
-                : visibility == Visibility.SHOW ? guiWidth - currentWidth : guiWidth;
-        return renderedX;
-    }
-
     static int layoutWidth(Font font, String title, String message, String frameStyle, int guiWidth) {
         return layoutWidth(font, title, message, frameStyle, guiWidth, false);
     }
@@ -345,6 +330,10 @@ public final class CustomReminderToast implements Toast {
         displayDurationMs = duration;
         elapsedDisplayMs = Math.max(0L, time - shownAt);
         visibility = elapsedDisplayMs < duration ? Visibility.SHOW : Visibility.HIDE;
+        if (visibility == Visibility.HIDE) {
+            recordOutcome(ReminderHistoryEntry.Status.MISSED);
+            ToastInteractionManager.unregister(this);
+        }
     }
 
     @Override
@@ -356,6 +345,8 @@ public final class CustomReminderToast implements Toast {
         Minecraft minecraft = Minecraft.getInstance();
         renderedGuiWidth = minecraft.getWindow().getGuiScaledWidth();
         renderedGuiHeight = minecraft.getWindow().getGuiScaledHeight();
+        renderedX = graphics.pose().last().pose().m30();
+        renderedY = graphics.pose().last().pose().m31();
         lastRenderedAt = Util.getMillis();
         double localMouseX = Double.NaN;
         double localMouseY = Double.NaN;
@@ -376,12 +367,6 @@ public final class CustomReminderToast implements Toast {
                 Util.getMillis() < actionFailedUntil,
                 snoozeMinutes, backgroundImagePath
         );
-    }
-
-    @Override
-    public void onFinishedRendering() {
-        recordOutcome(ReminderHistoryEntry.Status.MISSED);
-        ToastInteractionManager.unregister(this);
     }
 
     public static void renderPreview(
@@ -484,9 +469,9 @@ public final class CustomReminderToast implements Toast {
         if (vanilla) {
             cardWidth = vanillaWidthWithin(font, title, message, width);
             cardHeight = vanillaHeightWithin(font, message, cardWidth, height, showActions);
-            graphics.pose().pushMatrix();
+            graphics.pose().pushPose();
             graphics.pose().translate(Math.max(0, (width - cardWidth) / 2),
-                    Math.max(0, (height - cardHeight) / 2));
+                    Math.max(0, (height - cardHeight) / 2), 0);
         }
         renderCard(
                 graphics, font, cardWidth, cardHeight,
@@ -500,7 +485,7 @@ public final class CustomReminderToast implements Toast {
                 normalizeSnoozeMinutes(snoozeMinutes), backgroundImagePath
         );
         if (vanilla) {
-            graphics.pose().popMatrix();
+            graphics.pose().popPose();
         }
     }
 
@@ -902,7 +887,7 @@ public final class CustomReminderToast implements Toast {
     private static void renderVanillaCard(GuiGraphics graphics, Font font, int width, int height,
                                           String message, String title, boolean showActions,
                                           int snoozeMinutes) {
-        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
+        graphics.blitSprite(RenderType::guiTextured, VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
         if (width < VANILLA_TEXT_X + 8 || height < font.lineHeight + 4) {
             return;
         }
@@ -1034,10 +1019,10 @@ public final class CustomReminderToast implements Toast {
 
     private static void drawScaled(GuiGraphics graphics, Font font, String text,
                                    int x, int y, float scale, int color, boolean shadow) {
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(Math.round(x), Math.round(y));
-        graphics.pose().scale(scale, scale);
+        graphics.pose().pushPose();
+        graphics.pose().translate(Math.round(x), Math.round(y), 0);
+        graphics.pose().scale(scale, scale, 1.0f);
         graphics.drawString(font, Component.literal(text), 0, 0, color, shadow);
-        graphics.pose().popMatrix();
+        graphics.pose().popPose();
     }
 }

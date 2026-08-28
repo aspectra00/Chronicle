@@ -48,7 +48,7 @@ public final class ReminderEditorScreen extends Screen {
     private EditBox hourBox;
     private EditBox minuteBox;
     private EditBox intervalBox;
-    private EditBox triggerValueBox;
+    private VerticallyCenteredEditBox triggerValueBox;
     private EditBox triggerXBox;
     private EditBox triggerZBox;
     private EditBox triggerRadiusBox;
@@ -526,7 +526,7 @@ public final class ReminderEditorScreen extends Screen {
                 triggerValueText, maxLength, narrationKey);
         triggerValueBox.setCentered(type != ReminderTrigger.Type.ENTER_DIMENSION);
         if (type == ReminderTrigger.Type.ENTER_DIMENSION) {
-            ((VerticallyCenteredEditBox) triggerValueBox).setHorizontalPadding(UiMetrics.GAP_XS);
+            triggerValueBox.setHorizontalPadding(UiMetrics.GAP_XS);
         }
         addRenderableWidget(triggerValueBox);
         return valueY + triggerValueBox.getHeight();
@@ -665,7 +665,6 @@ public final class ReminderEditorScreen extends Screen {
         box.setBordered(false);
         box.setCentered(true);
         box.setTextColor(0xFFE7ECF2);
-        box.setTextShadow(false);
         return box;
     }
 

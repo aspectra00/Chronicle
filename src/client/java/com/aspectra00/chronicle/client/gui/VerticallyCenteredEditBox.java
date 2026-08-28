@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 final class VerticallyCenteredEditBox extends EditBox {
     private final Font font;
     private int horizontalPadding;
+    private boolean centered;
 
     VerticallyCenteredEditBox(Font font, int x, int y, int width, int height, Component narration) {
         super(font, x, y, width, height, narration);
@@ -16,6 +17,11 @@ final class VerticallyCenteredEditBox extends EditBox {
 
     void setHorizontalPadding(int padding) {
         this.horizontalPadding = Math.max(0, padding);
+        setCursorPosition(getCursorPosition());
+    }
+
+    void setCentered(boolean centered) {
+        this.centered = centered;
         setCursorPosition(getCursorPosition());
     }
 
@@ -63,7 +69,8 @@ final class VerticallyCenteredEditBox extends EditBox {
     }
 
     private int effectivePadding() {
-        return Math.min(horizontalPadding, Math.max(0, (getWidth() - 1) / 2));
+        int centeredPadding = centered ? Math.max(0, (getWidth() - font.width(getValue())) / 2) : 0;
+        return Math.min(Math.max(horizontalPadding, centeredPadding), Math.max(0, (getWidth() - 1) / 2));
     }
 
     private double contentX(double mouseX) {

@@ -3,7 +3,7 @@ package com.aspectra00.chronicle.client;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
 
@@ -137,7 +137,7 @@ public final class CustomToastBackground {
             sourceHeight = Math.max(1, Math.round(texture.width() / destinationAspect));
             sourceY = Math.max(0, (texture.height() - sourceHeight) / 2);
         }
-        graphics.blit(RenderPipelines.GUI_TEXTURED, texture.id(),
+        graphics.blit(RenderType::guiTextured, texture.id(),
                 x, y, sourceX, sourceY, width, height,
                 sourceWidth, sourceHeight, texture.width(), texture.height());
         return true;

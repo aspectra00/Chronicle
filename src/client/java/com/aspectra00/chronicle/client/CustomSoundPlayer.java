@@ -90,7 +90,7 @@ public final class CustomSoundPlayer {
         }
         float effectiveVolume = clampVolume(volume);
         if (client != null && client.options != null) {
-            effectiveVolume *= clampVolume(client.options.getFinalSoundSourceVolume(SoundSource.UI));
+            effectiveVolume *= clampVolume(client.options.getSoundSourceVolume(SoundSource.MASTER));
         }
         if (effectiveVolume <= 0.0001f) {
             cancelCustom(false);
