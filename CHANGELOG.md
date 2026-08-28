@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1+26.2
+
+### Changed
+
+- Lowered the minimum Fabric Loader version to 0.19.0
+- Kept Fabric Loader 0.19.3 as the recommended stable version
+
 ## 1.3.0
 
 ### Added

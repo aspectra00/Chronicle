@@ -5,7 +5,7 @@
 | Component | Version |
 |---|---:|
 | Minecraft | 26.2 |
-| Fabric Loader | 0.19.3 |
+| Fabric Loader | 0.19.0 minimum; 0.19.3 recommended |
 | Fabric API | 0.157.0+26.2 |
 | Fabric Loom | 1.17.19 |
 | Java | 25 |
