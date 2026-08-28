@@ -10,10 +10,10 @@
 </p>
 
 <p align="center">
-  <img src="badges-for-readme/minecraft.svg" alt="Minecraft 26.1.2" height="38">
+  <img src="badges-for-readme/minecraft.svg" alt="Minecraft 26.1" height="38">
   <img src="badges-for-readme/fabric.svg" alt="Fabric Loader 0.19.3" height="38">
   <img src="badges-for-readme/java.svg" alt="Java 25" height="38">
-  <img src="badges-for-readme/chronicle.svg" alt="Chronicle 1.3.1 for Minecraft 26.1.2" height="38">
+  <img src="badges-for-readme/chronicle.svg" alt="Chronicle 1.3.1 for Minecraft 26.1" height="38">
 </p>
 
 Chronicle is a client-side reminder mod for Minecraft. It works in singleplayer and on multiplayer servers without a server-side install.
@@ -102,16 +102,16 @@ Both bindings can be changed under Minecraft's key bind settings.
 
 | Dependency | Version |
 |---|---:|
-| Minecraft | 26.1.2 |
-| Fabric Loader | 0.19.0 or newer (0.19.3 recommended) |
-| Fabric API | 0.155.2+26.1.2 |
+| Minecraft | 26.1 |
+| Fabric Loader | 0.18.6 or newer (0.19.3 recommended) |
+| Fabric API | 0.145.1+26.1 |
 | Java | 25 |
 
 Mod Menu is optional. Text Placeholder API is included in the Chronicle JAR.
 
 ## Installation
 
-1. Install Fabric Loader and Fabric API for Minecraft 26.1.2.
+1. Install Fabric Loader and Fabric API for Minecraft 26.1.
 2. Copy the Chronicle JAR into the `mods` folder.
 3. Start Minecraft and press `J`.
 
