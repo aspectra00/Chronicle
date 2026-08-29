@@ -18,6 +18,16 @@
 
 Chronicle is a client-side reminder mod for Minecraft. It works in singleplayer and on multiplayer servers without a server-side install.
 
+## Support Chronicle
+
+Chronicle is free and maintained across every supported Minecraft version. If it has saved you time or helped you avoid missing something important, you can help keep updates tested and available.
+
+<p align="center">
+  <a href="https://ko-fi.com/aspectra"><img src="https://img.shields.io/badge/Support_Chronicle_on_Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white" alt="Support Chronicle on Ko-fi"></a>
+</p>
+
+Support goes directly toward compatibility work, release testing, and new reminder features. Members can also choose to be credited in Chronicle's in-game Community Supporters screen.
+
 ## Features
 
 ### Reminders
