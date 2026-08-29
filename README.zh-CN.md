@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://cdn.modrinth.com/data/cached_images/849c602a1ac00208e0371ed231540da69e4fbfb3.png" alt="Chronicle" width="600">
+  <a href="README.md"><kbd><img src="badges-for-readme/flags/us.png" alt="English" title="English" width="64" height="42"></kbd></a>&nbsp;&nbsp;
+  <a href="README.ru.md"><kbd><img src="badges-for-readme/flags/ru.png" alt="Русский" title="Русский" width="64" height="42"></kbd></a>&nbsp;&nbsp;
+  <a href="README.zh-CN.md"><kbd>✓&nbsp;<img src="badges-for-readme/flags/cn.png" alt="已选择简体中文" title="简体中文" width="64" height="42"></kbd></a>&nbsp;&nbsp;
+  <a href="README.es.md"><kbd><img src="badges-for-readme/flags/es.png" alt="Español" title="Español" width="64" height="42"></kbd></a>&nbsp;&nbsp;
+  <a href="README.de.md"><kbd><img src="badges-for-readme/flags/de.png" alt="Deutsch" title="Deutsch" width="64" height="42"></kbd></a>
 </p>
 
 <p align="center">
-  <a href="README.md"><img src="badges-for-readme/flags/us.png" alt="English" title="English" width="64" height="42"></a>&nbsp;&nbsp;
-  <a href="README.ru.md"><img src="badges-for-readme/flags/ru.png" alt="Русский" title="Русский" width="64" height="42"></a>&nbsp;&nbsp;
-  <a href="README.zh-CN.md"><img src="badges-for-readme/flags/cn.png" alt="简体中文" title="简体中文" width="64" height="42"></a>&nbsp;&nbsp;
-  <a href="README.es.md"><img src="badges-for-readme/flags/es.png" alt="Español" title="Español" width="64" height="42"></a>&nbsp;&nbsp;
-  <a href="README.de.md"><img src="badges-for-readme/flags/de.png" alt="Deutsch" title="Deutsch" width="64" height="42"></a>
+  <img src="https://cdn.modrinth.com/data/cached_images/849c602a1ac00208e0371ed231540da69e4fbfb3.png" alt="Chronicle" width="600">
 </p>
 
 <p align="center">
