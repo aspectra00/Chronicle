@@ -3,11 +3,11 @@
 </p>
 
 <p align="center">
-  <a href="README.md"><img src="badges-for-readme/flags/us.png" alt="English" title="English" width="24" height="16"></a>&nbsp;&nbsp;
-  <a href="README.ru.md"><img src="badges-for-readme/flags/ru.png" alt="Русский" title="Русский" width="24" height="16"></a>&nbsp;&nbsp;
-  <a href="README.zh-CN.md"><img src="badges-for-readme/flags/cn.png" alt="简体中文" title="简体中文" width="24" height="16"></a>&nbsp;&nbsp;
-  <a href="README.es.md"><img src="badges-for-readme/flags/es.png" alt="Español" title="Español" width="24" height="16"></a>&nbsp;&nbsp;
-  <a href="README.de.md"><img src="badges-for-readme/flags/de.png" alt="Deutsch" title="Deutsch" width="24" height="16"></a>
+  <a href="README.md"><img src="badges-for-readme/flags/us.png" alt="English" title="English" width="64" height="42"></a>&nbsp;&nbsp;
+  <a href="README.ru.md"><img src="badges-for-readme/flags/ru.png" alt="Русский" title="Русский" width="64" height="42"></a>&nbsp;&nbsp;
+  <a href="README.zh-CN.md"><img src="badges-for-readme/flags/cn.png" alt="简体中文" title="简体中文" width="64" height="42"></a>&nbsp;&nbsp;
+  <a href="README.es.md"><img src="badges-for-readme/flags/es.png" alt="Español" title="Español" width="64" height="42"></a>&nbsp;&nbsp;
+  <a href="README.de.md"><img src="badges-for-readme/flags/de.png" alt="Deutsch" title="Deutsch" width="64" height="42"></a>
 </p>
 
 <p align="center">
