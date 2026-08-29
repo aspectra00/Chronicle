@@ -2,7 +2,7 @@
   <a href="README.md"><kbd><img src="badges-for-readme/flags/us.png" alt="English" title="English" width="64" height="42"></kbd></a>&nbsp;&nbsp;
   <a href="README.ru.md"><kbd><img src="badges-for-readme/flags/ru.png" alt="Русский" title="Русский" width="64" height="42"></kbd></a>&nbsp;&nbsp;
   <a href="README.zh-CN.md"><kbd><img src="badges-for-readme/flags/cn.png" alt="简体中文" title="简体中文" width="64" height="42"></kbd></a>&nbsp;&nbsp;
-  <a href="README.es.md"><kbd>✓&nbsp;<img src="badges-for-readme/flags/es.png" alt="Español seleccionado" title="Español" width="64" height="42"></kbd></a>&nbsp;&nbsp;
+  <a href="README.es.md"><kbd><kbd><img src="badges-for-readme/flags/es.png" alt="Español seleccionado" title="Español" width="64" height="42"></kbd></kbd></a>&nbsp;&nbsp;
   <a href="README.de.md"><kbd><img src="badges-for-readme/flags/de.png" alt="Deutsch" title="Deutsch" width="64" height="42"></kbd></a>
 </p>
 
