@@ -33,7 +33,7 @@ public final class CustomReminderToast implements Toast {
     private static final int MODERN_ICON_GAP = 9;
     private static final int MODERN_ACTION_GAP = 5;
     private static final ResourceLocation VANILLA_TOAST_BACKGROUND =
-            ResourceLocation.withDefaultNamespace("toast/system");
+            new ResourceLocation("minecraft", "toast/system");
     private static final int VANILLA_MIN_WIDTH = 160;
     private static final int VANILLA_MAX_LINE_WIDTH = 200;
     private static final int VANILLA_TEXT_X = 18;

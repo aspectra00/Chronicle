@@ -119,9 +119,9 @@ Chronicle распространяется бесплатно и поддерж�
 
 | Зависимость | Версия |
 |---|---:|
-| Minecraft | 1.21 |
-| Fabric Loader | 0.15.11 или новее (рекомендуется 0.19.3) |
-| Fabric API | 0.102.0+1.21 |
+| Minecraft | 1.20.6 |
+| Fabric Loader | 0.15.6 или новее (рекомендуется 0.19.3) |
+| Fabric API | 0.100.8+1.20.6 |
 | Java | 21 |
 
 Mod Menu необязателен. Text Placeholder API уже включён в JAR Chronicle.

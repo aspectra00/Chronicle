@@ -86,7 +86,7 @@ public final class CustomToastBackground {
             }
             texture = new DynamicTexture(image);
             image = null;
-            ResourceLocation nextId = ResourceLocation.fromNamespaceAndPath("chronicle",
+            ResourceLocation nextId = new ResourceLocation("chronicle",
                     "custom_toast_background/" + Integer.toUnsignedString(path.hashCode(), 16)
                             + "_" + Integer.toUnsignedString(textureGeneration++, 16));
             minecraft.getTextureManager().register(nextId, texture);
