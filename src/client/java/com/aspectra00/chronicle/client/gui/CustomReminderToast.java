@@ -33,7 +33,7 @@ public final class CustomReminderToast implements Toast {
     private static final int MODERN_ICON_GAP = 9;
     private static final int MODERN_ACTION_GAP = 5;
     private static final ResourceLocation VANILLA_TOAST_BACKGROUND =
-            new ResourceLocation("minecraft", "toast/system");
+            new ResourceLocation("minecraft", "textures/gui/toasts.png");
     private static final int VANILLA_MIN_WIDTH = 160;
     private static final int VANILLA_MAX_LINE_WIDTH = 200;
     private static final int VANILLA_TEXT_X = 18;
@@ -885,7 +885,7 @@ public final class CustomReminderToast implements Toast {
     private static void renderVanillaCard(GuiGraphics graphics, Font font, int width, int height,
                                           String message, String title, boolean showActions,
                                           int snoozeMinutes) {
-        graphics.blitSprite(VANILLA_TOAST_BACKGROUND, 0, 0, width, height);
+        renderVanillaBackground(graphics, width, height);
         if (width < VANILLA_TEXT_X + 8 || height < font.lineHeight + 4) {
             return;
         }
@@ -909,6 +909,39 @@ public final class CustomReminderToast implements Toast {
             int y = 7 + VANILLA_LINE_SPACING * (i + 1);
             if (y + font.lineHeight > textBottom - 3) break;
             graphics.drawString(font, Component.literal(lines.get(i)), VANILLA_TEXT_X, y, 0xFFFFFFFF, false);
+        }
+    }
+
+    private static void renderVanillaBackground(GuiGraphics graphics, int width, int height) {
+        if (width == 160 && height == 32) {
+            graphics.blit(VANILLA_TOAST_BACKGROUND, 0, 0, 0, 64, width, height);
+            return;
+        }
+        int bottomHeight = Math.max(0, Math.min(4, height - 28));
+        renderVanillaBackgroundRow(graphics, width, 0, 0, Math.min(28, height));
+        for (int y = 28; y < height - bottomHeight; y += 10) {
+            renderVanillaBackgroundRow(graphics, width, 16, y,
+                    Math.min(16, height - y - bottomHeight));
+        }
+        if (bottomHeight > 0) {
+            renderVanillaBackgroundRow(graphics, width, 32 - bottomHeight,
+                    height - bottomHeight, bottomHeight);
+        }
+    }
+
+    private static void renderVanillaBackgroundRow(GuiGraphics graphics, int width,
+                                                    int textureY, int y, int height) {
+        int leftWidth = textureY == 0 ? 20 : 5;
+        int rightWidth = Math.min(60, Math.max(0, width - leftWidth));
+        graphics.blit(VANILLA_TOAST_BACKGROUND, 0, y, 0, 64 + textureY,
+                Math.min(leftWidth, width), height);
+        for (int x = leftWidth; x < width - rightWidth; x += 64) {
+            graphics.blit(VANILLA_TOAST_BACKGROUND, x, y, 32, 64 + textureY,
+                    Math.min(64, width - x - rightWidth), height);
+        }
+        if (rightWidth > 0) {
+            graphics.blit(VANILLA_TOAST_BACKGROUND, width - rightWidth, y,
+                    160 - rightWidth, 64 + textureY, rightWidth, height);
         }
     }
 

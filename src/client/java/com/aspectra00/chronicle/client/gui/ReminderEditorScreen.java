@@ -981,9 +981,9 @@ public final class ReminderEditorScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (maxScroll <= 0 || Math.abs(verticalAmount) < 1.0E-9) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if (maxScroll <= 0 || Math.abs(amount) < 1.0E-9) {
+            return super.mouseScrolled(mouseX, mouseY, amount);
         }
 
         int panelW = UiMetrics.panelWidth(this.width);
@@ -995,10 +995,10 @@ public final class ReminderEditorScreen extends Screen {
         boolean insideContent = mouseX >= left && mouseX < left + panelW
                 && mouseY >= contentClipTop && mouseY < contentClipBottom;
         if (!insideContent) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+            return super.mouseScrolled(mouseX, mouseY, amount);
         }
 
-        int direction = verticalAmount < 0 ? 1 : -1;
+        int direction = amount < 0 ? 1 : -1;
         int next = Math.max(0, Math.min(maxScroll,
                 scrollOffset + direction * (UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM)));
         if (next != scrollOffset) {
