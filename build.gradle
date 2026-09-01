@@ -37,6 +37,10 @@ dependencies {
 	compileOnly "com.google.errorprone:error_prone_annotations:2.48.0"
 }
 
+configurations.configureEach {
+	resolutionStrategy.force "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+
 processResources {
 	def version = project.version
 	inputs.property "version", version

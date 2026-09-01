@@ -260,20 +260,19 @@ public final class ReminderHistoryScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount,
-                                 double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         HistoryLayout layout = layout();
         List<ReminderHistoryEntry> entries = filteredEntries();
         int maxScroll = Math.max(0, entries.size() - visibleRows(layout));
         boolean inside = mouseX >= layout.left() && mouseX < layout.left() + layout.panelW()
                 && mouseY >= layout.listTop() && mouseY < layout.listBottom();
-        if (inside && maxScroll > 0 && Math.abs(verticalAmount) >= 1.0E-9) {
-            scrollOffset = verticalAmount < 0
+        if (inside && maxScroll > 0 && Math.abs(amount) >= 1.0E-9) {
+            scrollOffset = amount < 0
                     ? Math.min(maxScroll, scrollOffset + 1)
                     : Math.max(0, scrollOffset - 1);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override

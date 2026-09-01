@@ -1243,13 +1243,13 @@ public final class ToastCustomizerScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         int panelW = UiMetrics.panelWidth(this.width);
         int left = UiMetrics.panelLeft(this.width, panelW);
         int top = UiMetrics.panelTop(this.height);
         boolean compactStyles = panelW < 760 || this.height < DESKTOP_LAYOUT_MIN_HEIGHT;
         if (!compactStyles) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+            return super.mouseScrolled(mouseX, mouseY, amount);
         }
 
         int footerHeight = footerAreaHeight(panelW, compactStyles);
@@ -1259,11 +1259,11 @@ public final class ToastCustomizerScreen extends Screen {
         boolean insideContent = mouseX >= left && mouseX < left + panelW
                 && mouseY >= clipTop && mouseY < clipBottom;
         int max = maxScrollAmount();
-        if (!insideContent || max <= 0 || Math.abs(verticalAmount) < 1.0E-9) {
-            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        if (!insideContent || max <= 0 || Math.abs(amount) < 1.0E-9) {
+            return super.mouseScrolled(mouseX, mouseY, amount);
         }
 
-        int direction = verticalAmount < 0 ? 1 : -1;
+        int direction = amount < 0 ? 1 : -1;
         int next = Math.max(0, Math.min(max,
                 scrollOffset + direction * (UiMetrics.CONTROL_HEIGHT + UiMetrics.GAP_SM)));
         if (next != scrollOffset) {

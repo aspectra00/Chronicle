@@ -151,19 +151,18 @@ public final class SupportersScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount,
-                                 double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         Layout layout = layout();
         int maxScroll = maxScroll(layout);
         boolean inside = mouseX >= layout.left() && mouseX < layout.left() + layout.panelW()
                 && mouseY >= layout.listTop() && mouseY < layout.listBottom();
-        if (inside && maxScroll > 0 && Math.abs(verticalAmount) >= 1.0E-9) {
-            scrollRow = verticalAmount < 0
+        if (inside && maxScroll > 0 && Math.abs(amount) >= 1.0E-9) {
+            scrollRow = amount < 0
                     ? Math.min(maxScroll, scrollRow + 1)
                     : Math.max(0, scrollRow - 1);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override

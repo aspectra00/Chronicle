@@ -393,7 +393,7 @@ public class ReminderConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         int panelW = UiMetrics.panelWidth(this.width);
         boolean tiny = this.width < 380 || this.height < 260;
         boolean compact = panelW < 760 || tiny;
@@ -410,14 +410,14 @@ public class ReminderConfigScreen extends Screen {
         int left = UiMetrics.panelLeft(this.width, panelW);
         if (mouseX >= left && mouseX < left + panelW
                 && mouseY >= Math.max(0, listTop - 12) && mouseY < listBottom
-                && maxScroll > 0 && Math.abs(verticalAmount) >= 1.0E-9) {
-            scrollOffset = verticalAmount < 0
+                && maxScroll > 0 && Math.abs(amount) >= 1.0E-9) {
+            scrollOffset = amount < 0
                     ? Math.min(maxScroll, scrollOffset + 1)
                     : Math.max(0, scrollOffset - 1);
             init(this.minecraft, this.width, this.height);
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+        return super.mouseScrolled(mouseX, mouseY, amount);
     }
 
     @Override

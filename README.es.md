@@ -119,9 +119,9 @@ Ambas teclas se pueden cambiar en los ajustes de controles de Minecraft.
 
 | Dependencia | Versión |
 |---|---:|
-| Minecraft | 1.20.2 |
-| Fabric Loader | 0.14.22 o posterior (se recomienda 0.19.3) |
-| Fabric API | 0.91.6+1.20.2 |
+| Minecraft | 1.20.1 |
+| Fabric Loader | 0.14.21 o posterior (se recomienda 0.19.3) |
+| Fabric API | 0.91.0+1.20.1 |
 | Java | 17 |
 
 Mod Menu es opcional. Text Placeholder API está incluido en el JAR de Chronicle.
