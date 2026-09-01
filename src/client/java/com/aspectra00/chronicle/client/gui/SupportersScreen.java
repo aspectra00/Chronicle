@@ -296,6 +296,10 @@ public final class SupportersScreen extends Screen {
                 .orElse("—");
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         transition.start(this.minecraft, parent);

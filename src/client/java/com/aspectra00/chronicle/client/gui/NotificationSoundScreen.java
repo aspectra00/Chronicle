@@ -478,6 +478,10 @@ public final class NotificationSoundScreen extends Screen {
         transition.end(graphics, this.width, this.height);
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         CustomSoundPlayer.stopCustom();
