@@ -685,6 +685,10 @@ public class ReminderConfigScreen extends Screen {
         graphics.drawString(this.font, Component.literal("×"), textX, textY, color, false);
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         transition.start(this.minecraft, parent);

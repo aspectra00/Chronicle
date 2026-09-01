@@ -2065,6 +2065,10 @@ public final class ToastCustomizerScreen extends Screen {
                 hovered || selected ? 0xFFE7ECF2 : 0xFF8995A4, false);
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         if (!settingsApplied && ChronicleClient.CONFIG != null) {

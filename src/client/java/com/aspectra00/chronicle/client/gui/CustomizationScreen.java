@@ -222,6 +222,10 @@ public final class CustomizationScreen extends Screen {
         }
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         transition.start(this.minecraft, parent);

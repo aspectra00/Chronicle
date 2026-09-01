@@ -1300,6 +1300,10 @@ public final class ReminderEditorScreen extends Screen {
         return text.substring(0, end) + ellipsis;
     }
 
+    private void clearFocus() {
+        setFocused(null);
+    }
+
     @Override
     public void onClose() {
         transition.start(this.minecraft, parent);
