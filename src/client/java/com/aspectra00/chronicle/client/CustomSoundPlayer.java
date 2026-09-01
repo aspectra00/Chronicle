@@ -7,7 +7,7 @@ import javazoom.jl.decoder.Header;
 import javazoom.jl.decoder.SampleBuffer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.client.sounds.JOrbisAudioStream;
+import com.mojang.blaze3d.audio.OggAudioStream;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
@@ -266,7 +266,7 @@ public final class CustomSoundPlayer {
 
     private static Clip loadOgg(Path path) throws Exception {
         try (InputStream input = Files.newInputStream(path);
-             JOrbisAudioStream stream = new JOrbisAudioStream(input)) {
+             OggAudioStream stream = new OggAudioStream(input)) {
             AudioFormat format = stream.getFormat();
             validateFormat(format);
             int frameSize = Math.max(1, format.getFrameSize());

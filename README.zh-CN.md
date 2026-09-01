@@ -119,10 +119,10 @@ Watches 页面会列出当前世界或服务器中的观察目标。Chronicle �
 
 | 依赖 | 版本 |
 |---|---:|
-| Minecraft | 1.20.5 |
-| Fabric Loader | 0.15.6 或更高版本（推荐 0.19.3） |
-| Fabric API | 0.97.8+1.20.5 |
-| Java | 21 |
+| Minecraft | 1.20.4 |
+| Fabric Loader | 0.15.1 或更高版本（推荐 0.19.3） |
+| Fabric API | 0.97.3+1.20.4 |
+| Java | 17 |
 
 Mod Menu 为可选依赖。Text Placeholder API 已包含在 Chronicle JAR 中。
 
