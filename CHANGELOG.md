@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.1+1.20.5
+
+### Changed
+
+- Ported Chronicle 1.3.1 to Minecraft 1.20.5
+- Updated Fabric API compatibility for the 1.20.5 release line
+- Set the minimum Fabric Loader version to 0.15.6
+
 ## 1.3.1+1.20.6
 
 ### Changed
