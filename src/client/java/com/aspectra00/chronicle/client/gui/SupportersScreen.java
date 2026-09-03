@@ -1,7 +1,7 @@
 package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
-import net.fabricmc.loader.api.FabricLoader;
+import com.aspectra00.chronicle.client.ChronicleNeoForge;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -290,9 +290,7 @@ public final class SupportersScreen extends Screen {
     }
 
     private static String version() {
-        return FabricLoader.getInstance().getModContainer("chronicle")
-                .map(container -> container.getMetadata().getVersion().getFriendlyString())
-                .orElse("—");
+        return ChronicleNeoForge.version();
     }
 
     @Override
