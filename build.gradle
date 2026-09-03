@@ -1,69 +1,90 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.146'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+sourceSets.main {
+    java {
+        srcDir 'src/client/java'
+        exclude '**/ModMenuIntegration.java'
+    }
+    resources {
+        exclude 'fabric.mod.json'
+    }
 }
 
 repositories {
-	mavenCentral()
-	maven {
-		name = "Nucleoid"
-		url = "https://maven.nucleoid.xyz/"
-	}
-	maven {
-		name = "TerraformersMC"
-		url = "https://maven.terraformersmc.com/"
-	}
+    mavenCentral()
 }
 
-loom {
-	splitEnvironmentSourceSets()
-
-	mods {
-		"chronicle" {
-			sourceSet sourceSets.main
-			sourceSet sourceSets.client
-		}
-	}
+neoForge {
+    version = neo_version
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+    }
+    mods {
+        chronicle {
+            sourceSet sourceSets.main
+        }
+    }
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-	modImplementation include("eu.pb4:placeholder-api:${project.placeholder_api_version}")
-	implementation include("javazoom:jlayer:1.0.1")
-	modCompileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
-	compileOnly "com.google.errorprone:error_prone_annotations:2.48.0"
+    jarJar(implementation('javazoom:jlayer:1.0.1')) {
+        version {
+            strictly '[1.0.1]'
+            prefer '1.0.1'
+        }
+    }
+    if (legacy_runtime_classpath.toBoolean()) {
+        additionalRuntimeClasspath 'javazoom:jlayer:1.0.1'
+    }
+    compileOnly 'com.google.errorprone:error_prone_annotations:2.48.0'
 }
 
-processResources {
-	def version = project.version
-	inputs.property "version", version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": version
-	}
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    def properties = [
+            minecraft_version_range: minecraft_version_range,
+            neo_version: neo_version,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id,
+            mod_name: mod_name,
+            mod_license: mod_license,
+            mod_version: mod_version
+    ]
+    inputs.properties properties
+    expand properties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
 }
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-	it.options.compilerArgs += ['-Xlint:all', '-Xlint:-processing']
+    options.release = java_version as int
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-processing']
 }
 
 java {
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+    withSourcesJar()
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
 }
 
 jar {
-	def projectName = project.name
-	inputs.property "projectName", projectName
-
-	from("LICENSE") {
-		rename { "${it}_$projectName"}
-	}
-	from("THIRD_PARTY_NOTICES.md")
+    from('LICENSE') {
+        rename { "${it}_${project.name}" }
+    }
+    from 'THIRD_PARTY_NOTICES.md'
 }
