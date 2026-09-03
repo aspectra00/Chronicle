@@ -25,7 +25,9 @@ repositories {
 }
 
 legacyForge {
-    version = "${minecraft_version}-${forge_version}"
+    enable {
+        neoForgeVersion = "${minecraft_version}-${neoforge_version}"
+    }
     runs {
         client {
             client()
