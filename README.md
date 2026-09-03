@@ -114,22 +114,19 @@ Placeholders registered through Text Placeholder API are supported as well.
 | `R` | Watch or unwatch the target under the crosshair |
 | `U` | Interact with an active Chronicle notification |
 
-Both bindings can be changed under Minecraft's key bind settings.
+All bindings can be changed under Minecraft's key bind settings.
 
 ## Requirements
 
 | Dependency | Version |
 |---|---:|
 | Minecraft | 1.20.1 |
-| Fabric Loader | 0.14.21 or newer (0.19.3 recommended) |
-| Fabric API | 0.91.0+1.20.1 |
+| Forge | 47.1.5 or newer |
 | Java | 17 |
-
-Mod Menu is optional. Text Placeholder API is included in the Chronicle JAR.
 
 ## Installation
 
-1. Install Fabric Loader and Fabric API for Minecraft 1.20.1.
+1. Install Forge 47.1.5 or newer for Minecraft 1.20.1.
 2. Copy the Chronicle JAR into the `mods` folder.
 3. Start Minecraft and press `J`.
 
