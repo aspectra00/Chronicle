@@ -14,11 +14,11 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 @Mod("chronicle")
-public final class ChronicleNeoForge {
+public final class ChronicleForge {
     private static String version = "—";
     private final ChronicleClient client = new ChronicleClient();
 
-    public ChronicleNeoForge() {
+    public ChronicleForge() {
         version = ModList.get().getModContainerById("chronicle")
                 .map(container -> container.getModInfo().getVersion().toString()).orElse("—");
         client.initialize(FMLPaths.CONFIGDIR.get());

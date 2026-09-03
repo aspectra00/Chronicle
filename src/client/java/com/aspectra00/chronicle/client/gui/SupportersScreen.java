@@ -1,7 +1,7 @@
 package com.aspectra00.chronicle.client.gui;
 
 import com.aspectra00.chronicle.client.ChronicleI18n;
-import com.aspectra00.chronicle.client.ChronicleNeoForge;
+import com.aspectra00.chronicle.client.ChronicleForge;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -290,7 +290,7 @@ public final class SupportersScreen extends Screen {
     }
 
     private static String version() {
-        return ChronicleNeoForge.version();
+        return ChronicleForge.version();
     }
 
     private void clearFocus() {
