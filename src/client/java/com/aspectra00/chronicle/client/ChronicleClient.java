@@ -15,11 +15,6 @@ import com.aspectra00.chronicle.client.gui.ToastCustomizerScreen;
 import com.aspectra00.chronicle.client.gui.ToastInteractionManager;
 import com.aspectra00.chronicle.client.gui.WatchListScreen;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.Util;
@@ -34,7 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class ChronicleClient implements ClientModInitializer {
+public class ChronicleClient {
     private static final String KEY_CATEGORY = "key.category.chronicle.main";
     private static final long TEST_TOAST_DEBOUNCE_MS = 500L;
     private static final long INTERVAL_SCAN_PERIOD_MS = 250L;
@@ -88,11 +83,9 @@ public class ChronicleClient implements ClientModInitializer {
         }
     }
 
-    @Override
-    public void onInitializeClient() {
+    public void initialize(Path configDir) {
         activeClient = this;
         backgroundPath = null;
-        Path configDir = FabricLoader.getInstance().getConfigDir();
         CONFIG = ReminderConfig.load(configDir);
         CONFIG.ensureValid();
         PENDING_NOTIFICATIONS.clear();
@@ -108,30 +101,27 @@ public class ChronicleClient implements ClientModInitializer {
             runtimeConfigError = CONFIG.getLastSaveError();
         }
 
-        OPEN_MENU_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        OPEN_MENU_KEY = new KeyMapping(
                 "key.chronicle.open_menu",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_J,
                 KEY_CATEGORY
-        ));
-        WATCH_TARGET_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        );
+        WATCH_TARGET_KEY = new KeyMapping(
                 "key.chronicle.watch_target",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_R,
                 KEY_CATEGORY
-        ));
-        INTERACT_TOAST_KEY = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+        );
+        INTERACT_TOAST_KEY = new KeyMapping(
                 "key.chronicle.interact_toast",
                 InputConstants.Type.KEYSYM,
                 InputConstants.KEY_U,
                 KEY_CATEGORY
-        ));
-        ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
-        ClientLifecycleEvents.CLIENT_STOPPING.register(this::onClientStopping);
-        ToastInteractionManager.initialize();
+        );
     }
 
-    private void onClientTick(Minecraft client) {
+    public void tick(Minecraft client) {
         while (OPEN_MENU_KEY != null && OPEN_MENU_KEY.consumeClick()) {
             var currentScreen = client.screen;
             boolean chronicleOpen = currentScreen instanceof ReminderConfigScreen
@@ -341,7 +331,7 @@ public class ChronicleClient implements ClientModInitializer {
         nextSaveRetryAt = monotonicNow + retryDelay;
     }
 
-    private void onClientStopping(Minecraft client) {
+    public void close(Minecraft client) {
         if (configDirty && CONFIG != null && CONFIG.save()) {
             configDirty = false;
             runtimeConfigError = null;
